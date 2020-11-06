@@ -451,9 +451,10 @@ appendNewField(const typename Field<Dimension, DataType>::FieldName name,
 
   // Create the field in our cache.
   mFieldCache.push_back(std::make_shared<Field<Dimension, DataType>>(name, nodeList, value));
-  Field<Dimension, DataType>* fieldPtr = mFieldCache.back().get();
 
+  Field<Dimension, DataType>* fieldPtr = mFieldCache.back().get();
   mFieldPtrs.push_back(fieldPtr);
+
   NodeListRegistrar<Dimension>::sortInNodeListOrder(mFieldPtrs.begin(), mFieldPtrs.end());
   mFieldBasePtrs.clear();
   mNodeListPtrs.clear();
@@ -461,17 +462,6 @@ appendNewField(const typename Field<Dimension, DataType>::FieldName name,
     mFieldBasePtrs.push_back(fptr);
     mNodeListPtrs.push_back(const_cast<NodeList<Dimension>*>(fptr->nodeListPtr()));
   }
-
-  // // Determine the order this Field should be in.
-  // const NodeListRegistrar<Dimension>& nlr = NodeListRegistrar<Dimension>::instance();
-  // auto orderItr = nlr.findInsertionPoint(fieldPtr,
-  //                                            begin(),
-  //                                            end());
-  // const int delta = std::distance(begin(), orderItr);
-
-  // // Insert the field.
-  // mFieldPtrs.insert(orderItr, fieldPtr);
-  // mFieldBasePtrs.insert(mFieldBasePtrs.begin() + delta, fieldPtr);
 
   // // We also update the set of NodeListPtrs in proper order.
   // mNodeListPtrs.insert(mNodeListPtrs.begin() + delta, const_cast<NodeList<Dimension>*>(&nodeList));
@@ -1752,6 +1742,26 @@ buildNodeListIndexMap() {
 // Make a thread local copy of the FieldList -- assumes we're already in a
 // threaded region.
 //------------------------------------------------------------------------------
+
+
+template<typename Dimension, typename DataType>
+template<typename REDUCE_POLICY>
+inline FieldList<Dimension, RAJA::ReduceSum<REDUCE_POLICY, DataType>>
+FieldList<Dimension, DataType>::reduceSUM(){
+
+  FieldList<Dimension, RAJA::ReduceSum<REDUCE_POLICY, DataType> > result;
+  for (auto fitr = this->begin(); fitr < this->end(); ++fitr) {
+    result.appendNewField((*fitr)->name(),
+                          (*fitr)->nodeList(),
+                          RAJA::ReduceSum<REDUCE_POLICY, DataType>(DataTypeTraits<DataType>::zero())
+                         );
+  }
+
+  result.reductionType = ThreadReduction::SUM;
+  //result.threadMasterPtr = this;
+  return result;
+}
+
 template<typename Dimension, typename DataType>
 inline
 FieldList<Dimension, DataType>

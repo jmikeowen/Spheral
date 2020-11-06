@@ -10,6 +10,7 @@
 #ifndef __Spheral__FieldSpace__FieldList_hh__
 #define __Spheral__FieldSpace__FieldList_hh__
 
+#include "RAJA/RAJA.hpp"
 #include "FieldListBase.hh"
 #include "Utilities/OpenMP_wrapper.hh"
 
@@ -267,6 +268,10 @@ public:
   //----------------------------------------------------------------------------
   // Methods to facilitate threaded computing
   // Make a local thread copy of all the Fields
+  template<typename REDUCE_POLICY>
+  FieldList<Dimension, RAJA::ReduceSum<REDUCE_POLICY, DataType>> reduceSUM();
+  //FieldList<Dimension, REDUCE_TYPE<REDUCE_POLICY, DataType>> reducer<REDUCE_TYPE<REDUCE_POLICY, DataType>>();
+
   FieldList<Dimension, DataType> threadCopy(const ThreadReduction reductionType = ThreadReduction::SUM,
                                             const bool copy = false);
 
