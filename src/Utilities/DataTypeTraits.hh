@@ -18,6 +18,7 @@
 #include "Utilities/DomainNode.hh"
 #include "RK/RKCorrectionParams.hh"
 #include "RK/RKCoefficients.hh"
+#include "RAJA/RAJA.hpp"
 
 #ifdef USE_MPI
 extern "C" {
@@ -502,6 +503,17 @@ struct DataTypeTraits<RKCoefficients<Dim<ndim>>> {
   static bool fixedSize() { return false; }
   static int numElements(const RKCoefficients<Dim<ndim>>& x) { return x.size() + 1; }
   static RKCoefficients<Dim<ndim>> zero() { return RKCoefficients<Dim<ndim>>(); }
+};
+
+template<typename POLICY, typename T>
+struct DataTypeTraits<RAJA::ReduceSum<POLICY, T>> {
+  typedef T ElementType;
+  static bool fixedSize() { return DataTypeTraits<T>::fixedSize(); }
+  static int numElements(const RAJA::ReduceSum<POLICY, T>&) { return DataTypeTraits<T>::numElements(T()); }
+  static T zero() { return DataTypeTraits<T>::zero(); }
+#ifdef USE_MPI
+  static MPI_Datatype MpiDataType() { return DataTypeTraits<T>::MpiDataType; }
+#endif
 };
 
 }
