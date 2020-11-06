@@ -120,15 +120,6 @@ public:
   Field& operator+=(const DataType& rhs);
   Field& operator-=(const DataType& rhs);
 
-//   // Multiplication of two fields, possibly by another DataType.
-//   template<typename OtherDataType>
-//   Field<Dimension, typename CombineTypes<DataType, OtherDataType>::ProductType>
-//   operator*(const Field<Dimension, OtherDataType>& rhs) const;
-
-//   template<typename OtherDataType>
-//   Field<Dimension, typename CombineTypes<DataType, OtherDataType>::ProductType>
-//   operator*(const OtherDataType& rhs) const;
-
   Field<Dimension, DataType>& operator*=(const Field<Dimension, Scalar>& rhs);
   Field<Dimension, DataType>& operator*=(const Scalar& rhs);
 
@@ -164,24 +155,6 @@ public:
   bool operator<(const DataType& rhs) const;
   bool operator>=(const DataType& rhs) const;
   bool operator<=(const DataType& rhs) const;
-
-//   // Interpolate from this Field onto the given position.  Assumes that the
-//   // neighbor initializations have already been performed for the given
-//   // position!
-//   DataType operator()(const Vector& r,
-//                       const TableKernel<Dimension>& W) const;
-
-//   // Interpolate from this Field onto a new Field defined at the positions
-//   // of the given NodeList.
-//   Field<Dimension, DataType>
-//   sampleField(const NodeList<Dimension>& splatNodeList,
-//               const TableKernel<Dimension>& W) const;
-
-//   // Conservatively splat values from this Field onto a new Field defined
-//   // at the positions of the given NodeList, using the MASH formalism.
-//   Field<Dimension, DataType>
-//   splatToFieldMash(const NodeList<Dimension>& splatNodeList,
-//                    const TableKernel<Dimension>& W) const;
 
   // Test if this Field is in a valid, internally consistent state.
   bool valid() const;
@@ -237,7 +210,6 @@ public:
 private:
   //--------------------------- Private Interface ---------------------------//
   // Private Data
-//  std::vector<DataType,std::allocator<DataType> > mDataArray;
   std::vector<DataType, DataAllocator<DataType>> mDataArray;
   bool mValid;
 
