@@ -1763,6 +1763,31 @@ FieldList<Dimension, DataType>::reduceSUM(){
 }
 
 template<typename Dimension, typename DataType>
+template<typename REDUCE_POLICY>
+inline auto FieldList<Dimension, DataType>::getReduceSum(const REDUCE_POLICY& ) -> std::vector<std::vector<RAJA::ReduceSum<REDUCE_POLICY, DataType>>>{
+
+  std::vector<std::vector< RAJA::ReduceSum<REDUCE_POLICY, DataType> >> reduceData(mFieldPtrs.size());
+
+  for (size_t ni = 0; ni < mFieldPtrs.size(); ++ni) {
+    reduceData[ni] = std::vector<RAJA::ReduceSum<REDUCE_POLICY, DataType> >(mFieldPtrs[ni]->size());
+  }
+
+  return reduceData;
+}
+
+
+  
+template<typename Dimension, typename DataType>
+template<typename T>
+inline void FieldList<Dimension, DataType>::getReduction(const std::vector<std::vector<T>>& reductionData){
+  for (size_t ni = 0; ni < mFieldPtrs.size(); ++ni) {
+    for (size_t i = 0; i < mFieldPtrs[ni]->size(); ++i) {
+      this->operator()(ni, i) = reductionData[ni][i].get();
+    }
+  }
+}
+
+template<typename Dimension, typename DataType>
 inline
 FieldList<Dimension, DataType>
 FieldList<Dimension, DataType>::

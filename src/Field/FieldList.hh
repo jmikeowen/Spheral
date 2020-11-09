@@ -300,6 +300,7 @@ private:
 
   // Internal method to build the NodeListIndexMap from scratch.
   void buildNodeListIndexMap();
+
 public:
   // A data attribute to indicate how to reduce this field across threads.
   ThreadReduction reductionType;
@@ -307,6 +308,11 @@ public:
   // The master FieldList if this is a thread copy.
   FieldList<Dimension, DataType>* threadMasterPtr;
 
+  template<typename REDUCE_POLICY>
+  std::vector<std::vector<RAJA::ReduceSum<REDUCE_POLICY, DataType>>> getReduceSum(const REDUCE_POLICY&);
+
+  template<typename T>
+  void getReduction(const std::vector<std::vector<T>>& reductionData);
 };
 
 }

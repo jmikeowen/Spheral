@@ -129,16 +129,11 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   using WALK_EXEC_POL = RAJA::omp_for_exec;
   using WALK_REDUCE_POL = RAJA::omp_reduce;
 
-  // Trying something out ...
-  //auto rhoSum_thread = rhoSum.threadCopy(threadStack);
-  std::vector<std::vector< RAJA::ReduceSum<WALK_REDUCE_POL,double> >> rhoSum_thread(numNodeLists);
-  for (size_t ni = 0; ni < rhoSum_thread.size(); ++ni) {
-    rhoSum_thread[ni] = std::vector<RAJA::ReduceSum<WALK_REDUCE_POL,double> >(rhoSum[ni]->size());
-  }
+  auto rhoSum_thread = rhoSum.getReduceSum(WALK_REDUCE_POL());
 
+  typename SpheralThreads<Dimension>::FieldListStack threadStack;
   auto DvDt_thread = DvDt.threadCopy(threadStack);
   // Thread private  scratch variables.
-  typename SpheralThreads<Dimension>::FieldListStack threadStack;
   auto DepsDt_thread = DepsDt.threadCopy(threadStack);
   auto DvDx_thread = DvDx.threadCopy(threadStack);
   auto localDvDx_thread = localDvDx.threadCopy(threadStack);
@@ -187,7 +182,7 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     CHECK(rhoi > 0.0);
     CHECK(Hdeti > 0.0);
 
-    RAJA::ReduceSum<WALK_REDUCE_POL, double>& rhoSumi = rhoSum_thread[nodeListi][i];
+    auto& rhoSumi = rhoSum_thread[nodeListi][i];
     //double& rhoSumi = rhoSum_thread(nodeListi, i);
     Vector& DvDti = DvDt_thread(nodeListi, i);
     double& DepsDti = DepsDt_thread(nodeListi, i);
@@ -391,11 +386,7 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   // Reduce the thread values to the master.
   threadReduceFieldLists<Dimension>(threadStack);
 
-  for (size_t ni = 0; ni < rhoSum_thread.size(); ++ni) {
-    for (size_t i = 0; i < rhoSum[ni]->size(); ++i) {
-      rhoSum(ni, i) = rhoSum_thread[ni][i].get();
-    }
-  }
+  rhoSum.getReduction(rhoSum_thread);
 
 
   // Finish up the derivatives for each point.
