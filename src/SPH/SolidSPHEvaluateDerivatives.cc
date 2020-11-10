@@ -129,26 +129,24 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   using WALK_EXEC_POL = RAJA::omp_for_exec;
   using WALK_REDUCE_POL = RAJA::omp_reduce;
 
-  auto rhoSum_thread = rhoSum.getReduceSum(WALK_REDUCE_POL());
-
   typename SpheralThreads<Dimension>::FieldListStack threadStack;
-  auto DvDt_thread = DvDt.threadCopy(threadStack);
-  // Thread private  scratch variables.
-  auto DepsDt_thread = DepsDt.threadCopy(threadStack);
-  auto DvDx_thread = DvDx.threadCopy(threadStack);
-  auto localDvDx_thread = localDvDx.threadCopy(threadStack);
-  auto M_thread = M.threadCopy(threadStack);
-  auto localM_thread = localM.threadCopy(threadStack);
   auto maxViscousPressure_thread = maxViscousPressure.threadCopy(threadStack, ThreadReduction::MAX);
 
-  auto effViscousPressure_thread = effViscousPressure.threadCopy(threadStack);
-  auto rhoSumCorrection_thread = rhoSumCorrection.threadCopy(threadStack);
-  auto viscousWork_thread = viscousWork.threadCopy(threadStack);
-  auto XSPHWeightSum_thread = XSPHWeightSum.threadCopy(threadStack);
-  auto XSPHDeltaV_thread = XSPHDeltaV.threadCopy(threadStack);
-  auto weightedNeighborSum_thread = weightedNeighborSum.threadCopy(threadStack);
-  auto massSecondMoment_thread = massSecondMoment.threadCopy(threadStack);
-  auto DSDt_thread = DSDt.threadCopy(threadStack);
+  auto DvDt_thread   =   DvDt.getReduceSum(WALK_REDUCE_POL());
+  auto rhoSum_thread = rhoSum.getReduceSum(WALK_REDUCE_POL());
+  auto DepsDt_thread = DepsDt.getReduceSum(WALK_REDUCE_POL());
+  auto DvDx_thread   =   DvDx.getReduceSum(WALK_REDUCE_POL());
+  auto localDvDx_thread = localDvDx.getReduceSum(WALK_REDUCE_POL());
+  auto M_thread = M.getReduceSum(WALK_REDUCE_POL());
+  auto localM_thread = localM.getReduceSum(WALK_REDUCE_POL());
+  auto effViscousPressure_thread = effViscousPressure.getReduceSum(WALK_REDUCE_POL());
+  auto rhoSumCorrection_thread = rhoSumCorrection.getReduceSum(WALK_REDUCE_POL());
+  auto viscousWork_thread = viscousWork.getReduceSum(WALK_REDUCE_POL());
+  auto XSPHWeightSum_thread = XSPHWeightSum.getReduceSum(WALK_REDUCE_POL());
+  auto XSPHDeltaV_thread = XSPHDeltaV.getReduceSum(WALK_REDUCE_POL());
+  auto weightedNeighborSum_thread = weightedNeighborSum.getReduceSum(WALK_REDUCE_POL());
+  auto massSecondMoment_thread = massSecondMoment.getReduceSum(WALK_REDUCE_POL());
+  auto DSDt_thread = DSDt.getReduceSum(WALK_REDUCE_POL());
 
 
   // Walk all the interacting pairs.
@@ -183,55 +181,53 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     CHECK(Hdeti > 0.0);
 
     auto& rhoSumi = rhoSum_thread[nodeListi][i];
-    //double& rhoSumi = rhoSum_thread(nodeListi, i);
-    Vector& DvDti = DvDt_thread(nodeListi, i);
-    double& DepsDti = DepsDt_thread(nodeListi, i);
-    Tensor& DvDxi = DvDx_thread(nodeListi, i);
-    Tensor& localDvDxi = localDvDx_thread(nodeListi, i);
-    Tensor& Mi = M_thread(nodeListi, i);
-    Tensor& localMi = localM_thread(nodeListi, i);
+    auto& DvDti = DvDt_thread[nodeListi][i];
+    auto& DepsDti = DepsDt_thread[nodeListi][i];
+    auto& DvDxi = DvDx_thread[nodeListi][i];
+    auto& localDvDxi = localDvDx_thread[nodeListi][i];
+    auto& Mi = M_thread[nodeListi][i];
+    auto& localMi = localM_thread[nodeListi][i];
     double& maxViscousPressurei = maxViscousPressure_thread(nodeListi, i);
-    double& effViscousPressurei = effViscousPressure_thread(nodeListi, i);
-    double& rhoSumCorrectioni = rhoSumCorrection_thread(nodeListi, i);
-    double& viscousWorki = viscousWork_thread(nodeListi, i);
-    double& XSPHWeightSumi = XSPHWeightSum_thread(nodeListi, i);
-    Vector& XSPHDeltaVi = XSPHDeltaV_thread(nodeListi, i);
-    double& weightedNeighborSumi = weightedNeighborSum_thread(nodeListi, i);
-    SymTensor& massSecondMomenti = massSecondMoment_thread(nodeListi, i);
+    auto& effViscousPressurei = effViscousPressure_thread[nodeListi][i];
+    auto& rhoSumCorrectioni = rhoSumCorrection_thread[nodeListi][i];
+    auto& viscousWorki = viscousWork_thread[nodeListi][i];
+    auto& XSPHWeightSumi = XSPHWeightSum_thread[nodeListi][i];
+    auto& XSPHDeltaVi = XSPHDeltaV_thread[nodeListi][i];
+    auto& weightedNeighborSumi = weightedNeighborSum_thread[nodeListi][i];
+    auto& massSecondMomenti = massSecondMoment_thread[nodeListi][i];
 
     // Get the state for node j
-    const Vector rj = position(nodeListj, j);
-    const double mj = mass(nodeListj, j);
-    const Vector vj = velocity(nodeListj, j);
-    const double rhoj = massDensity(nodeListj, j);
-    const double Pj = pressure(nodeListj, j);
-    const SymTensor Hj = H(nodeListj, j);
-    const double cj = soundSpeed(nodeListj, j);
-    const double omegaj = omega(nodeListj, j);
-    const SymTensor Sj = S(nodeListj, j);
-    const double Hdetj = Hj.Determinant();
-    const double safeOmegaj = safeInv(omegaj, tiny);
-    const double pTypej = pTypes(nodeListj, j);
+    const Vector& rj = position(nodeListj, j);
+    const double  mj = mass(nodeListj, j);
+    const Vector& vj = velocity(nodeListj, j);
+    const double  rhoj = massDensity(nodeListj, j);
+    const double  Pj = pressure(nodeListj, j);
+    const SymTensor& Hj = H(nodeListj, j);
+    const double  cj = soundSpeed(nodeListj, j);
+    const double  omegaj = omega(nodeListj, j);
+    const SymTensor& Sj = S(nodeListj, j);
+    const double  Hdetj = Hj.Determinant();
+    const double  safeOmegaj = safeInv(omegaj, tiny);
+    const double  pTypej = pTypes(nodeListj, j);
     CHECK(mj > 0.0);
     CHECK(rhoj > 0.0);
     CHECK(Hdetj > 0.0);
 
     auto& rhoSumj = rhoSum_thread[nodeListj][j];
-    //double& rhoSumj = rhoSum_thread(nodeListj, j);
-    Vector& DvDtj = DvDt_thread(nodeListj, j);
-    double& DepsDtj = DepsDt_thread(nodeListj, j);
-    Tensor& DvDxj = DvDx_thread(nodeListj, j);
-    Tensor& localDvDxj = localDvDx_thread(nodeListj, j);
-    Tensor& Mj = M_thread(nodeListj, j);
-    Tensor& localMj = localM_thread(nodeListj, j);
+    auto& DvDtj = DvDt_thread[nodeListj][j];
+    auto& DepsDtj = DepsDt_thread.at(nodeListj).at(j);
+    auto& DvDxj = DvDx_thread[nodeListj][j];
+    auto& localDvDxj = localDvDx_thread[nodeListj][j];
+    auto& Mj = M_thread[nodeListj][j];
+    auto& localMj = localM_thread[nodeListj][j];
     double& maxViscousPressurej = maxViscousPressure_thread(nodeListj, j);
-    double& effViscousPressurej = effViscousPressure_thread(nodeListj, j);
-    double& rhoSumCorrectionj = rhoSumCorrection_thread(nodeListj, j);
-    double& viscousWorkj = viscousWork_thread(nodeListj, j);
-    double& XSPHWeightSumj = XSPHWeightSum_thread(nodeListj, j);
-    Vector& XSPHDeltaVj = XSPHDeltaV_thread(nodeListj, j);
-    double& weightedNeighborSumj = weightedNeighborSum_thread(nodeListj, j);
-    SymTensor& massSecondMomentj = massSecondMoment_thread(nodeListj, j);
+    auto& effViscousPressurej = effViscousPressure_thread[nodeListj][j];
+    auto& rhoSumCorrectionj = rhoSumCorrection_thread[nodeListj][j];
+    auto& viscousWorkj = viscousWork_thread[nodeListj][j];
+    auto& XSPHWeightSumj = XSPHWeightSum_thread[nodeListj][j];
+    auto& XSPHDeltaVj = XSPHDeltaV_thread[nodeListj][j];
+    auto& weightedNeighborSumj = weightedNeighborSum_thread[nodeListj][j];
+    auto& massSecondMomentj = massSecondMoment_thread[nodeListj][j];
 
     // Flag if this is a contiguous material pair or not.
     const bool sameMatij = true; // (nodeListi == nodeListj and fragIDi == fragIDj);
@@ -338,7 +334,7 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     const auto deltaDvDt = sigmarhoi*gradWi + sigmarhoj*gradWj - Qacci - Qaccj;
     if (freeParticle) {
       DvDti += mj*deltaDvDt;
-      DvDtj -= mi*deltaDvDt;
+      DvDtj += -(mi*deltaDvDt);
     }
     if (compatibleEnergy) pairAccelerations[kk] = mj*deltaDvDt;  // Acceleration for i (j anti-symmetric)
 
@@ -347,15 +343,17 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     const auto deltaDvDxj = fDeffij*vij.dyad(gradWGj);
 
     // Specific thermal energy evolution.
-    DepsDti -= mj*(fDeffij*sigmarhoi.doubledot(deltaDvDxi.Symmetric()) - workQi);
-    DepsDtj -= mi*(fDeffij*sigmarhoj.doubledot(deltaDvDxj.Symmetric()) - workQj);
+    DepsDti += -mj*(fDeffij*sigmarhoi.doubledot(deltaDvDxi.Symmetric()) - workQi);
+    DepsDtj += -mi*(fDeffij*sigmarhoj.doubledot(deltaDvDxj.Symmetric()) - workQj);
+    //DepsDt_thread[nodeListj][j]& -= mi*(fDeffij*sigmarhoj.doubledot(deltaDvDxj.Symmetric()) - workQj);
+
 
     // Velocity gradient.ay
-    DvDxi -= mj*deltaDvDxi;
-    DvDxj -= mi*deltaDvDxj;
+    DvDxi += -mj*deltaDvDxi;
+    DvDxj += -mi*deltaDvDxj;
     if (sameMatij) {
-      localDvDxi -= mj*deltaDvDxi;
-      localDvDxj -= mi*deltaDvDxj;
+      localDvDxi += -mj*deltaDvDxi;
+      localDvDxj += -mi*deltaDvDxj;
     }
 
     // Estimate of delta v (for XSPH).
@@ -363,16 +361,16 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
       const auto wXSPHij = 0.5*(mi/rhoi*Wi + mj/rhoj*Wj);
       XSPHWeightSumi += wXSPHij;
       XSPHWeightSumj += wXSPHij;
-      XSPHDeltaVi -= wXSPHij*vij;
+      XSPHDeltaVi += -wXSPHij*vij;
       XSPHDeltaVj += wXSPHij*vij;
     }
 
     // Linear gradient correction term.
-    Mi -= mj*rij.dyad(gradWGi);
-    Mj -= mi*rij.dyad(gradWGj);
+    Mi += -mj*rij.dyad(gradWGi);
+    Mj += -mi*rij.dyad(gradWGj);
     if (sameMatij) {
-      localMi -= mj*rij.dyad(gradWGi);
-      localMj -= mi*rij.dyad(gradWGj);
+      localMi += -mj*rij.dyad(gradWGi);
+      localMj += -mi*rij.dyad(gradWGj);
     }
 
     // Add timing info for work
@@ -387,6 +385,20 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   threadReduceFieldLists<Dimension>(threadStack);
 
   rhoSum.getReduction(rhoSum_thread);
+  DvDt.getReduction(DvDt_thread);
+  DepsDt.getReduction(DepsDt_thread);
+  DvDx.getReduction(DvDx_thread);
+  localDvDx.getReduction(localDvDx_thread);
+  M.getReduction(M_thread);
+  localM.getReduction(localM_thread);
+  effViscousPressure.getReduction(effViscousPressure_thread);
+  rhoSumCorrection.getReduction(rhoSumCorrection_thread);
+  viscousWork.getReduction(viscousWork_thread);
+  XSPHWeightSum.getReduction(XSPHWeightSum_thread);
+  XSPHDeltaV.getReduction(XSPHDeltaV_thread);
+  weightedNeighborSum.getReduction(weightedNeighborSum_thread);
+  massSecondMoment.getReduction(massSecondMoment_thread);
+  DSDt.getReduction(DSDt_thread);
 
 
   // Finish up the derivatives for each point.
