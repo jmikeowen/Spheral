@@ -308,6 +308,9 @@ public:
   std::vector<std::vector<RAJA::ReduceSum<REDUCE_POLICY, DataType>>> getReduceSum(const REDUCE_POLICY&);
 
   template<typename REDUCE_POLICY>
+  std::vector<std::vector<RAJA::ReduceMin<REDUCE_POLICY, DataType>>> getReduceMin(const REDUCE_POLICY&);
+
+  template<typename REDUCE_POLICY>
   std::vector<std::vector<RAJA::ReduceMax<REDUCE_POLICY, DataType>>> getReduceMax(const REDUCE_POLICY&);
 
   template<typename T>

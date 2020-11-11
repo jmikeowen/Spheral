@@ -1747,10 +1747,30 @@ template<typename Dimension, typename DataType>
 template<typename REDUCE_POLICY>
 inline auto FieldList<Dimension, DataType>::getReduceSum(const REDUCE_POLICY& ) -> std::vector<std::vector<RAJA::ReduceSum<REDUCE_POLICY, DataType>>>{
 
-  std::vector<std::vector< RAJA::ReduceSum<REDUCE_POLICY, DataType> >> reduceData(mFieldPtrs.size());
+  using reduce_type = RAJA::ReduceSum<REDUCE_POLICY, DataType>;
+
+  std::vector<std::vector<reduce_type>> reduceData(mFieldPtrs.size());
 
   for (size_t ni = 0; ni < mFieldPtrs.size(); ++ni) {
-    reduceData[ni] = std::vector<RAJA::ReduceSum<REDUCE_POLICY, DataType> >(mFieldPtrs[ni]->size());
+    reduceData[ni] = std::vector<reduce_type>(mFieldPtrs[ni]->size());
+  }
+
+  return reduceData;
+}
+
+template<typename Dimension, typename DataType>
+template<typename REDUCE_POLICY>
+inline auto FieldList<Dimension, DataType>::getReduceMin(const REDUCE_POLICY& ) -> std::vector<std::vector<RAJA::ReduceMin<REDUCE_POLICY, DataType>>>{
+
+  using reduce_type = RAJA::ReduceMin<REDUCE_POLICY, DataType>;
+
+  std::vector<std::vector<reduce_type>> reduceData(mFieldPtrs.size());
+
+  for (size_t ni = 0; ni < mFieldPtrs.size(); ++ni) {
+    reduceData[ni] = std::vector<reduce_type>(mFieldPtrs[ni]->size());
+    for (size_t i = 0; i < reduceData[ni].size(); ++i) {
+      reduceData[ni][i] = reduce_type(mFieldPtrs[ni]->at(i));
+    }
   }
 
   return reduceData;
@@ -1760,12 +1780,14 @@ template<typename Dimension, typename DataType>
 template<typename REDUCE_POLICY>
 inline auto FieldList<Dimension, DataType>::getReduceMax(const REDUCE_POLICY& ) -> std::vector<std::vector<RAJA::ReduceMax<REDUCE_POLICY, DataType>>>{
 
-  std::vector<std::vector< RAJA::ReduceMax<REDUCE_POLICY, DataType> >> reduceData(mFieldPtrs.size());
+  using reduce_type = RAJA::ReduceMax<REDUCE_POLICY, DataType>;
+
+  std::vector<std::vector<reduce_type>> reduceData(mFieldPtrs.size());
 
   for (size_t ni = 0; ni < mFieldPtrs.size(); ++ni) {
-    reduceData[ni] = std::vector<RAJA::ReduceMax<REDUCE_POLICY, DataType> >(mFieldPtrs[ni]->size());
+    reduceData[ni] = std::vector<reduce_type>(mFieldPtrs[ni]->size());
     for (size_t i = 0; i < reduceData[ni].size(); ++i) {
-      reduceData[ni][i] = RAJA::ReduceMax<REDUCE_POLICY, DataType>(mFieldPtrs[ni]->at(i));
+      reduceData[ni][i] = reduce_type(mFieldPtrs[ni]->at(i));
     }
   }
 
