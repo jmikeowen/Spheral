@@ -268,10 +268,6 @@ public:
   //----------------------------------------------------------------------------
   // Methods to facilitate threaded computing
   // Make a local thread copy of all the Fields
-  template<typename REDUCE_POLICY>
-  FieldList<Dimension, RAJA::ReduceSum<REDUCE_POLICY, DataType>> reduceSUM();
-  //FieldList<Dimension, REDUCE_TYPE<REDUCE_POLICY, DataType>> reducer<REDUCE_TYPE<REDUCE_POLICY, DataType>>();
-
   FieldList<Dimension, DataType> threadCopy(const ThreadReduction reductionType = ThreadReduction::SUM,
                                             const bool copy = false);
 
@@ -310,6 +306,9 @@ public:
 
   template<typename REDUCE_POLICY>
   std::vector<std::vector<RAJA::ReduceSum<REDUCE_POLICY, DataType>>> getReduceSum(const REDUCE_POLICY&);
+
+  template<typename REDUCE_POLICY>
+  std::vector<std::vector<RAJA::ReduceMax<REDUCE_POLICY, DataType>>> getReduceMax(const REDUCE_POLICY&);
 
   template<typename T>
   void getReduction(const std::vector<std::vector<T>>& reductionData);

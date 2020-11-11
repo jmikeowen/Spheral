@@ -129,9 +129,6 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   using WALK_EXEC_POL = RAJA::omp_for_exec;
   using WALK_REDUCE_POL = RAJA::omp_reduce;
 
-  typename SpheralThreads<Dimension>::FieldListStack threadStack;
-  auto maxViscousPressure_thread = maxViscousPressure.threadCopy(threadStack, ThreadReduction::MAX);
-
   auto DvDt_thread   =   DvDt.getReduceSum(WALK_REDUCE_POL());
   auto rhoSum_thread = rhoSum.getReduceSum(WALK_REDUCE_POL());
   auto DepsDt_thread = DepsDt.getReduceSum(WALK_REDUCE_POL());
@@ -139,6 +136,7 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   auto localDvDx_thread = localDvDx.getReduceSum(WALK_REDUCE_POL());
   auto M_thread = M.getReduceSum(WALK_REDUCE_POL());
   auto localM_thread = localM.getReduceSum(WALK_REDUCE_POL());
+  auto maxViscousPressure_thread = maxViscousPressure.getReduceMax(WALK_REDUCE_POL());
   auto effViscousPressure_thread = effViscousPressure.getReduceSum(WALK_REDUCE_POL());
   auto rhoSumCorrection_thread = rhoSumCorrection.getReduceSum(WALK_REDUCE_POL());
   auto viscousWork_thread = viscousWork.getReduceSum(WALK_REDUCE_POL());
@@ -187,7 +185,7 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     auto& localDvDxi = localDvDx_thread[nodeListi][i];
     auto& Mi = M_thread[nodeListi][i];
     auto& localMi = localM_thread[nodeListi][i];
-    double& maxViscousPressurei = maxViscousPressure_thread(nodeListi, i);
+    auto& maxViscousPressurei = maxViscousPressure_thread[nodeListi][i];
     auto& effViscousPressurei = effViscousPressure_thread[nodeListi][i];
     auto& rhoSumCorrectioni = rhoSumCorrection_thread[nodeListi][i];
     auto& viscousWorki = viscousWork_thread[nodeListi][i];
@@ -220,7 +218,7 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     auto& localDvDxj = localDvDx_thread[nodeListj][j];
     auto& Mj = M_thread[nodeListj][j];
     auto& localMj = localM_thread[nodeListj][j];
-    double& maxViscousPressurej = maxViscousPressure_thread(nodeListj, j);
+    auto& maxViscousPressurej = maxViscousPressure_thread[nodeListj][j];
     auto& effViscousPressurej = effViscousPressure_thread[nodeListj][j];
     auto& rhoSumCorrectionj = rhoSumCorrection_thread[nodeListj][j];
     auto& viscousWorkj = viscousWork_thread[nodeListj][j];
@@ -293,8 +291,8 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     const double workQj = vij.dot(Qaccj);
     const double Qi = rhoi*rhoi*(QPiij.diagonalElements().maxAbsElement());
     const double Qj = rhoj*rhoj*(QPiji.diagonalElements().maxAbsElement());
-    maxViscousPressurei = max(maxViscousPressurei, Qi);
-    maxViscousPressurej = max(maxViscousPressurej, Qj);
+    maxViscousPressurei.max(Qi);
+    maxViscousPressurej.max(Qj);
     effViscousPressurei += mj*Qi*WQi/rhoj;
     effViscousPressurej += mi*Qj*WQj/rhoi;
     viscousWorki += mj*workQi;
@@ -345,8 +343,6 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     // Specific thermal energy evolution.
     DepsDti += -mj*(fDeffij*sigmarhoi.doubledot(deltaDvDxi.Symmetric()) - workQi);
     DepsDtj += -mi*(fDeffij*sigmarhoj.doubledot(deltaDvDxj.Symmetric()) - workQj);
-    //DepsDt_thread[nodeListj][j]& -= mi*(fDeffij*sigmarhoj.doubledot(deltaDvDxj.Symmetric()) - workQj);
-
 
     // Velocity gradient.ay
     DvDxi += -mj*deltaDvDxi;
@@ -382,8 +378,6 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   }); // loop over pairs
 
   // Reduce the thread values to the master.
-  threadReduceFieldLists<Dimension>(threadStack);
-
   rhoSum.getReduction(rhoSum_thread);
   DvDt.getReduction(DvDt_thread);
   DepsDt.getReduction(DepsDt_thread);
@@ -391,6 +385,7 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   localDvDx.getReduction(localDvDx_thread);
   M.getReduction(M_thread);
   localM.getReduction(localM_thread);
+  maxViscousPressure.getReduction(maxViscousPressure_thread);
   effViscousPressure.getReduction(effViscousPressure_thread);
   rhoSumCorrection.getReduction(rhoSumCorrection_thread);
   viscousWork.getReduction(viscousWork_thread);

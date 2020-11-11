@@ -1743,25 +1743,6 @@ buildNodeListIndexMap() {
 // threaded region.
 //------------------------------------------------------------------------------
 
-
-template<typename Dimension, typename DataType>
-template<typename REDUCE_POLICY>
-inline FieldList<Dimension, RAJA::ReduceSum<REDUCE_POLICY, DataType>>
-FieldList<Dimension, DataType>::reduceSUM(){
-
-  FieldList<Dimension, RAJA::ReduceSum<REDUCE_POLICY, DataType> > result;
-  for (auto fitr = this->begin(); fitr < this->end(); ++fitr) {
-    result.appendNewField((*fitr)->name(),
-                          (*fitr)->nodeList(),
-                          RAJA::ReduceSum<REDUCE_POLICY, DataType>(DataTypeTraits<DataType>::zero())
-                         );
-  }
-
-  result.reductionType = ThreadReduction::SUM;
-  //result.threadMasterPtr = this;
-  return result;
-}
-
 template<typename Dimension, typename DataType>
 template<typename REDUCE_POLICY>
 inline auto FieldList<Dimension, DataType>::getReduceSum(const REDUCE_POLICY& ) -> std::vector<std::vector<RAJA::ReduceSum<REDUCE_POLICY, DataType>>>{
@@ -1770,6 +1751,22 @@ inline auto FieldList<Dimension, DataType>::getReduceSum(const REDUCE_POLICY& ) 
 
   for (size_t ni = 0; ni < mFieldPtrs.size(); ++ni) {
     reduceData[ni] = std::vector<RAJA::ReduceSum<REDUCE_POLICY, DataType> >(mFieldPtrs[ni]->size());
+  }
+
+  return reduceData;
+}
+
+template<typename Dimension, typename DataType>
+template<typename REDUCE_POLICY>
+inline auto FieldList<Dimension, DataType>::getReduceMax(const REDUCE_POLICY& ) -> std::vector<std::vector<RAJA::ReduceMax<REDUCE_POLICY, DataType>>>{
+
+  std::vector<std::vector< RAJA::ReduceMax<REDUCE_POLICY, DataType> >> reduceData(mFieldPtrs.size());
+
+  for (size_t ni = 0; ni < mFieldPtrs.size(); ++ni) {
+    reduceData[ni] = std::vector<RAJA::ReduceMax<REDUCE_POLICY, DataType> >(mFieldPtrs[ni]->size());
+    for (size_t i = 0; i < reduceData[ni].size(); ++i) {
+      reduceData[ni][i] = RAJA::ReduceMax<REDUCE_POLICY, DataType>(mFieldPtrs[ni]->at(i));
+    }
   }
 
   return reduceData;
