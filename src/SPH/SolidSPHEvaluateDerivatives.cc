@@ -12,6 +12,17 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
                     const State<Dimension>& state,
                     StateDerivatives<Dimension>& derivatives) const {
 
+#ifdef ENABLE_OPENMP
+  using PAIR_EXEC_POL = RAJA::omp_for_exec;
+  using PAIR_REDUCE_POL = RAJA::omp_reduce;
+  using NODE_INNER_EXEC_POL = RAJA::omp_for_exec;
+#else
+  using PAIR_EXEC_POL = RAJA::seq_exec;
+  using PAIR_REDUCE_POL = RAJA::seq_reduce;
+  using NODE_INNER_EXEC_POL = RAJA::seq_exec;
+#endif
+  using NODE_OUTER_EXEC_POL = RAJA::seq_exec;
+
   // Get the ArtificialViscosity.
   auto& Q = this->artificialViscosity();
 
@@ -125,31 +136,27 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   // Build the functor we use to compute the effective coupling between nodes.
   DamagedNodeCouplingWithFrags<Dimension> coupling(damage, gradDamage, H, fragIDs);
 
-
-  using WALK_EXEC_POL = RAJA::omp_for_exec;
-  using WALK_REDUCE_POL = RAJA::omp_reduce;
-
-  auto DvDt_thread   =   DvDt.getReduceSum(WALK_REDUCE_POL());
-  auto rhoSum_thread = rhoSum.getReduceSum(WALK_REDUCE_POL());
-  auto DepsDt_thread = DepsDt.getReduceSum(WALK_REDUCE_POL());
-  auto DvDx_thread   =   DvDx.getReduceSum(WALK_REDUCE_POL());
-  auto localDvDx_thread = localDvDx.getReduceSum(WALK_REDUCE_POL());
-  auto M_thread = M.getReduceSum(WALK_REDUCE_POL());
-  auto localM_thread = localM.getReduceSum(WALK_REDUCE_POL());
-  auto maxViscousPressure_thread = maxViscousPressure.getReduceMax(WALK_REDUCE_POL());
-  auto effViscousPressure_thread = effViscousPressure.getReduceSum(WALK_REDUCE_POL());
-  auto rhoSumCorrection_thread = rhoSumCorrection.getReduceSum(WALK_REDUCE_POL());
-  auto viscousWork_thread = viscousWork.getReduceSum(WALK_REDUCE_POL());
-  auto XSPHWeightSum_thread = XSPHWeightSum.getReduceSum(WALK_REDUCE_POL());
-  auto XSPHDeltaV_thread = XSPHDeltaV.getReduceSum(WALK_REDUCE_POL());
-  auto weightedNeighborSum_thread = weightedNeighborSum.getReduceSum(WALK_REDUCE_POL());
-  auto massSecondMoment_thread = massSecondMoment.getReduceSum(WALK_REDUCE_POL());
-  auto DSDt_thread = DSDt.getReduceSum(WALK_REDUCE_POL());
-
+  // Get RAJA::Reducer arrays. 
+  auto DvDt_reducer = DvDt.getReduceSum(PAIR_REDUCE_POL());
+  auto rhoSum_reducer = rhoSum.getReduceSum(PAIR_REDUCE_POL());
+  auto DepsDt_reducer = DepsDt.getReduceSum(PAIR_REDUCE_POL());
+  auto DvDx_reducer = DvDx.getReduceSum(PAIR_REDUCE_POL());
+  auto localDvDx_reducer = localDvDx.getReduceSum(PAIR_REDUCE_POL());
+  auto M_reducer = M.getReduceSum(PAIR_REDUCE_POL());
+  auto localM_reducer = localM.getReduceSum(PAIR_REDUCE_POL());
+  auto maxViscousPressure_reducer = maxViscousPressure.getReduceMax(PAIR_REDUCE_POL());
+  auto effViscousPressure_reducer = effViscousPressure.getReduceSum(PAIR_REDUCE_POL());
+  auto rhoSumCorrection_reducer = rhoSumCorrection.getReduceSum(PAIR_REDUCE_POL());
+  auto viscousWork_reducer = viscousWork.getReduceSum(PAIR_REDUCE_POL());
+  auto XSPHWeightSum_reducer = XSPHWeightSum.getReduceSum(PAIR_REDUCE_POL());
+  auto XSPHDeltaV_reducer = XSPHDeltaV.getReduceSum(PAIR_REDUCE_POL());
+  auto weightedNeighborSum_reducer = weightedNeighborSum.getReduceSum(PAIR_REDUCE_POL());
+  auto massSecondMoment_reducer = massSecondMoment.getReduceSum(PAIR_REDUCE_POL());
+  auto DSDt_reducer = DSDt.getReduceSum(PAIR_REDUCE_POL());
 
   // Walk all the interacting pairs.
   RAJA::TypedRangeSegment<unsigned int> array_npairs(0, npairs);
-  RAJA::forall<WALK_EXEC_POL>(array_npairs, [&](unsigned int kk) {
+  RAJA::forall<PAIR_EXEC_POL>(array_npairs, [&](unsigned int kk) {
       
     Scalar Wi, gWi, WQi, gWQi, Wj, gWj, WQj, gWQj;
     Tensor QPiij, QPiji;
@@ -178,21 +185,21 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     CHECK(rhoi > 0.0);
     CHECK(Hdeti > 0.0);
 
-    auto& rhoSumi = rhoSum_thread[nodeListi][i];
-    auto& DvDti = DvDt_thread[nodeListi][i];
-    auto& DepsDti = DepsDt_thread[nodeListi][i];
-    auto& DvDxi = DvDx_thread[nodeListi][i];
-    auto& localDvDxi = localDvDx_thread[nodeListi][i];
-    auto& Mi = M_thread[nodeListi][i];
-    auto& localMi = localM_thread[nodeListi][i];
-    auto& maxViscousPressurei = maxViscousPressure_thread[nodeListi][i];
-    auto& effViscousPressurei = effViscousPressure_thread[nodeListi][i];
-    auto& rhoSumCorrectioni = rhoSumCorrection_thread[nodeListi][i];
-    auto& viscousWorki = viscousWork_thread[nodeListi][i];
-    auto& XSPHWeightSumi = XSPHWeightSum_thread[nodeListi][i];
-    auto& XSPHDeltaVi = XSPHDeltaV_thread[nodeListi][i];
-    auto& weightedNeighborSumi = weightedNeighborSum_thread[nodeListi][i];
-    auto& massSecondMomenti = massSecondMoment_thread[nodeListi][i];
+    auto& rhoSumi = rhoSum_reducer[nodeListi][i];
+    auto& DvDti = DvDt_reducer[nodeListi][i];
+    auto& DepsDti = DepsDt_reducer[nodeListi][i];
+    auto& DvDxi = DvDx_reducer[nodeListi][i];
+    auto& localDvDxi = localDvDx_reducer[nodeListi][i];
+    auto& Mi = M_reducer[nodeListi][i];
+    auto& localMi = localM_reducer[nodeListi][i];
+    auto& maxViscousPressurei = maxViscousPressure_reducer[nodeListi][i];
+    auto& effViscousPressurei = effViscousPressure_reducer[nodeListi][i];
+    auto& rhoSumCorrectioni = rhoSumCorrection_reducer[nodeListi][i];
+    auto& viscousWorki = viscousWork_reducer[nodeListi][i];
+    auto& XSPHWeightSumi = XSPHWeightSum_reducer[nodeListi][i];
+    auto& XSPHDeltaVi = XSPHDeltaV_reducer[nodeListi][i];
+    auto& weightedNeighborSumi = weightedNeighborSum_reducer[nodeListi][i];
+    auto& massSecondMomenti = massSecondMoment_reducer[nodeListi][i];
 
     // Get the state for node j
     const Vector& rj = position(nodeListj, j);
@@ -211,21 +218,21 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     CHECK(rhoj > 0.0);
     CHECK(Hdetj > 0.0);
 
-    auto& rhoSumj = rhoSum_thread[nodeListj][j];
-    auto& DvDtj = DvDt_thread[nodeListj][j];
-    auto& DepsDtj = DepsDt_thread.at(nodeListj).at(j);
-    auto& DvDxj = DvDx_thread[nodeListj][j];
-    auto& localDvDxj = localDvDx_thread[nodeListj][j];
-    auto& Mj = M_thread[nodeListj][j];
-    auto& localMj = localM_thread[nodeListj][j];
-    auto& maxViscousPressurej = maxViscousPressure_thread[nodeListj][j];
-    auto& effViscousPressurej = effViscousPressure_thread[nodeListj][j];
-    auto& rhoSumCorrectionj = rhoSumCorrection_thread[nodeListj][j];
-    auto& viscousWorkj = viscousWork_thread[nodeListj][j];
-    auto& XSPHWeightSumj = XSPHWeightSum_thread[nodeListj][j];
-    auto& XSPHDeltaVj = XSPHDeltaV_thread[nodeListj][j];
-    auto& weightedNeighborSumj = weightedNeighborSum_thread[nodeListj][j];
-    auto& massSecondMomentj = massSecondMoment_thread[nodeListj][j];
+    auto& rhoSumj = rhoSum_reducer[nodeListj][j];
+    auto& DvDtj = DvDt_reducer[nodeListj][j];
+    auto& DepsDtj = DepsDt_reducer.at(nodeListj).at(j);
+    auto& DvDxj = DvDx_reducer[nodeListj][j];
+    auto& localDvDxj = localDvDx_reducer[nodeListj][j];
+    auto& Mj = M_reducer[nodeListj][j];
+    auto& localMj = localM_reducer[nodeListj][j];
+    auto& maxViscousPressurej = maxViscousPressure_reducer[nodeListj][j];
+    auto& effViscousPressurej = effViscousPressure_reducer[nodeListj][j];
+    auto& rhoSumCorrectionj = rhoSumCorrection_reducer[nodeListj][j];
+    auto& viscousWorkj = viscousWork_reducer[nodeListj][j];
+    auto& XSPHWeightSumj = XSPHWeightSum_reducer[nodeListj][j];
+    auto& XSPHDeltaVj = XSPHDeltaV_reducer[nodeListj][j];
+    auto& weightedNeighborSumj = weightedNeighborSum_reducer[nodeListj][j];
+    auto& massSecondMomentj = massSecondMoment_reducer[nodeListj][j];
 
     // Flag if this is a contiguous material pair or not.
     const bool sameMatij = true; // (nodeListi == nodeListj and fragIDi == fragIDj);
@@ -377,29 +384,29 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
 
   }); // loop over pairs
 
-  // Reduce the thread values to the master.
-  rhoSum.getReduction(rhoSum_thread);
-  DvDt.getReduction(DvDt_thread);
-  DepsDt.getReduction(DepsDt_thread);
-  DvDx.getReduction(DvDx_thread);
-  localDvDx.getReduction(localDvDx_thread);
-  M.getReduction(M_thread);
-  localM.getReduction(localM_thread);
-  maxViscousPressure.getReduction(maxViscousPressure_thread);
-  effViscousPressure.getReduction(effViscousPressure_thread);
-  rhoSumCorrection.getReduction(rhoSumCorrection_thread);
-  viscousWork.getReduction(viscousWork_thread);
-  XSPHWeightSum.getReduction(XSPHWeightSum_thread);
-  XSPHDeltaV.getReduction(XSPHDeltaV_thread);
-  weightedNeighborSum.getReduction(weightedNeighborSum_thread);
-  massSecondMoment.getReduction(massSecondMoment_thread);
-  DSDt.getReduction(DSDt_thread);
+  // Reduce the thread values to master FieldList.
+  rhoSum.getReduction(rhoSum_reducer);
+  DvDt.getReduction(DvDt_reducer);
+  DepsDt.getReduction(DepsDt_reducer);
+  DvDx.getReduction(DvDx_reducer);
+  localDvDx.getReduction(localDvDx_reducer);
+  M.getReduction(M_reducer);
+  localM.getReduction(localM_reducer);
+  maxViscousPressure.getReduction(maxViscousPressure_reducer);
+  effViscousPressure.getReduction(effViscousPressure_reducer);
+  rhoSumCorrection.getReduction(rhoSumCorrection_reducer);
+  viscousWork.getReduction(viscousWork_reducer);
+  XSPHWeightSum.getReduction(XSPHWeightSum_reducer);
+  XSPHDeltaV.getReduction(XSPHDeltaV_reducer);
+  weightedNeighborSum.getReduction(weightedNeighborSum_reducer);
+  massSecondMoment.getReduction(massSecondMoment_reducer);
+  DSDt.getReduction(DSDt_reducer);
 
 
   // Finish up the derivatives for each point.
 
   RAJA::TypedRangeSegment<unsigned int> array_numNodeLists(0, numNodeLists);
-  RAJA::forall<RAJA::seq_exec>(array_numNodeLists, [&](int nodeListi) {
+  RAJA::forall<NODE_OUTER_EXEC_POL>(array_numNodeLists, [&](int nodeListi) {
 
     const auto& nodeList = mass[nodeListi]->nodeList();
     const auto  hmin = nodeList.hmin();
@@ -418,7 +425,7 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
 
     const auto ni = nodeList.numInternalNodes();
     RAJA::TypedRangeSegment<unsigned int> array_ni(0, ni);
-    RAJA::forall<RAJA::omp_for_exec>(array_ni, [&](int i) {
+    RAJA::forall<NODE_INNER_EXEC_POL>(array_ni, [&](int i) {
 
       // Get the state for node i.
       const Vector& ri = position(nodeListi, i);
