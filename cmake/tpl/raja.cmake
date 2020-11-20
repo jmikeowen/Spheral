@@ -1,7 +1,7 @@
 set(RAJA_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/${lib_name})
 set(RAJA_DIST "RAJA-v0.12.1.tar.gz")
 set(RAJA_URL "https://github.com/LLNL/RAJA/releases/download/v0.12.1/${RAJA_DIST}")
-set(RAJA_MD5 "MD5=f209d2f03f002f46be6eb1a7e6aedeb6")
+set(RAJA_MD5 "MD5=9ee47fd5f3d5fe5e16fccca73e7878cc")
 set(RAJA_CACHE "${CACHE_DIR}/${RAJA_DIST}")
 
 set(${lib_name}_libs libRAJA.a)
