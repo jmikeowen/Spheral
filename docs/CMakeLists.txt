@@ -26,6 +26,11 @@ if(ENABLE_DOCS AND NOT SPHINX_EXEC STREQUAL "SPHINX_EXEC-NOTFOUND")
     "${BINARY_BUILD_DIR}/conf.py"
     @ONLY)
 
+  set(DOC_DEPENDS ${spheral_py_depends})
+  if(pip_BUILD)
+    set(DOC_DEPENDS ${DOC_DEPENDS} pip-modules)
+  endif()
+
   add_custom_target(Spheral_docs ALL
     ${SPHINX_EXEC}
     -q -b html
@@ -33,6 +38,6 @@ if(ENABLE_DOCS AND NOT SPHINX_EXEC STREQUAL "SPHINX_EXEC-NOTFOUND")
     -d "${SPHINX_CACHE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${SPHINX_HTML_DIR}"
-    DEPENDS ${spheral_py_depends} pip-modules
+    DEPENDS ${DOC_DEPENDS}
     COMMENT "Building HTML documentation with Sphinx")
 endif()

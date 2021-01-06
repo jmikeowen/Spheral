@@ -357,10 +357,11 @@ specificHeat(const Scalar massDensity,
              const Scalar temperature) const {
   double Ti, rhoi, Pi, Ei, Si, CVi, DPDTi, DPDRi, csi;
   rhoi = max(mRhoMin, min(mRhoMax, massDensity)) / mRhoConv;
-  Ti = temperature / mTconv;
+  Ti = max(mTmin, min(mTmax, temperature)) / mTconv;
   call_aneos_(const_cast<int*>(&mMaterialNumber), &Ti, &rhoi,
               &Pi, &Ei, &Si, &CVi, &DPDTi, &DPDRi, &csi);
-  return CVi * mCVconv;
+  const auto nDen = massDensity/mAtomicWeight;
+  return max(1.0e-1*mConstants.molarGasConstant()*nDen, CVi * mCVconv);
 }
 
 //------------------------------------------------------------------------------

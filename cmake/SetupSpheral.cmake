@@ -51,6 +51,7 @@ set(ENABLE_3D ON CACHE BOOL "enable 3d")
 set(ENABLE_INSTANTIATIONS ON CACHE BOOL "enable instantiations")
 set(ENABLE_TIMER OFF CACHE BOOL "enable timer")
 set(ENABLE_ANEOS ON CACHE BOOL "enable the ANEOS equation of state package")
+set(ENABLE_OPENSUBDIV ON CACHE BOOL "enable the Opensubdiv Pixar extension for refining polyhedra")
 set(ENABLE_HELMHOLTZ ON CACHE BOOL "enable the Helmholtz equation of state package")
 
 option(ENABLE_STATIC_CXXONLY "build only static libs" OFF)
@@ -66,6 +67,8 @@ endif()
 if(ENABLE_OPENMP)
   list(APPEND spheral_blt_depends openmp)
 endif()
+
+option(BOOST_HEADER_ONLY "only use the header only components of Boost" OFF)
 
 #-------------------------------------------------------------------------------#
 # Set a default build type if none was specified
@@ -117,25 +120,25 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}")
 # which point to directories outside the build tree to the install RPATH
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-#-------------------------------------------------------------------------------
-# Install symlink for spheral->python
-#-------------------------------------------------------------------------------
-if (NOT ENABLE_CXXONLY)
-  install(CODE "execute_process( \
-    COMMAND ${CMAKE_COMMAND} -E create_symlink ${PYTHON_EXE} spheral \
-    WORKING_DIRECTORY ${SPHERAL_TPL_DIR})")
-endif()
+if (NOT BUILD_TPL_ONLY)
+  #-------------------------------------------------------------------------------
+  # Install symlink for spheral->python
+  #-------------------------------------------------------------------------------
+  if (NOT ENABLE_CXXONLY)
+    install(CODE "execute_process( \
+      COMMAND ${CMAKE_COMMAND} -E create_symlink ${PYTHON_EXE} spheral \
+      WORKING_DIRECTORY ${SPHERAL_TPL_DIR})")
+  endif()
 
-#-------------------------------------------------------------------------------
-# Prepare to build the src
-#-------------------------------------------------------------------------------
-add_subdirectory(${SPHERAL_ROOT_DIR}/src)
+  #-------------------------------------------------------------------------------
+  # Prepare to build the src
+  #-------------------------------------------------------------------------------
+  add_subdirectory(${SPHERAL_ROOT_DIR}/src)
 
-add_subdirectory(${SPHERAL_ROOT_DIR}/scripts)
-
-#-------------------------------------------------------------------------------
-# Add the documentation
-#-------------------------------------------------------------------------------
-if (NOT ENABLE_CXXONLY)
-  add_subdirectory(${SPHERAL_ROOT_DIR}/docs)
+  #-------------------------------------------------------------------------------
+  # Add the documentation
+  #-------------------------------------------------------------------------------
+  if (NOT ENABLE_CXXONLY)
+    add_subdirectory(${SPHERAL_ROOT_DIR}/docs)
+  endif()
 endif()

@@ -21,5 +21,5 @@ set(Gravity_headers
 
 spheral_add_cxx_library(Gravity)
 
-list(APPEND SPHERAL_PYTHON_DEPENDS Spheral_Gravity)
-set(SPHERAL_PYTHON_DEPENDS "${SPHERAL_PYTHON_DEPENDS}" PARENT_SCOPE)
+list(APPEND SPHERAL_CXX_LIBS Spheral_Gravity)
+set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

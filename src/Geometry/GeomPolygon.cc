@@ -147,7 +147,7 @@ template<typename UintType>
 struct FuzzyPoint2LessThan {
   UintType fuzz;
   FuzzyPoint2LessThan(const UintType ifuzz = 1): fuzz(ifuzz) {}
-  bool operator()(const Point2<UintType>& p1, const Point2<UintType>& p2) {
+  bool operator()(const Point2<UintType>& p1, const Point2<UintType>& p2) const {
     return (p1.x + fuzz < p2.x        ? true :
             p1.x        > p2.x + fuzz ? false :
             p1.y + fuzz < p2.y        ? true :
@@ -155,7 +155,7 @@ struct FuzzyPoint2LessThan {
             false);
   }
   bool operator()(const std::pair<Point2<UintType>, unsigned>& p1,
-                  const std::pair<Point2<UintType>, unsigned>& p2) {
+                  const std::pair<Point2<UintType>, unsigned>& p2) const {
     return operator()(p1.first, p2.first);
   }
 };

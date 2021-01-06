@@ -60,22 +60,10 @@
     <ClCompile Include="..\..\src\Geometry\GeomTensor_eigen.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Geometry\GeomThirdRankTensor.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Geometry\GeomVector.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Geometry\Jacobi.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Geometry\Jacobi2.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Geometry\GeomFifthRankTensor.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Geometry\GeomFourthRankTensor.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Geometry\clipConvexFacetedVolumeByPlanes2d.cc">

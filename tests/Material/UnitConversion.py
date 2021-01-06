@@ -23,8 +23,11 @@ if unitType == "cgs":
             [units.c, 2.99792458e10, "speed of light"],
             [units.kB, 1.380649e-16, "Boltzmann constant"],
             [units.molarGasConstant, 8.314462618e7, "molar gas constant"],
+            [units.unitMassDensity, 1000.0, "unit mass density"],
             [units.stefanBoltzmannConstant, 5.670374419e-5, "Stefan Boltzmann constant"],
-            [units.blackBodyConstant, 7.56573325003e-15, "Radiation constant"]]
+            [units.blackBodyConstant, 7.56573325003e-15, "Radiation constant"],
+            [units.planckConstant, 6.62607015e-27, "Planck constant"],
+            [units.unitEnergyJ, 1.0e-7, "unit energy"]]
 elif unitType == "mixed":
     units = PhysicalConstants(1.e-3, # millimeter
                               1.e-18, # femtograms
@@ -38,8 +41,11 @@ elif unitType == "mixed":
             [units.c, 2.99792458e17, "speed of light"],
             [units.kB, 1.380649e22, "Boltzmann constant"],
             [units.molarGasConstant, 8.314462618e45, "molar gas constant"],
+            [units.unitMassDensity, 1.0e-9, "unit mass density"],
             [units.stefanBoltzmannConstant, 5.670374419e64, "Stefan Boltzmann constant"],
-            [units.blackBodyConstant, 7.56573325003e47, "Radiation constant"]]
+            [units.blackBodyConstant, 7.56573325003e47, "Radiation constant"],
+            [units.planckConstant, 6.62607015e-4, "Planck constant"],
+            [units.unitEnergyJ, 1.0e-36, "unit energy"]]
     
 for val, ref, desc in vals:
     if abs(val - ref) / ref > 1.e-10:

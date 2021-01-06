@@ -162,4 +162,13 @@ PhysicalConstants::blackBodyConstant() const {
     return BlackBody;
 }
 
+//------------------------------------------------------------------------------
+// Planck constant
+//------------------------------------------------------------------------------
+inline
+double
+PhysicalConstants::planckConstant() const {
+    return Planck;
+}
+
 }

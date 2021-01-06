@@ -288,6 +288,20 @@ def gradientRK(fieldList = "const FieldList<%(Dimension)s, %(DataType)s>&",
 
 #-------------------------------------------------------------------------------
 @PYB11template("Dimension", "DataType")
+@PYB11pycppname("gradientRK")
+def gradientRK2(fieldList = "const FieldList<%(Dimension)s, std::vector<%(DataType)s>>&",
+               position = "const FieldList<%(Dimension)s, typename %(Dimension)s::Vector>&",
+               weight = "const FieldList<%(Dimension)s, typename %(Dimension)s::Scalar>&",
+               H = "const FieldList<%(Dimension)s, typename %(Dimension)s::SymTensor>&",
+               connectivityMap = "const ConnectivityMap<%(Dimension)s>&",
+               WR = "const ReproducingKernel<%(Dimension)s>&",
+               corrections = "const FieldList<%(Dimension)s, RKCoefficients<%(Dimension)s>>&",
+               nodeCoupling = ("const NodeCoupling&", "NodeCoupling()")):
+    "Compute the RK gradient at each point for a FieldList."
+    return "FieldList<%(Dimension)s, std::vector<typename MathTraits<%(Dimension)s, %(DataType)s>::GradientType>>"
+
+#-------------------------------------------------------------------------------
+@PYB11template("Dimension", "DataType")
 def hessianRK(fieldList = "const FieldList<%(Dimension)s, %(DataType)s>&",
               position = "const FieldList<%(Dimension)s, typename %(Dimension)s::Vector>&",
               weight = "const FieldList<%(Dimension)s, typename %(Dimension)s::Scalar>&",

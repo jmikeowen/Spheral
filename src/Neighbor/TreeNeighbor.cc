@@ -177,6 +177,24 @@ TreeNeighbor<Dimension>::
 }
 
 //------------------------------------------------------------------------------
+// Set the master list of nodes based on a particular node index.
+//------------------------------------------------------------------------------
+template<typename Dimension>
+void
+TreeNeighbor<Dimension>::
+setMasterList(int nodeID,
+              std::vector<int>& masterList,
+              std::vector<int>& coarseNeighbors,
+              const bool ghostConnectivity) const {
+  CHECK(valid());
+  const auto& nodeList = this->nodeList();
+  CHECK(nodeID >= 0 and nodeID < nodeList.numInternalNodes());
+  const auto& positions = nodeList.positions();
+  const auto& Hfield = nodeList.Hfield();
+  this->setMasterList(positions(nodeID), Hfield(nodeID), masterList, coarseNeighbors, ghostConnectivity);
+}
+
+//------------------------------------------------------------------------------
 // Set the master list using either a scalar or tensor H.
 //------------------------------------------------------------------------------
 template<typename Dimension>

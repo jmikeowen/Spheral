@@ -40,7 +40,8 @@ class Timer:
         return "double"
 
     @PYB11static
-    def TimerSummary(self):
+    def TimerSummary(self,
+                     fname=("const std::string", '"time.table"')):
         return "void"
 
     #...........................................................................

@@ -48,51 +48,51 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CUDADebug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ParDebug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ParDebugVisit|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CUDARelease|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebugInfo|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ParRelease|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ParReleaseWithDebugInfo|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -100,53 +100,53 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Serial.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Serial.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='CUDADebug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Serial.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Serial.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ParDebug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Parallel.x64.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Parallel.x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ParDebugVisit|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Parallel.x64.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Parallel.x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Serial.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\CPUOptimization.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Serial.props" />
+    <Import Project="$(WindowsProjectPath)Properties\CPUOptimization.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='CUDARelease|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Serial.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\CPUOptimization.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Serial.props" />
+    <Import Project="$(WindowsProjectPath)Properties\CPUOptimization.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebugInfo|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Serial.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\CPUOptimization.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Serial.props" />
+    <Import Project="$(WindowsProjectPath)Properties\CPUOptimization.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ParRelease|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Parallel.x64.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\CPUOptimization.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Parallel.x64.props" />
+    <Import Project="$(WindowsProjectPath)Properties\CPUOptimization.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ParReleaseWithDebugInfo|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Parallel.x64.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\CPUOptimization.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Parallel.x64.props" />
+    <Import Project="$(WindowsProjectPath)Properties\CPUOptimization.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
@@ -352,6 +352,7 @@
     <ClCompile Include="..\..\src\Boundary\BoundaryInst.cc.3.cc" />
     <ClCompile Include="..\..\src\Boundary\CRKSPHVoidBoundaryInst.cc.2.cc" />
     <ClCompile Include="..\..\src\Boundary\CRKSPHVoidBoundaryInst.cc.3.cc" />
+    <ClCompile Include="..\..\src\Boundary\FacetedVolumeBoundary.cc" />
     <ClCompile Include="..\..\src\Boundary\findNodesTouchingThroughPlanesInst.cc.2.cc" />
     <ClCompile Include="..\..\src\Boundary\findNodesTouchingThroughPlanesInst.cc.3.cc" />
     <ClCompile Include="..\..\src\Boundary\PeriodicBoundaryInst.cc.2.cc" />
@@ -461,6 +462,8 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\Boundary\FacetedVolumeBoundary.hh" />
+    <ClInclude Include="..\..\src\Boundary\FacetedVolumeBoundaryInline.hh" />
     <ClInclude Include="..\..\src\Boundary\findNodesTouchingThroughPlanes.hh" />
     <ClInclude Include="..\..\src\Boundary\InflowOutflowBoundary.hh" />
     <ClInclude Include="..\..\src\Boundary\InflowOutflowBoundaryInline.hh" />

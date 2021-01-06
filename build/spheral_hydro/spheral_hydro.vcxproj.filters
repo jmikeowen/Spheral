@@ -75,6 +75,9 @@
     <ClCompile Include="..\..\src\Hydro\EntropyPolicyInst.cc.3.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Hydro\RZNonSymmetricSpecificThermalEnergyPolicy.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\Hydro\entropyWeightingFunction.hh">
@@ -157,5 +160,10 @@
     <CustomBuild Include="..\..\src\Hydro\EntropyPolicyInst.cc.py">
       <Filter>Inst Files</Filter>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\Hydro\RZNonSymmetricSpecificThermalEnergyPolicy.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

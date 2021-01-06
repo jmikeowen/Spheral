@@ -48,51 +48,51 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CUDADebug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ParDebug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ParDebugVisit|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CUDARelease|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebugInfo|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ParRelease|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ParReleaseWithDebugInfo|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -100,53 +100,53 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Serial.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Serial.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='CUDADebug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Serial.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Serial.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ParDebug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Parallel.x64.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Parallel.x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ParDebugVisit|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Parallel.x64.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Parallel.x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Serial.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\CPUOptimization.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Serial.props" />
+    <Import Project="$(WindowsProjectPath)Properties\CPUOptimization.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='CUDARelease|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Serial.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\CPUOptimization.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Serial.props" />
+    <Import Project="$(WindowsProjectPath)Properties\CPUOptimization.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDebugInfo|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Serial.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\CPUOptimization.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Serial.props" />
+    <Import Project="$(WindowsProjectPath)Properties\CPUOptimization.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ParRelease|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Parallel.x64.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\CPUOptimization.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Parallel.x64.props" />
+    <Import Project="$(WindowsProjectPath)Properties\CPUOptimization.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ParReleaseWithDebugInfo|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\src\Win32\Base Debug Libraries.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\Parallel.x64.props" />
-    <Import Project="..\..\..\..\src\Win32\Properties\CPUOptimization.props" />
+    <Import Project="$(WindowsProjectPath)Base Debug Libraries.props" />
+    <Import Project="$(WindowsProjectPath)Properties\Parallel.x64.props" />
+    <Import Project="$(WindowsProjectPath)Properties\CPUOptimization.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
@@ -450,6 +450,9 @@
     </ProjectReference>
     <ProjectReference Include="..\spheral_physics\spheral_physics.vcxproj">
       <Project>{3539b82b-87bb-4978-8385-6be114d06546}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\spheral_RK\spheral_RK.vcxproj">
+      <Project>{4ff41911-47c6-4ddc-8f3c-87109695bc38}</Project>
     </ProjectReference>
     <ProjectReference Include="..\spheral_SolidMaterial\spheral_SolidMaterial.vcxproj">
       <Project>{2a0b7886-a83d-4f52-8d6e-e6abfc3581a2}</Project>

@@ -21,5 +21,5 @@ set(Integrator_headers
 
 spheral_add_cxx_library(Integrator)
 
-list(APPEND SPHERAL_PYTHON_DEPENDS Spheral_Integrator)
-set(SPHERAL_PYTHON_DEPENDS "${SPHERAL_PYTHON_DEPENDS}" PARENT_SCOPE)
+list(APPEND SPHERAL_CXX_LIBS Spheral_Integrator)
+set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

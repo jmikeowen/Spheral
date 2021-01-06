@@ -227,6 +227,16 @@ requireReproducingKernelHessian() const {
 }
 
 //------------------------------------------------------------------------------
+// By default assume reproducing kernel correction in finalize is not needed.
+//------------------------------------------------------------------------------
+template<typename Dimension>
+bool
+Physics<Dimension>::
+updateReproducingKernelsInFinalize() const {
+  return false;
+}
+
+//------------------------------------------------------------------------------
 // Provide a default method for the extraEnergy method, which will return 0.0
 // for classes that don't have their own energy.
 //------------------------------------------------------------------------------

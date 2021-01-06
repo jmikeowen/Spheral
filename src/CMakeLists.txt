@@ -64,5 +64,7 @@ foreach(e_package ${extra_packages})
   add_subdirectory(${extra_packages_DIR}/${e_package} ${CMAKE_CURRENT_BINARY_DIR}/${e_package})
 endforeach()
 
+#add_subdirectory(CXXTests)
+
 install(EXPORT ${PROJECT_NAME}-targets DESTINATION Spheral/lib/cmake)
-set(SPHERAL_PYTHON_DEPENDS ${SPHERAL_PYTHON_DEPENDS} PARENT_SCOPE)
+set(SPHERAL_CXX_LIBS ${SPHERAL_CXX_LIBS} PARENT_SCOPE)

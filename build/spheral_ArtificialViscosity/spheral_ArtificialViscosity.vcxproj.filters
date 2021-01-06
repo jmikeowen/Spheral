@@ -24,9 +24,6 @@
     <ClCompile Include="..\..\src\ArtificialViscosity\CRKSPHMonaghanGingoldViscosityInst.cc.3.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\ArtificialViscosity\CRKSPHMonaghanGingoldViscosityRZ.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ArtificialViscosity\MonaghanGingoldViscosityInst.cc.2.cc">
       <Filter>Source Files</Filter>
     </ClCompile>

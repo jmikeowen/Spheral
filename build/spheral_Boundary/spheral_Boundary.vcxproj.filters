@@ -53,6 +53,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Boundary\PeriodicBoundaryInst.cc.2.cc" />
     <ClCompile Include="..\..\src\Boundary\PeriodicBoundaryInst.cc.3.cc" />
+    <ClCompile Include="..\..\src\Boundary\FacetedVolumeBoundary.cc">
+      <Filter>Inst Files\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\Boundary\AxisBoundaryRZ.hh">
@@ -126,6 +129,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Boundary\findNodesTouchingThroughPlanes.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Boundary\FacetedVolumeBoundary.hh">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Boundary\FacetedVolumeBoundaryInline.hh">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

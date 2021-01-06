@@ -8,6 +8,7 @@ set(PYTHON_URL "http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTH
 set(PYTHON_MD5 "MD5=38c84292658ed4456157195f1c9bcbe1")
 set(PYTHON_SITE_PACKAGE_DIR ${PYTHON_INSTALL_DIR}/lib/python2.7/site-packages)
 
+set(${lib_name}_libs libpython2.7.so)
 set(${lib_name}_INCLUDES $<BUILD_INTERFACE:${PYTHON_INSTALL_DIR}/include/python2.7/>)
 
 set(PYTHON_C_COMPILER ${CMAKE_C_COMPILER})
@@ -42,12 +43,13 @@ if(${lib_name}_BUILD)
     CONFIGURE_COMMAND env CC=${PYTHON_C_COMPILER}
                           CXX=${PYTHON_CXX_COMPILER}
                           CFLAGS=-I${ZLIB_INSTALL_DIR}/include
-                          LDFLAGS=-L${ZLIB_INSTALL_DIR}/lib
                           LIBS=-lz
                       ${PYTHON_SRC_DIR}/configure
                           --with-cxx-main='${PYTHON_CXX_COMPILER}'
                           --disable-ipv6
+                          --enable-shared
                           --prefix=${PYTHON_INSTALL_DIR}
+                          LDFLAGS=-Wl,-L${ZLIB_INSTALL_DIR}/lib,-rpath=${PYTHON_INSTALL_DIR}/lib
     BUILD_COMMAND make 
     INSTALL_COMMAND make install
     DEPENDS ${zlib_build_dep}

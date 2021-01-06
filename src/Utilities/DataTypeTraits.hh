@@ -66,17 +66,19 @@ struct DataTypeTraits<int> {
 #endif
 };
 
-// //------------------------------------------------------------------------------
-// template<>
-// struct DataTypeTraits<size_t> {
-//   typedef size_t ElementType;
-//   static bool fixedSize() { return true; }
-//   static size_t numElements(const ElementType& x) { return 1; }
-//   static size_t zero() { return 0U; }
-// #ifdef USE_MPI
-//   static MPI_Datatype MpiDataType() { return MPI_UNSIGNED; }
-// #endif
-// };
+#if __APPLE__
+//------------------------------------------------------------------------------
+template<>
+struct DataTypeTraits<size_t> {
+  typedef size_t ElementType;
+  static bool fixedSize() { return true; }
+  static size_t numElements(const ElementType& x) { return 1; }
+  static size_t zero() { return 0U; }
+#ifdef USE_MPI
+  static MPI_Datatype MpiDataType() { return MPI_UNSIGNED; }
+#endif
+};
+#endif
 
 //------------------------------------------------------------------------------
 template<>

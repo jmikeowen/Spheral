@@ -74,7 +74,7 @@ endfunction()
 #         - List of addition includes needed by a given package
 #     <package_name>_ADDITIONAL_SOURCE
 #         - List of additional sources to build library with
-#     SPHERAL_PYTHON_DEPENDS
+#     SPHERAL_CXX_LIBS
 #         - List of items that are required to build the python portion of spheral
 #     spheral_depends
 #         - List of targets the library depends on
@@ -94,7 +94,7 @@ function(spheral_add_pybind11_library package_name)
   set(MODULE_NAME Spheral${package_name})
   blt_add_library(NAME         ${MODULE_NAME}
                   SOURCES      ${PYB11_GENERATED_SOURCE} ${${package_name}_ADDITIONAL_SOURCES}
-                  DEPENDS_ON   -Wl,--start-group ${SPHERAL_PYTHON_DEPENDS} ${spheral_blt_depends} ${${package_name}_ADDITIONAL_DEPENDS} -Wl,--end-group
+                  DEPENDS_ON   -Wl,--start-group ${SPHERAL_CXX_LIBS} ${spheral_blt_depends} ${${package_name}_ADDITIONAL_DEPENDS} -Wl,--end-group
                   INCLUDES     ${${package_name}_ADDITIONAL_INCLUDES}
                   OUTPUT_NAME  ${MODULE_NAME}
                   CLEAR_PREFIX TRUE

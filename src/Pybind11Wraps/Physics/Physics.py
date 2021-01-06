@@ -125,6 +125,12 @@ class Physics:
 
     @PYB11virtual
     @PYB11const
+    def updateReproducingKernelsInFinalize(self):
+        "Does this package need an update of reproducing kernels during finalize?"
+        return "bool"
+    
+    @PYB11virtual
+    @PYB11const
     def extraEnergy(self):
         "Many physics packages will have their own representations of energy in the system (gravitational potential energy, radiative losses, etc.)"
         return "Scalar"

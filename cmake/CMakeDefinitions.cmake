@@ -43,8 +43,8 @@ add_definitions(-DUSE_TRIANGLE=0)
 add_definitions(-DNOPOLYTOPE=1)
 
 # Are we using Opensubdiv?
-if (opensubdiv_BUILD)
-  add_definitions(-DHAVE_OPENSUBDIV)
+if (ENABLE_OPENSUBDIV)
+  add_definitions(-DENABLE_OPENSUBDIV)
 endif()
 
 # Choose the dimensions we build

@@ -71,9 +71,6 @@
     <ClCompile Include="..\..\src\Strength\PlasticStrainPolicyInst.cc.3.cc">
       <Filter>Source Files\Strength</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Strength\RZDeviatoricStressPolicy.cc">
-      <Filter>Source Files\Strength</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Strength\RZPlasticStrainPolicy.cc">
       <Filter>Source Files\Strength</Filter>
     </ClCompile>

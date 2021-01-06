@@ -41,6 +41,7 @@ public:
   double unitMassDensity() const;
   double stefanBoltzmannConstant() const;
   double blackBodyConstant() const;
+  double planckConstant() const;
   double unitEnergyJ() const;
 
 private:
@@ -61,6 +62,7 @@ private:
   const double UnitMassDensity;
   const double Sigma;
   const double BlackBody;
+  const double Planck;
 
   // The reference MKS data we base our values on.
   static const double mpMKS;
@@ -72,6 +74,7 @@ private:
   static const double RgasMKS;
   static const double NAvogadro;
   static const double StefanBoltzmannMKS;
+  static const double PlanckMKS;
 
 };
 

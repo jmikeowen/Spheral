@@ -47,6 +47,10 @@ public:
   // ********** Descendent Neighbor types must provide these methods. **********
   // Set or refine the neighbor lists for the given position and smoothing 
   // scale.
+  virtual void setMasterList(int nodeID,
+                             std::vector<int>& masterList,
+                             std::vector<int>& coarseNeighbors,
+                             const bool ghostConnectivity = false) const override;
   virtual void setMasterList(const Vector& position,
                              const Scalar& H,
                              std::vector<int>& masterList,

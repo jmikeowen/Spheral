@@ -32,11 +32,13 @@ RKCorrections(const std::set<RKOrder> orders,
               const DataBase<Dimension>& dataBase,
               const TableKernel<Dimension>& W,
               const RKVolumeType volumeType,
-              const bool needHessian):
+              const bool needHessian,
+              const bool updateInFinalize):
   mOrders(orders),
   mDataBase(dataBase),
   mVolumeType(volumeType),
   mNeedHessian(needHessian),
+  mUpdateInFinalize(updateInFinalize),
   mWR(),
   mVolume(FieldStorageType::CopyFields),
   mSurfaceArea(FieldStorageType::CopyFields),
@@ -387,11 +389,18 @@ evaluateDerivatives(const Scalar /*time*/,
 template<typename Dimension>
 void
 RKCorrections<Dimension>::
-finalize(const Scalar /*time*/, 
-         const Scalar /*dt*/,
-         DataBase<Dimension>& /*dataBase*/, 
-         State<Dimension>& /*state*/,
-         StateDerivatives<Dimension>& /*derivs*/) {
+finalize(const Scalar time, 
+         const Scalar dt,
+         DataBase<Dimension>& dataBase, 
+         State<Dimension>& state,
+         StateDerivatives<Dimension>& derivs) {
+  if (mUpdateInFinalize) {
+    // Calculate new volumes
+    preStepInitialize(dataBase, state, derivs);
+    
+    // Calculate new corrections
+    initialize(time, dt, dataBase, state, derivs);
+  }
 }
 
 //------------------------------------------------------------------------------

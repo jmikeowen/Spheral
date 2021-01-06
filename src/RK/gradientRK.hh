@@ -26,6 +26,16 @@ gradientRK(const FieldList<Dimension, DataType>& fieldList,
            const FieldList<Dimension, RKCoefficients<Dimension>>& corrections,
            const NodeCoupling& nodeCoupling = NodeCoupling());
 
+template<typename Dimension, typename DataType>
+FieldList<Dimension, std::vector<typename MathTraits<Dimension, DataType>::GradientType>>
+gradientRK(const FieldList<Dimension, std::vector<DataType>>& fieldList,
+           const FieldList<Dimension, typename Dimension::Vector>& position,
+           const FieldList<Dimension, typename Dimension::Scalar>& weight,
+           const FieldList<Dimension, typename Dimension::SymTensor>& H,
+           const ConnectivityMap<Dimension>& connectivityMap,
+           const ReproducingKernel<Dimension>& WR,
+           const FieldList<Dimension, RKCoefficients<Dimension>>& corrections,
+           const NodeCoupling& nodeCoupling = NodeCoupling());
 }
 
 #endif

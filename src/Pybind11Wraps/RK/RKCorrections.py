@@ -24,7 +24,8 @@ class RKCorrections(Physics):
                dataBase = "const DataBase<%(Dimension)s>&",
                W = "const TableKernel<%(Dimension)s>&",
                volumeType = "const RKVolumeType",
-               needHessian = "const bool"):
+               needHessian = "const bool",
+               updateInFinalize = ("const bool", False)):
         "Constructor"
         
     @PYB11virtual

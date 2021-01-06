@@ -461,7 +461,8 @@ rk = RKCorrections(orders = set([ZerothOrder, correctionOrder]),
                    dataBase = dataBase,
                    W = WT,
                    volumeType = volumeType,
-                   needHessian = testHessian)
+                   needHessian = testHessian,
+                   updateInFinalize = False)
 output("rk")
 output("rk.correctionOrders")
 WR = rk.WR(correctionOrder)

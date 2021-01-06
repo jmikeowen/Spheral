@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+SCRIPT_PATH=${0%/*}
+. "$SCRIPT_PATH/utils/parse-args.sh"
+
 BUILD_SUFFIX=lc_toss3-clang-9.0.0-debug-mpi-cxx
 
 rm -rf ${BUILD_SUFFIX} 2>/dev/null
@@ -10,14 +13,13 @@ module load cmake/3.14.5
 module load clang/9.0.0
 
 cmake \
-  ../.. \
+  ${SRC_DIR} \
   -DCMAKE_BUILD_TYPE=Debug \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-9.0.0/bin/clang++ \
   -DCMAKE_C_COMPILER=/usr/tce/packages/clang/clang-9.0.0/bin/clang \
+  -C ${SRC_DIR}/host-configs/lc-builds/toss3/clangX_tpl.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_MPI=On \
-  -DCMAKE_INSTALL_PREFIX=../install \
-  -DSPHERAL_TPL_DIR=/usr/workspace/wsrzd/davis291/SPHERAL/toss_Spheral_clang9/install \
-  -DBUILD_TPL=Off \
-  -DENABLE_STATIC_CXXONLY=On
-  "$@" \
+  -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
+  -DENABLE_STATIC_CXXONLY=On \
+  $CMAKE_ARGS \

@@ -41,7 +41,10 @@ set(Boundary_headers
     AxisBoundaryRZ.hh
     Boundary.hh
     BoundaryInline.hh
+    ConstantBoundaryUtilities.hh
     CRKSPHVoidBoundary.hh
+    PeriodicBoundary.hh
+    PeriodicPlanarBoundary.hh
     PlanarBoundary.hh
     PlanarBoundaryInline.hh
     PlanarSymmetryBoundary.hh
@@ -54,5 +57,5 @@ set(Boundary_headers
 
 spheral_add_cxx_library(Boundary)
 
-list(APPEND SPHERAL_PYTHON_DEPENDS Spheral_Boundary)
-set(SPHERAL_PYTHON_DEPENDS "${SPHERAL_PYTHON_DEPENDS}" PARENT_SCOPE)
+list(APPEND SPHERAL_CXX_LIBS Spheral_Boundary)
+set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

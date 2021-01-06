@@ -42,6 +42,11 @@ set(RK_headers
   HullVolumePolicy.hh
   HVolumePolicy.hh
   interpolateRK.hh
+  ReproducingKernel.hh
+  ReproducingKernelInline.hh
+  ReproducingKernelMethods.hh
+  ReproducingKernelMethodsInline.hh
+  RKCoefficients.hh
   RKCorrectionParams.hh
   RKCorrections.hh
   RKUtilities.hh
@@ -50,5 +55,5 @@ set(RK_headers
 
 spheral_add_cxx_library(RK)
 
-list(APPEND SPHERAL_PYTHON_DEPENDS Spheral_RK)
-set(SPHERAL_PYTHON_DEPENDS "${SPHERAL_PYTHON_DEPENDS}" PARENT_SCOPE)
+list(APPEND SPHERAL_CXX_LIBS Spheral_RK)
+set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

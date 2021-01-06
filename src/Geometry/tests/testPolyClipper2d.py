@@ -3,10 +3,10 @@
 import unittest
 from math import *
 import time
-from PolyhedronFileUtilities import *
 
 from Spheral2d import *
 from SpheralTestUtilities import fuzzyEqual
+from PolyhedronFileUtilities import *
 
 # Create a global random number generator.
 import random

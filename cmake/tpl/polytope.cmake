@@ -12,7 +12,7 @@ set(POLYTOPE_USE_PYTHON On)
 if(ENABLE_CXXONLY)
   set(POLYTOPE_USE_PYTHON Off)
 else()
-  list(APPEND POLYTOPE_DEPENDS python-install pip-modules)
+  list(APPEND POLYTOPE_DEPENDS python-install pip-modules ${spheral_py_depends})
 endif()
 
 if(${lib_name}_BUILD)
@@ -44,11 +44,11 @@ if(${lib_name}_BUILD)
     LOG_INSTALL ${OUT_PROTOCOL_EP}
   )
 
+  if(NOT ENABLE_CXXONLY AND NOT ENABLE_STATIC_CXXONLY)
+    install(
+      FILES ${${lib_name}_DIR}/lib/python2.7/site-packages/polytope/polytope.so
+      DESTINATION ${PYTHON_SITE_PACKAGE_DIR}
+      )
+  endif()
 endif()
 
-if(NOT ENABLE_CXXONLY AND NOT ENABLE_STATIC_CXXONLY)
-  install(
-    FILES ${${lib_name}_DIR}/lib/python2.7/site-packages/polytope/polytope.so
-    DESTINATION ${PYTHON_SITE_PACKAGE_DIR}
-    )
-endif()

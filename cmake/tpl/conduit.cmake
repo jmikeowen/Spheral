@@ -20,13 +20,14 @@ if(${lib_name}_BUILD)
     URL ${CONDUIT_URL}
     URL_HASH ${CONDUIT_MD5}
     DOWNLOAD_DIR ${CACHE_DIR}
-    CMAKE_ARGS ../conduit/src/ -DCMAKE_BUILD_TYPE=Release
+    SOURCE_SUBDIR src/
+    CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                -DCMAKE_C_FLAGS=${cflags}
                -DCMAKE_EXE_LINKER_FLAGS=${ldflags}
                -DENABLE_TESTS=Off
-               -DHDF5_DIR=${HDF5_INSTALL_DIR}
+               -DHDF5_DIR=${hdf5_DIR}
                -DCMAKE_INSTALL_PREFIX=${${lib_name}_DIR}
 
     DEPENDS ${hdf5_build_dep} ${zlib_build_dep}

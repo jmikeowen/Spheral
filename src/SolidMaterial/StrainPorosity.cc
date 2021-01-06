@@ -249,6 +249,7 @@ template<typename Dimension>
 void
 StrainPorosity<Dimension>::
 dumpState(FileIO& file, const string& pathName) const {
+  file.write(mc0, pathName + "/c0");
   file.write(mAlpha0, pathName + "/alpha0");
   file.write(mAlpha, pathName + "/alpha");
   file.write(mDalphaDt, pathName + "/DalphaDt");
@@ -263,11 +264,8 @@ template<typename Dimension>
 void
 StrainPorosity<Dimension>::
 restoreState(const FileIO& file, const string& pathName) {
-  if (file.pathExists(pathName + "/alpha0")) {
-    file.read(mAlpha0, pathName + "/alpha0");
-  } else {
-    if (Process::getRank() == 0) cerr << "StrainPorosity WARNING: using backwards compatible restoreState without alpha0 path.\n";
-  }
+  file.read(mc0, pathName + "/c0");
+  file.read(mAlpha0, pathName + "/alpha0");
   file.read(mAlpha, pathName + "/alpha");
   file.read(mDalphaDt, pathName + "/DalphaDt");
   file.read(mStrain, pathName + "/strain");

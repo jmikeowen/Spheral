@@ -42,7 +42,8 @@ public:
                 const DataBase<Dimension>& dataBase,
                 const TableKernel<Dimension>& W,
                 const RKVolumeType volumeType,
-                const bool needHessian);
+                const bool needHessian,
+                const bool updateInFinalize);
 
   // Destructor.
   virtual ~RKCorrections();
@@ -139,6 +140,7 @@ private:
   const DataBase<Dimension>& mDataBase;
   const RKVolumeType mVolumeType;
   const bool mNeedHessian;
+  const bool mUpdateInFinalize;
   boost::unordered_map<RKOrder, ReproducingKernel<Dimension>> mWR;
 
   // State

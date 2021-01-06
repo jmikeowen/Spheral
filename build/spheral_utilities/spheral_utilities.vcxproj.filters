@@ -327,5 +327,8 @@
     <ClInclude Include="..\..\src\Utilities\DomainNodeInline.hh">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\Utilities\OpenMP_wrapper.hh">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
