@@ -172,7 +172,10 @@ commandLine(KernelConstructor = NBSplineKernel,
             tol = 1.0e-5,
 
             graphics = True,
+
+            timerName = ""
             )
+
 assert not(boolReduceViscosity and boolCullenViscosity)
 if smallPressure:
     P0 = 1.0e-6
@@ -479,7 +482,9 @@ control = SpheralController(integrator,
                             statsStep = statsStep,
                             restartStep = restartStep,
                             restartBaseName = restartBaseName,
-                            restoreCycle = restoreCycle)
+                            restoreCycle = restoreCycle,
+                            timerName = timerName
+                            )
 output("control")
 
 #-------------------------------------------------------------------------------

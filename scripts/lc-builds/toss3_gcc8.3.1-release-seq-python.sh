@@ -3,7 +3,8 @@
 SCRIPT_PATH=${0%/*}
 . "$SCRIPT_PATH/utils/parse-args.sh"
 
-BUILD_SUFFIX=lc_toss3-gcc-8.3.1-rel-seq-py
+# Inherit build directory name from script name
+BUILD_SUFFIX="lc_$(TMP=${BASH_SOURCE##*/}; echo ${TMP%.*})"
 
 rm -rf ${BUILD_SUFFIX} 2>/dev/null
 mkdir -p ${BUILD_SUFFIX}/install
