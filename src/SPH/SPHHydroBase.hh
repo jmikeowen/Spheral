@@ -9,6 +9,7 @@
 #include <string>
 
 #include "Physics/GenericHydro.hh"
+#include "RAJA/RAJA.hpp"
 
 namespace Spheral {
 
