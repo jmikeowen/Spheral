@@ -15,7 +15,7 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   TIME_SPHevalDerivs_initial.start();
 
 #ifdef ENABLE_OPENMP
-  using PAIR_EXEC_POL = RAJA::omp_for_exec;
+  using PAIR_EXEC_POL = RAJA::omp_parallel_for_exec;
   using PAIR_REDUCE_POL = RAJA::omp_reduce;
   using NODE_INNER_EXEC_POL = RAJA::omp_for_exec;
 #else
@@ -162,9 +162,6 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     //auto weightedNeighborSum_thread = weightedNeighborSum.threadCopy(threadStack);
     //auto massSecondMoment_thread = massSecondMoment.threadCopy(threadStack);
 
-//#pragma omp for
-    //for (auto kk = 0u; kk < npairs; ++kk) {
-      const auto start = Timing::currentTime();
       i = pairs[kk].i_node;
       j = pairs[kk].j_node;
       nodeListi = pairs[kk].i_list;
@@ -378,17 +375,6 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
         localMi += -mj*rij.dyad(gradWi);
         localMj += -mi*rij.dyad(gradWj);
       }
-
-      // Add timing info for work
-      const auto deltaTimePair = 0.5*Timing::difference(start, Timing::currentTime());
-//#pragma omp atomic
-//      nodeLists[nodeListi]->work()(i) += deltaTimePair;
-//#pragma omp atomic
-//      nodeLists[nodeListj]->work()(j) += deltaTimePair;
-      RAJA::atomicAdd<RAJA::auto_atomic>(&nodeLists[nodeListi]->work()(i), deltaTimePair);
-      RAJA::atomicAdd<RAJA::auto_atomic>(&nodeLists[nodeListj]->work()(j), deltaTimePair);
-
-  //  } // loop over pairs
 
     // Reduce the thread values to the master.
     //threadReduceFieldLists<Dimension>(threadStack);

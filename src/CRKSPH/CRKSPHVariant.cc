@@ -465,10 +465,6 @@ evaluateDerivatives(const typename Dimension::Scalar time,
          ++iItr) {
       const int i = *iItr;
 
-      // Prepare to accumulate the time.
-      const auto start = Timing::currentTime();
-      size_t ncalc = 0;
-
       // Get the state for node i.
       const auto& ri = position(nodeListi, i);
       const auto mi = mass(nodeListi, i);
@@ -677,9 +673,6 @@ evaluateDerivatives(const typename Dimension::Scalar time,
       // // DepsDti -= Pi/rhoi*DvDxi.Trace();
       // if (surfacePoint(nodeListi, i) > 1) DepsDti -= Pi/rhoi*DvDxi.Trace();
 
-      // Get the time for pairwise interactions.
-      const auto deltaTimePair = Timing::difference(start, Timing::currentTime())/max(size_t(1), ncalc);
-
       // Time evolution of the mass density.
       DrhoDti = -rhoi*DvDxi.Trace();
 
@@ -717,31 +710,6 @@ evaluateDerivatives(const typename Dimension::Scalar time,
                                                               connectivityMap,
                                                               nodeListi,
                                                               i);
-
-      // Increment the work for i.
-      worki += Timing::difference(start, Timing::currentTime());
-
-      // Now add the pairwise time for each neighbor we computed here.
-      for (auto nodeListj = 0; nodeListj != numNodeLists; ++nodeListj) {
-        const auto& connectivity = fullConnectivity[nodeListj];
-        if (connectivity.size() > 0) {
-          const auto firstGhostNodej = nodeLists[nodeListj]->firstGhostNode();
-          auto& workFieldj = nodeLists[nodeListj]->work();
-#if defined __INTEL_COMPILER
-#pragma vector always
-#endif
-          for (auto jItr = connectivity.begin();
-               jItr != connectivity.end();
-               ++jItr) {
-            const auto j = *jItr;
-            if (connectivityMap.calculatePairInteraction(nodeListi, i, 
-                                                         nodeListj, j,
-                                                         firstGhostNodej)) {
-              workFieldj(j) += deltaTimePair;
-            }
-          }
-        }
-      }
     }
   }
 }

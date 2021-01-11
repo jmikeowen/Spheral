@@ -162,7 +162,6 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     Tensor QPiij, QPiji;
     SymTensor sigmai, sigmaj;
 
-    const auto start = Timing::currentTime();
     int i = pairs[kk].i_node;
     int j = pairs[kk].j_node;
     int nodeListi = pairs[kk].i_list;
@@ -282,7 +281,6 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
       rhoSumi += mj*Wi;
       rhoSumj += mi*Wj;
     }
-
     // Contribution to the sum density correction
     rhoSumCorrectioni += mj * WQi / rhoj ;
     rhoSumCorrectionj += mi * WQj / rhoi ;
@@ -376,12 +374,6 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
       localMj += -mi*rij.dyad(gradWGj);
     }
 
-    // Add timing info for work
-    double deltaTimePair = 0.5*Timing::difference(start, Timing::currentTime());
-
-    RAJA::atomicAdd<RAJA::auto_atomic>(&nodeLists[nodeListi]->work()(i), deltaTimePair);
-    RAJA::atomicAdd<RAJA::auto_atomic>(&nodeLists[nodeListj]->work()(j), deltaTimePair);
-
   }); // loop over pairs
 
   // Reduce the thread values to master FieldList.
@@ -401,7 +393,6 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   weightedNeighborSum.getReduction(weightedNeighborSum_reducer);
   massSecondMoment.getReduction(massSecondMoment_reducer);
   DSDt.getReduction(DSDt_reducer);
-
 
   // Finish up the derivatives for each point.
 
