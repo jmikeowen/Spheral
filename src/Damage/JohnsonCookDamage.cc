@@ -56,7 +56,6 @@ JohnsonCookDamage(SolidNodeList<Dimension>& nodeList,
   mD2("D2_" + nodeList.name(), D2),
   mFailureStrain(SolidFieldNames::flaws, nodeList),
   mMeltSpecificEnergy(SolidFieldNames::meltSpecificEnergy, nodeList),
-  mNewEffectiveDamage(EffectiveTensorDamagePolicy<Dimension>::prefix() + SolidFieldNames::effectiveTensorDamage, nodeList),
   mD3(D3),
   mD4(D4),
   mD5(D5),
@@ -84,13 +83,8 @@ JohnsonCookDamage<Dimension>::
 evaluateDerivatives(const Scalar /*time*/,
                     const Scalar /*dt*/,
                     const DataBase<Dimension>& /*dataBase*/,
-                    const State<Dimension>& state,
-                    StateDerivatives<Dimension>& derivs) const {
-
-  // Fow now we update the effective damage as simply a copy of the damage.
-  const auto& D = state.field(state.buildFieldKey(SolidFieldNames::tensorDamage, mNodeList.name()), SymTensor::zero);
-  auto& Deff = derivs.field(state.buildFieldKey(EffectiveTensorDamagePolicy<Dimension>::prefix() + SolidFieldNames::effectiveTensorDamage, mNodeList.name()), SymTensor::zero);
-  Deff = D;
+                    const State<Dimension>& /*state*/,
+                    StateDerivatives<Dimension>& /*derivs*/) const {
 }
 
 //------------------------------------------------------------------------------
@@ -129,11 +123,9 @@ registerState(DataBase<Dimension>& /*dataBase*/,
                                                                          mTcrit));
   state.enroll(mFailureStrain, flawPolicy);
 
-  // Register the damage and effective damage.
+  // Register the damage
   PolicyPointer damagePolicy(new JohnsonCookDamagePolicy<Dimension>());
-  PolicyPointer effDamagePolicy(new EffectiveTensorDamagePolicy<Dimension>());
   state.enroll(mNodeList.damage(), damagePolicy);
-  state.enroll(mNodeList.effectiveDamage(), effDamagePolicy);
 
   // We also require the melt energy.
   PolicyPointer meltPolicy(new MeltEnergyPolicy<Dimension>());
@@ -147,8 +139,7 @@ template<typename Dimension>
 void
 JohnsonCookDamage<Dimension>::
 registerDerivatives(DataBase<Dimension>& /*dataBase*/,
-                    StateDerivatives<Dimension>& derivs) {
-  derivs.enroll(mNewEffectiveDamage);
+                    StateDerivatives<Dimension>& /*derivs*/) {
 }
 
 //------------------------------------------------------------------------------
@@ -164,18 +155,14 @@ applyGhostBoundaries(State<Dimension>& state,
   typedef typename State<Dimension>::KeyType Key;
   const Key nodeListName = this->nodeList().name();
   const Key DKey = state.buildFieldKey(SolidFieldNames::tensorDamage, nodeListName);
-  const Key DeffKey = state.buildFieldKey(SolidFieldNames::effectiveTensorDamage, nodeListName);
   CHECK(state.registered(DKey));
-  CHECK(state.registered(DeffKey));
   auto& D = state.field(DKey, SymTensor::zero);
-  auto& Deff = state.field(DeffKey, SymTensor::zero);
 
   // Apply ghost boundaries to the damage.
   for (ConstBoundaryIterator boundaryItr = this->boundaryBegin();
        boundaryItr != this->boundaryEnd();
        ++boundaryItr) {
     (*boundaryItr)->applyGhostBoundary(D);
-    (*boundaryItr)->applyGhostBoundary(Deff);
   }
 }
 
@@ -192,20 +179,14 @@ enforceBoundaries(State<Dimension>& state,
   typedef typename State<Dimension>::KeyType Key;
   const Key nodeListName = this->nodeList().name();
   const Key DKey = state.buildFieldKey(SolidFieldNames::tensorDamage, nodeListName);
-  const Key DeffKey = state.buildFieldKey(SolidFieldNames::effectiveTensorDamage, nodeListName);
-  const Key gradDKey = state.buildFieldKey(SolidFieldNames::damageGradient, nodeListName);
   CHECK(state.registered(DKey));
-  CHECK(state.registered(DeffKey));
-  CHECK(state.registered(gradDKey));
   auto& D = state.field(DKey, SymTensor::zero);
-  auto& Deff = state.field(DeffKey, SymTensor::zero);
 
   // Enforce!
   for (ConstBoundaryIterator boundaryItr = this->boundaryBegin(); 
        boundaryItr != this->boundaryEnd();
        ++boundaryItr) {
     (*boundaryItr)->enforceBoundary(D);
-    (*boundaryItr)->enforceBoundary(Deff);
   }
 }
 

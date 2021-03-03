@@ -53,6 +53,17 @@ member of a pair (maintaining symmetry)."""
 
     @PYB11returnpolicy("reference_internal")
     @PYB11const
+    def intersectionConnectivity(self,
+                                 pair = "const NodePairIdxType&"):
+        """Get the pre-computed intersection connectivity for points if it was requested.
+Note, this is different than what we expect for overlap connectivity: in this
+method the intersection points (k) are all points that points (i,j) have in
+common when (i,j) are ALSO neighbors.  Overlap connectivity may exist for
+(i,j) even if (i,j) are not neighbors, and this set will miss such points."""
+        return "const std::vector<std::vector<int>>&"
+
+    @PYB11returnpolicy("reference_internal")
+    @PYB11const
     def overlapConnectivityForNode(self,
                                    nodeList = "const NodeListType*",
                                    nodeID = "const int"):
@@ -73,7 +84,8 @@ member of a pair (maintaining symmetry)."""
                                          nodeListi = "const int",
                                          i = "const int",
                                          nodeListj = "const int",
-                                         j = "const int"):
+                                         j = "const int",
+                                         position = ("const FieldList<%(Dimension)s, Vector>&", "FieldList<%(Dimension)s, Vector>()")):
         "Compute the common neighbors for a pair of nodes."
         return "std::vector< std::vector<int> >"
 
@@ -149,8 +161,11 @@ member of a pair (maintaining symmetry)."""
     # Properties
     buildGhostConnectivity = PYB11property(doc="Are we building connectivity for ghost nodes?")
     buildOverlapConnectivity = PYB11property(doc="Are we building connectivity for nodes that overlap?")
+    buildIntersectionConnectivity = PYB11property(doc="Are we building the connectivity intersection for nodes that interact?")
     nodeLists = PYB11property("const std::vector<const NodeListType*>&", "nodeLists",
                               returnpolicy="reference",
                               doc="The set of NodeLists we have connectivity for")
     nodePairList = PYB11property(returnpolicy="reference",
                                  doc="The connectivity as a set of (nodeListi, i, nodeListj, j)")
+    coupling = PYB11property("const NodeCoupling&", returnpolicy="reference",
+                             doc="The coupling functor for pairs of nodes")

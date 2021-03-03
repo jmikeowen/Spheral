@@ -17,9 +17,7 @@ struct SolidFieldNames {
   static const std::string plasticStrainRate;
   static const std::string scalarDamage;
   static const std::string tensorDamage;
-  static const std::string effectiveTensorDamage;
-  static const std::string damageGradient;
-  static const std::string damageHat;
+  static const std::string damageCoupling;
   static const std::string strain;
   static const std::string strainTensor;
   static const std::string effectiveStrainTensor;

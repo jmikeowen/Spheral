@@ -9,7 +9,7 @@ SRC_DIR=
 INSTALL_DIR=
 CMAKE_ARGS=
 
-while getopts "s:i:D:C:" name;
+while getopts "s:i:h:D:C:" name;
 do
   case $name in
   s)  SRC_DIR="$OPTARG"
@@ -31,6 +31,13 @@ do
         fi
       fi
       ;;
+  h)  HOST_CONFIGS_DIR="$OPTARG"
+      printf 'Option -h host_configs_dir "%s" specified\n' "$HOST_CONFIGS_DIR"
+      if [ -d $PWD/$HOST_CONFIGS_DIR ]
+      then
+        HOST_CONFIGS_DIR=$PWD/$HOST_CONFIGS_DIR
+      fi
+      ;;
   D)  CMAKE_ARGS=$CMAKE_ARGS"-D$OPTARG ";;
   C)  CMAKE_ARGS=$CMAKE_ARGS"-C $OPTARG ";;
   ?)  printf "Usage: %s: [-d Spheral source directory] [CMake args ...]\n" $0
@@ -47,6 +54,11 @@ if [ ! -z "$INSTALL_DIR" ]; then
   printf 'Using install_dir "%s"\n' "$INSTALL_DIR"
 else
   INSTALL_DIR=../install
+fi
+if [ ! -z "$HOST_CONFIGS_DIR" ]; then
+  printf 'Using host_configs_dir "%s"\n' "$HOST_CONFIGS_DIR"
+else
+  HOST_CONFIGS_DIR=$SRC_DIR/host-configs
 fi
 
 if [ ! -z "$CMAKE_ARGS" ]; then

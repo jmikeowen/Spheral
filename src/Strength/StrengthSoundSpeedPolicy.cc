@@ -27,6 +27,7 @@ StrengthSoundSpeedPolicy<Dimension>::
 StrengthSoundSpeedPolicy():
   SoundSpeedPolicy<Dimension>() {
   this->addDependency(HydroFieldNames::pressure);
+  this->addDependency(SolidFieldNames::tensorDamage);
 }
 
 //------------------------------------------------------------------------------
@@ -53,27 +54,28 @@ update(const KeyType& key,
   StateBase<Dimension>::splitFieldKey(key, fieldKey, nodeListKey);
   REQUIRE(fieldKey == HydroFieldNames::soundSpeed and 
           nodeListKey == UpdatePolicyBase<Dimension>::wildcard());
-  FieldList<Dimension, Scalar> stateFields = state.fields(fieldKey, Scalar());
-  const unsigned numFields = stateFields.numFields();
+  auto stateFields = state.fields(fieldKey, Scalar());
+  const auto numFields = stateFields.numFields();
 
   // Have the base class set the initial sound speed.
   SoundSpeedPolicy<Dimension>::update(key, state, derivs, multiplier, t, dt);
 
   // Get the density, energy, and pressure fields from the state.
-  const FieldList<Dimension, Scalar> rho = state.fields(HydroFieldNames::massDensity, 0.0);
-  const FieldList<Dimension, Scalar> eps = state.fields(HydroFieldNames::specificThermalEnergy, 0.0);
-  const FieldList<Dimension, Scalar> P = state.fields(HydroFieldNames::pressure, 0.0);
+  const auto rho = state.fields(HydroFieldNames::massDensity, 0.0);
+  const auto eps = state.fields(HydroFieldNames::specificThermalEnergy, 0.0);
+  const auto P = state.fields(HydroFieldNames::pressure, 0.0);
+  const auto D = state.fields(SolidFieldNames::tensorDamage, SymTensor::zero);
 
   // Walk the individual fields.
-  for (unsigned k = 0; k != numFields; ++k) {
+  for (auto k = 0u; k < numFields; ++k) {
 
     // Get the strength model.  This cast is ugly, but is a work-around for now.
-    const SolidNodeList<Dimension>* solidNodeListPtr = dynamic_cast<const SolidNodeList<Dimension>*>(stateFields[k]->nodeListPtr());
+    const auto* solidNodeListPtr = dynamic_cast<const SolidNodeList<Dimension>*>(stateFields[k]->nodeListPtr());
     CHECK(solidNodeListPtr != 0);
-    const StrengthModel<Dimension>& strengthModel = solidNodeListPtr->strengthModel();
+    const auto& strengthModel = solidNodeListPtr->strengthModel();
 
     // Set the full sound speed.
-    if (strengthModel.providesSoundSpeed()) strengthModel.soundSpeed(*stateFields[k], *rho[k], *eps[k], *P[k], *stateFields[k]);
+    if (strengthModel.providesSoundSpeed()) strengthModel.soundSpeed(*stateFields[k], *rho[k], *eps[k], *P[k], *stateFields[k], *D[k]);
   }
 }
 

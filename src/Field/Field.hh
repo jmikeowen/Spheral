@@ -48,6 +48,7 @@ public:
   typedef typename Dimension::SymTensor SymTensor;
   
   typedef typename FieldBase<Dimension>::FieldName FieldName;
+  typedef Dimension FieldDimension;
   typedef DataType FieldDataType;
   typedef DataType value_type;      // STL compatibility.
 

@@ -5,7 +5,7 @@
 #include "Utilities/CounterClockwiseComparator.hh"
 #include "Utilities/sort_permutation.hh"
 
-#include "Geometry/polyclipper.hh"
+#include "Geometry/PolyClipperUtilities.hh"
 
 #include <algorithm>
 #include <set>
@@ -39,11 +39,11 @@ Dim<2>::FacetedVolume clipFacetedVolume(const Dim<2>::FacetedVolume& poly,
   if (nplanes == 0) return poly;
 
   // Construct the PolyClipper version of our polygon.
-  PolyClipper::Polygon poly2d;
-  PolyClipper::convertToPolygon(poly2d, poly);
+  PolyClipperPolygon poly2d;
+  convertToPolyClipper(poly2d, poly);
 
   // Now the planes.
-  vector<PolyClipper::Plane2d> planes2d(nplanes);
+  vector<PolyClipperPlane2d> planes2d(nplanes);
   for (auto i = 0u; i < nplanes; ++i) {
     const Vector& nhat = planes[i].normal();
     const Vector& p = planes[i].point();
@@ -52,7 +52,7 @@ Dim<2>::FacetedVolume clipFacetedVolume(const Dim<2>::FacetedVolume& poly,
   }
 
   // Sort the planes by distance -- lets us clip more efficiently.
-  std::sort(planes2d.begin(), planes2d.end(), [](const PolyClipper::Plane2d& lhs, const PolyClipper::Plane2d& rhs) { return lhs.dist < rhs.dist; });
+  std::sort(planes2d.begin(), planes2d.end(), [](const PolyClipperPlane2d& lhs, const PolyClipperPlane2d& rhs) { return lhs.dist < rhs.dist; });
 
   // Do the deed.
   PolyClipper::clipPolygon(poly2d, planes2d);
@@ -64,7 +64,7 @@ Dim<2>::FacetedVolume clipFacetedVolume(const Dim<2>::FacetedVolume& poly,
   PolyClipper::moments(area, cent, poly2d);
   const auto tol = 1.0e-10 * area;
   PolyClipper::collapseDegenerates(poly2d, tol);
-  PolyClipper::convertFromPolygon(result, poly2d);
+  convertFromPolyClipper(result, poly2d);
   return result;
 }
 
@@ -82,11 +82,11 @@ Dim<3>::FacetedVolume clipFacetedVolume(const Dim<3>::FacetedVolume& poly,
   if (nplanes == 0) return poly;
 
   // Construct the PolyClipper version of our polygon.
-  PolyClipper::Polyhedron poly3d;
-  PolyClipper::convertToPolyhedron(poly3d, poly);
+  PolyClipperPolyhedron poly3d;
+  convertToPolyClipper(poly3d, poly);
 
   // Now the planes.
-  vector<PolyClipper::Plane3d> planes3d(nplanes);
+  vector<PolyClipperPlane3d> planes3d(nplanes);
   for (auto i = 0u; i < nplanes; ++i) {
     const Vector& nhat = planes[i].normal();
     const Vector& p = planes[i].point();
@@ -95,7 +95,7 @@ Dim<3>::FacetedVolume clipFacetedVolume(const Dim<3>::FacetedVolume& poly,
   }
 
   // Sort the planes by distance -- lets us clip more efficiently.
-  std::sort(planes3d.begin(), planes3d.end(), [](const PolyClipper::Plane3d& lhs, const PolyClipper::Plane3d& rhs) { return lhs.dist < rhs.dist; });
+  std::sort(planes3d.begin(), planes3d.end(), [](const PolyClipperPlane3d& lhs, const PolyClipperPlane3d& rhs) { return lhs.dist < rhs.dist; });
 
   // Do the deed.
   PolyClipper::clipPolyhedron(poly3d, planes3d);
@@ -107,7 +107,7 @@ Dim<3>::FacetedVolume clipFacetedVolume(const Dim<3>::FacetedVolume& poly,
   PolyClipper::moments(area, cent, poly3d);
   const auto tol = 1.0e-10 * area;
   PolyClipper::collapseDegenerates(poly3d, tol);
-  PolyClipper::convertFromPolyhedron(result, poly3d);
+  convertFromPolyClipper(result, poly3d);
   return result;
 }
 
@@ -124,11 +124,11 @@ double clippedVolume(const Dim<2>::FacetedVolume& poly,
   if (nplanes == 0) return poly.volume();
 
   // Construct the PolyClipper version of our polygon.
-  PolyClipper::Polygon poly2d;
-  PolyClipper::convertToPolygon(poly2d, poly);
+  PolyClipperPolygon poly2d;
+  convertToPolyClipper(poly2d, poly);
 
   // Now the planes.
-  vector<PolyClipper::Plane2d> planes2d(nplanes);
+  vector<PolyClipperPlane2d> planes2d(nplanes);
   for (auto i = 0u; i < nplanes; ++i) {
     const Vector& nhat = planes[i].normal();
     const Vector& p = planes[i].point();
@@ -137,7 +137,7 @@ double clippedVolume(const Dim<2>::FacetedVolume& poly,
   }
 
   // Sort the planes by distance -- lets us clip more efficiently.
-  std::sort(planes2d.begin(), planes2d.end(), [](const PolyClipper::Plane2d& lhs, const PolyClipper::Plane2d& rhs) { return lhs.dist < rhs.dist; });
+  std::sort(planes2d.begin(), planes2d.end(), [](const PolyClipperPlane2d& lhs, const PolyClipperPlane2d& rhs) { return lhs.dist < rhs.dist; });
 
   // Do the deed.
   PolyClipper::clipPolygon(poly2d, planes2d);
@@ -162,20 +162,20 @@ double clippedVolume(const Dim<3>::FacetedVolume& poly,
   if (nplanes == 0) return poly.volume();
 
   // Construct the PolyClipper version of our polyhedron.
-  PolyClipper::Polyhedron poly3d;
-  PolyClipper::convertToPolyhedron(poly3d, poly);
+  PolyClipperPolyhedron poly3d;
+  convertToPolyClipper(poly3d, poly);
 
   // Now the planes.
-  vector<PolyClipper::Plane3d> planes3d(nplanes);
+  vector<PolyClipperPlane3d> planes3d(nplanes);
   for (auto i = 0u; i < nplanes; ++i) {
     const Vector& nhat = planes[i].normal();
     const Vector& p = planes[i].point();
-    planes3d[i].normal = nhat;
+    planes3d[i].normal = nhat.x();
     planes3d[i].dist = -p.dot(nhat);
   }
 
   // Sort the planes by distance -- lets us clip more efficiently.
-  std::sort(planes3d.begin(), planes3d.end(), [](const PolyClipper::Plane3d& lhs, const PolyClipper::Plane3d& rhs) { return lhs.dist < rhs.dist; });
+  std::sort(planes3d.begin(), planes3d.end(), [](const PolyClipperPlane3d& lhs, const PolyClipperPlane3d& rhs) { return lhs.dist < rhs.dist; });
 
   // Do the deed.
   PolyClipper::clipPolyhedron(poly3d, planes3d);

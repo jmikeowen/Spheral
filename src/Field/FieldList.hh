@@ -48,6 +48,7 @@ public:
   typedef typename Dimension::Tensor Tensor;
   typedef typename Dimension::SymTensor SymTensor;
   
+  typedef Dimension FieldDimension;
   typedef DataType FieldDataType;
 
   typedef FieldBase<Dimension>* BaseElementType;

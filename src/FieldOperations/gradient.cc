@@ -147,6 +147,142 @@ gradient(const FieldList<Dimension, DataType>& fieldList,
   return result;
 }
 
+template<typename Dimension, typename DataType>
+FieldList<Dimension, std::vector<typename MathTraits<Dimension, DataType>::GradientType>>
+gradient(const FieldList<Dimension, std::vector<DataType>>& fieldList,
+         const FieldList<Dimension, typename Dimension::Vector>& position,
+         const FieldList<Dimension, typename Dimension::Scalar>& /*weight*/,
+         const FieldList<Dimension, typename Dimension::Scalar>& mass,
+         const FieldList<Dimension, typename Dimension::Scalar>& rho,
+         const FieldList<Dimension, typename Dimension::SymTensor>& Hfield,
+         const TableKernel<Dimension>& kernel) {
+
+  // Typedef's to ease typing/understandability.
+  typedef typename Dimension::Scalar Scalar;
+  typedef typename Dimension::Vector Vector;
+  typedef typename Dimension::SymTensor SymTensor;
+  typedef typename MathTraits<Dimension, DataType>::GradientType GradientType;
+
+  // Get size of vector
+  const auto vectorSize = (fieldList.numInternalNodes() > 0 ?
+                           fieldList(fieldList.internalNodeBegin()).size() :
+                           0);
+  
+ // Return FieldList.
+  FieldList<Dimension, std::vector<GradientType>> result;
+  vector< vector<bool> > flagNodeDone(fieldList.numFields());
+  result.copyFields();
+  for (typename FieldList<Dimension, std::vector<DataType>>::const_iterator
+         fieldItr = fieldList.begin();
+       fieldItr < fieldList.end(); 
+       ++fieldItr) {
+    result.appendField(Field<Dimension, std::vector<GradientType>>("grad",
+                                                                   (*fieldItr)->nodeList(),
+                                                                   std::vector<GradientType>(vectorSize, GradientType::zero)));
+    flagNodeDone[fieldItr - fieldList.begin()].resize((*fieldItr)->nodeListPtr()->numInternalNodes(), false);
+  }
+
+  // Loop over all the elements in the input FieldList.
+  for (InternalNodeIterator<Dimension> nodeItr = fieldList.internalNodeBegin();
+       nodeItr < fieldList.internalNodeEnd();
+       ++nodeItr) {
+
+    // Check if this node has been done yet.
+    if (!flagNodeDone[nodeItr.fieldID()][nodeItr.nodeID()]) {
+
+      // We will do the batch of master nodes associated with this node together.
+      // Set the neighbor information.
+      vector<vector<int>> masterLists, coarseNeighbors, refineNeighbors;
+      fieldList.setMasterNodeLists(position(nodeItr), Hfield(nodeItr), masterLists, coarseNeighbors);
+
+      // Now loop over all the master nodes.
+      for (MasterNodeIterator<Dimension> masterItr = fieldList.masterNodeBegin(masterLists);
+           masterItr < fieldList.masterNodeEnd();
+           ++masterItr) {
+        CHECK(flagNodeDone[masterItr.fieldID()][masterItr.nodeID()] == false);
+
+        // Set the refined neighbor information for this master node.
+        fieldList.setRefineNodeLists(position(masterItr), Hfield(masterItr), coarseNeighbors, refineNeighbors);
+
+        // Loop over the refined neighbors.
+        const Vector& ri = position(masterItr);
+        const SymTensor& Hi = Hfield(masterItr);
+        const Scalar& rhoi = rho(masterItr);
+        const std::vector<DataType>& fieldi = fieldList(masterItr);
+
+        for (RefineNodeIterator<Dimension> neighborItr = fieldList.refineNodeBegin(refineNeighbors);
+             neighborItr < fieldList.refineNodeEnd();
+             ++neighborItr) {
+
+          const Vector& rj = position(neighborItr);
+          const SymTensor& Hj = Hfield(neighborItr);
+          const Scalar& mj = mass(neighborItr);
+          const std::vector<DataType>& fieldj = fieldList(neighborItr);
+
+          const Vector rij = ri - rj;
+          const Vector etai = Hi*rij;
+          const Vector etaj = Hj*rij;
+          const Vector etaiNorm = etai.unitVector();
+          const Vector etajNorm = etaj.unitVector();
+
+          // Get the symmetrized kernel gradient for this node pair.
+          Vector gradWij;
+          switch((*fieldList.begin())->nodeListPtr()->neighbor().neighborSearchType()) {
+          case NeighborSearchType::GatherScatter:
+            gradWij = 0.5*(Hi*etaiNorm*kernel.grad(etai, Hi) + 
+                           Hj*etajNorm*kernel.grad(etaj, Hj));
+            break;
+
+          case NeighborSearchType::Gather:
+            gradWij = Hi*etaiNorm*kernel.grad(etai, Hi);
+            break;
+
+          case NeighborSearchType::Scatter:
+            gradWij = Hj*etajNorm*kernel.grad(etaj, Hj);
+            break;
+
+          default:
+            VERIFY2(false, "Unhandled neighbor search type.");
+          }
+
+          // Add this nodes contribution to the master value.
+          for (auto m = 0u; m < vectorSize; ++m) {
+            CHECK(result(masterItr).size() == vectorSize &&
+                  fieldj.size() == vectorSize &&
+                  fieldi.size() == vectorSize);
+            result(masterItr)[m] += mj*(fieldj[m] - fieldi[m])*gradWij;
+          }
+        }
+
+        // Normalize by density.
+        CHECK(rhoi > 0.0);
+        for (auto m = 0u; m < vectorSize; ++m) {
+          CHECK(result(masterItr).size() == vectorSize);
+          result(masterItr)[m] /= rhoi;
+        }
+
+        // This master node is finished.
+        flagNodeDone[masterItr.fieldID()][masterItr.nodeID()] = true;
+      }
+    }
+  }
+
+  // After we're done, all nodes in all NodeLists should be flagged as done.
+  for (typename vector< vector<bool> >::const_iterator
+         flagNodeItr = flagNodeDone.begin();
+       flagNodeItr < flagNodeDone.end();
+       ++flagNodeItr) {
+    int checkcount = count(flagNodeItr->begin(), flagNodeItr->end(), false);
+    if (checkcount > 0) {
+      cerr << "Error in FieldList::gradient: Not all values determined on exit "
+           << checkcount << endl;
+    }
+    CHECK(checkcount == 0);
+  }
+
+  return result;
+}
+
 //------------------------------------------------------------------------------
 // The limiter method.
 //------------------------------------------------------------------------------

@@ -15,6 +15,7 @@
 #include "Utilities/timingUtilities.hh"
 #include "Utilities/mortonOrderIndices.hh"
 #include "Utilities/PairComparisons.hh"
+#include "Utilities/pointDistances.hh"
 #include "Utilities/Timer.hh"
 
 #include <algorithm>
@@ -36,6 +37,8 @@ extern Timer TIME_ConnectivityMap_cutConnectivity;
 extern Timer TIME_ConnectivityMap_valid;
 extern Timer TIME_ConnectivityMap_computeConnectivity;
 extern Timer TIME_ConnectivityMap_computeOverlapConnectivity;
+extern Timer TIME_ConnectivityMap_computeIntersectionConnectivity;
+extern Timer TIME_ConnectivityMap_precomputeIntersectionConnectivity;
 
 namespace Spheral {
 
@@ -134,9 +137,12 @@ ConnectivityMap():
   mNodeLists(),
   mBuildGhostConnectivity(false),
   mBuildOverlapConnectivity(false),
+  mBuildIntersectionConnectivity(false),
   mConnectivity(),
   mNodeTraversalIndices(),
-  mKeys(FieldStorageType::CopyFields) {
+  mKeys(FieldStorageType::CopyFields),
+  mCouplingPtr(std::make_shared<NodeCoupling>()),
+  mIntersectionConnectivity() {
 }
 
 //------------------------------------------------------------------------------
@@ -288,6 +294,28 @@ patchConnectivity(const FieldList<Dimension, int>& flags,
     // sort(mNodePairList.begin(), mNodePairList.end(), [this](const NodePairIdxType& a, const NodePairIdxType& b) { return (mKeys(a.i_list, a.i_node) + mKeys(a.j_list, a.j_node)) < (mKeys(b.i_list, b.i_node) + mKeys(b.j_list, b.j_node)); });
     // sort(mNodePairList.begin(), mNodePairList.end(), [this](const NodePairIdxType& a, const NodePairIdxType& b) { return hashKeys(mKeys(a.i_list, a.i_node), mKeys(a.j_list, a.j_node)) < hashKeys(mKeys(b.i_list, b.i_node), mKeys(b.j_list, b.j_node)); });
     sortPairs(mNodePairList, mKeys);
+  } else {
+    std::sort(mNodePairList.begin(), mNodePairList.end());
+  }
+
+  // Patch the intersection lists if we're maintaining them
+  if (mBuildIntersectionConnectivity) {
+    IntersectionConnectivityContainer intersection;
+    for (const auto& element: mIntersectionConnectivity) {
+      auto pair = element.first;
+      const auto& oldintersect = element.second;
+      if (flags(pair.i_list, pair.i_node) != 0 and flags(pair.j_list, pair.j_node) != 0) {
+        pair.i_node = old2new(pair.i_list, pair.i_node);
+        pair.j_node = old2new(pair.j_list, pair.j_node);
+        vector<vector<int>> newintersect(numNodeLists);
+        for (auto klist = 0u; klist < numNodeLists; ++klist) {
+          for (const auto k: oldintersect[klist]) {
+            if (flags(klist, k) != 0) newintersect[klist].push_back(old2new(klist, k));
+          }
+        }
+        intersection[pair] = newintersect;
+      }
+    }
   }
 
   // You can't check valid yet 'cause the NodeLists have not been resized
@@ -305,41 +333,68 @@ template<typename Dimension>
 vector<vector<int> >
 ConnectivityMap<Dimension>::
 connectivityIntersectionForNodes(const int nodeListi, const int i,
-                                 const int nodeListj, const int j) const {
+                                 const int nodeListj, const int j,
+                                 const FieldList<Dimension, typename Dimension::Vector>& position) const {
 
   // Pre-conditions.
+  TIME_ConnectivityMap_computeIntersectionConnectivity.start();
   const auto numNodeLists = mNodeLists.size();
-  REQUIRE(nodeListi < (int)numNodeLists and
-          nodeListj < (int)numNodeLists);
+  const auto domainDecompIndependent = NodeListRegistrar<Dimension>::instance().domainDecompositionIndependent();
+  const auto ghostConnectivity = (mBuildGhostConnectivity or
+                                  mBuildOverlapConnectivity or
+                                  domainDecompIndependent);
   const auto firstGhostNodei = mNodeLists[nodeListi]->firstGhostNode();
   const auto firstGhostNodej = mNodeLists[nodeListj]->firstGhostNode();
-  REQUIRE(i < (int)firstGhostNodei or j < (int)firstGhostNodej);
+  const bool usePosition = (position.numFields() == numNodeLists);
+  REQUIRE(nodeListi < (int)numNodeLists and
+          nodeListj < (int)numNodeLists);
+  REQUIRE(ghostConnectivity or i < (int)firstGhostNodei or j < (int)firstGhostNodej);
+  REQUIRE(position.numFields() == numNodeLists or position.numFields() == 0);
 
   // Prepare the result.
   vector<vector<int>> result(numNodeLists);
 
   // If both nodes are internal, we simply intersect their neighbor lists.
-  if (i < (int)firstGhostNodei and j < (int)firstGhostNodej) {
-    vector<vector<int>> neighborsi = this->connectivityForNode(nodeListi, i);
-    vector<vector<int>> neighborsj = this->connectivityForNode(nodeListj, j);
+  if (ghostConnectivity or (i < (int)firstGhostNodei and j < (int)firstGhostNodej)) {
+    const auto& neighborsi = this->connectivityForNode(nodeListi, i);
+    const auto& neighborsj = this->connectivityForNode(nodeListj, j);
     CHECK(neighborsi.size() == numNodeLists);
     CHECK(neighborsj.size() == numNodeLists);
-    neighborsi[nodeListi].push_back(i);
-    neighborsj[nodeListj].push_back(j);
-    for (unsigned k = 0; k != numNodeLists; ++k) {
-      sort(neighborsi[k].begin(), neighborsi[k].end());
-      sort(neighborsj[k].begin(), neighborsj[k].end());
-      set_intersection(neighborsi[k].begin(), neighborsi[k].end(),
-                       neighborsj[k].begin(), neighborsj[k].end(),
-                       back_inserter(result[k]));
+    vector<int> neighborsijk;
+    Vector posi, posj, b;
+    if (usePosition) {
+      posi = position(nodeListi, i);
+      posj = position(nodeListj, j);
+    }
+    for (auto klist = 0u; klist < numNodeLists; ++klist) {
+      neighborsijk.clear();
+      if (domainDecompIndependent) {
+        std::set_intersection(neighborsi[klist].begin(), neighborsi[klist].end(),
+                              neighborsj[klist].begin(), neighborsj[klist].end(),
+                              std::back_inserter(neighborsijk),
+                              [&](const int a, const int b) { return mKeys(klist, a) < mKeys(klist, b); });
+      } else {
+        std::set_intersection(neighborsi[klist].begin(), neighborsi[klist].end(),
+                              neighborsj[klist].begin(), neighborsj[klist].end(),
+                              std::back_inserter(neighborsijk));
+      }
+      if (usePosition) {
+        std::copy_if(neighborsijk.begin(), neighborsijk.end(), std::back_inserter(result[klist]),
+                     [&](int k) { return (closestPointOnSegment(position(klist, k), posi, posj, b)); });
+      } else {
+        result[klist] = neighborsijk;
+      }
     }
   } else if (i < (int)firstGhostNodei) {
     result = this->connectivityForNode(nodeListi, i);
   } else {
     result = this->connectivityForNode(nodeListj, j);
   }
+  result[nodeListi].push_back(i);
+  result[nodeListj].push_back(j);
 
   // That's it.
+  TIME_ConnectivityMap_computeIntersectionConnectivity.stop();
   return result;
 }
 
@@ -384,13 +439,18 @@ connectivityUnionForNodes(const int nodeListi, const int i,
 
   // Pre-conditions.
   const unsigned numNodeLists = mNodeLists.size();
-  REQUIRE(nodeListi < (int)numNodeLists and
-          nodeListj < (int)numNodeLists);
+  const auto domainDecompIndependent = NodeListRegistrar<Dimension>::instance().domainDecompositionIndependent();
+  const auto ghostConnectivity = (mBuildGhostConnectivity or
+                                  mBuildOverlapConnectivity or
+                                  domainDecompIndependent);
   const unsigned firstGhostNodei = mNodeLists[nodeListi]->firstGhostNode();
   const unsigned firstGhostNodej = mNodeLists[nodeListj]->firstGhostNode();
+  CONTRACT_VAR(ghostConnectivity);
   CONTRACT_VAR(firstGhostNodei);
   CONTRACT_VAR(firstGhostNodej);
-  REQUIRE(i < (int)firstGhostNodei or j < (int)firstGhostNodej);
+  REQUIRE(nodeListi < (int)numNodeLists and
+          nodeListj < (int)numNodeLists);
+  REQUIRE(ghostConnectivity or i < (int)firstGhostNodei or j < (int)firstGhostNodej);
 
   // Do the deed.
   vector<vector<int> > result(numNodeLists);
@@ -753,6 +813,7 @@ computeConnectivity() {
     mNodeTraversalIndices = vector<vector<int> >(numNodeLists);
   }
   mNodePairList.clear();
+  mIntersectionConnectivity.clear();
 
   // If we're trying to be domain decomposition independent, we need a key to sort
   // by that will give us a unique ordering regardless of position.  The Morton ordered
@@ -798,7 +859,7 @@ computeConnectivity() {
   //   trefine = std::clock_t(0), 
   //   twalk = std::clock_t(0);
   CHECK(mConnectivity.size() == connectivitySize);
-  for (auto iiNodeList = 0u; iiNodeList != numNodeLists; ++iiNodeList) {
+  for (auto iiNodeList = 0u; iiNodeList < numNodeLists; ++iiNodeList) {
     const auto etaMax = mNodeLists[iiNodeList]->neighbor().kernelExtent();
 
     // Iterate over the nodes in this NodeList, and look for any that are not done yet.
@@ -867,10 +928,8 @@ computeConnectivity() {
                     // We don't include self-interactions.
                     if ((iNodeList != jNodeList) or (i != j)) {
                       neighbors[jNodeList].push_back(j);
-                      if (calculatePairInteraction(iNodeList, i, jNodeList, j, firstGhostNodej)) 
-                        nodePairs_private.push_back(NodePairIdxType(i, iNodeList, j, jNodeList));
-                      if (domainDecompIndependent) 
-                        keys[jNodeList].push_back(pair<int, Key>(j, mKeys(jNodeList, j)));
+                      if (calculatePairInteraction(iNodeList, i, jNodeList, j, firstGhostNodej)) nodePairs_private.push_back(NodePairIdxType(i, iNodeList, j, jNodeList));
+                      if (domainDecompIndependent) keys[jNodeList].push_back(pair<int, Key>(j, mKeys(jNodeList, j)));
                     }
                   }
                 }
@@ -968,6 +1027,8 @@ computeConnectivity() {
     // sort(mNodePairList.begin(), mNodePairList.end(), [this](const NodePairIdxType& a, const NodePairIdxType& b) { return (mKeys(a.i_list, a.i_node) + mKeys(a.j_list, a.j_node)) < (mKeys(b.i_list, b.i_node) + mKeys(b.j_list, b.j_node)); });
     // sort(mNodePairList.begin(), mNodePairList.end(), [this](const NodePairIdxType& a, const NodePairIdxType& b) { return hashKeys(mKeys(a.i_list, a.i_node), mKeys(a.j_list, a.j_node)) < hashKeys(mKeys(b.i_list, b.i_node), mKeys(b.j_list, b.j_node)); });
     sortPairs(mNodePairList, mKeys);
+  } else {
+    std::sort(mNodePairList.begin(), mNodePairList.end());
   }
 
   // Do we need overlap connectivity?
@@ -1036,6 +1097,31 @@ computeConnectivity() {
       }
     }
     TIME_ConnectivityMap_computeOverlapConnectivity.stop();
+  }
+
+  // Are we building intersection connectivity?
+  if (mBuildIntersectionConnectivity) {
+    TIME_ConnectivityMap_precomputeIntersectionConnectivity.start();
+    const auto npairs = mNodePairList.size();
+#pragma omp parallel
+    {
+      IntersectionConnectivityContainer intersection_private;
+      Vector b;
+#pragma omp for
+      for (auto k = 0u; k < npairs; ++k) {
+        const auto& pair = mNodePairList[k];
+        intersection_private[pair] = this->connectivityIntersectionForNodes(pair.i_list, pair.i_node,
+                                                                            pair.j_list, pair.j_node,
+                                                                            position);
+      }
+#pragma omp critical
+      {
+        for (const auto& element: intersection_private) {
+          mIntersectionConnectivity[element.first] = element.second;
+        }
+      } // omp critical
+    }   // omp parallel
+    TIME_ConnectivityMap_precomputeIntersectionConnectivity.stop();
   }
 
   // {

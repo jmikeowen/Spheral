@@ -25,7 +25,7 @@ not fill out the complete physics package interface."""
                nodeList = "SolidNodeList<%(Dimension)s>&",
                W = "const TableKernel<%(Dimension)s>&",
                crackGrowthMultiplier = "const double",
-               flawAlgorithm = "const EffectiveFlawAlgorithm",
+               damageCouplingAlgorithm  = "const DamageCouplingAlgorithm",
                flaws = "const FlawStorageType&"):
         "Constructor"
 
@@ -43,27 +43,42 @@ not fill out the complete physics package interface."""
         return "void"
 
     @PYB11virtual
-    def preStepInitialize(self,
-                          dataBase = "const DataBase<%(Dimension)s>&",
-                          state = "State<%(Dimension)s>&",
-                          derivs = "StateDerivatives<%(Dimension)s>&"):
-        return "void"
-
-    @PYB11virtual
     def registerState(self,
                       dataBase = "DataBase<%(Dimension)s>&",
                       state = "State<%(Dimension)s>&"):
         return "void"
 
     @PYB11virtual 
-    def postStateUpdate(self,
-                        time = "const Scalar",
-                        dt = "const Scalar",
-                        dataBase = "const DataBase<%(Dimension)s>&",
-                        state = "State<%(Dimension)s>&",
-                        derivs = "StateDerivatives<%(Dimension)s>&"):
+    def initialize(self,
+                   time = "const Scalar",
+                   dt = "const Scalar",
+                   dataBase = "const DataBase<%(Dimension)s>&",
+                   state = "State<%(Dimension)s>&",
+                   derivs = "StateDerivatives<%(Dimension)s>&"):
+        "Initialize before computing the derivatives."
         return "void"
 
+    @PYB11virtual
+    def finalize(self,
+                 time = "const Scalar", 
+                 dt = "const Scalar",
+                 dataBase = "DataBase<%(Dimension)s>&", 
+                 state = "State<%(Dimension)s>&",
+                 derivs = "StateDerivatives<%(Dimension)s>&"):
+        "Similarly packages might want a hook to do some post-step finalizations.  Really we should rename this post-step finalize."
+        return "void"
+
+    @PYB11virtual
+    @PYB11const
+    def requireGhostConnectivity(self):
+        "Some physics algorithms require ghost connectivity to be constructed."
+        return "bool"
+
+    @PYB11virtual
+    @PYB11const
+    def requireIntersectionConnectivity(self):
+        "Some physics algorithms require intersection connectivity to be constructed."
+        return "bool"
 
     #...........................................................................
     # Methods
@@ -83,15 +98,16 @@ not fill out the complete physics package interface."""
     kernel = PYB11property("const TableKernel<%(Dimension)s>&", returnpolicy="reference_internal",
                            doc="Access the kernel.")
     crackGrowthMultiplier = PYB11property("double")
-    effectiveFlawAlgorithm = PYB11property("EffectiveFlawAlgorithm")
+    damageCouplingAlgorithm = PYB11property("DamageCouplingAlgorithm", "damageCouplingAlgorithm",
+                                            doc="The choice for coupling with damaged nodes.")
+    nodeCoupling = PYB11property("const NodeCoupling&", "nodeCoupling",
+                                 doc="The NodeCoupling implementation")
     excludeNodes = PYB11property("std::vector<int>", "excludeNodes", "excludeNodes",
                                  doc="Allow the user to specify a set of nodes to be excluded from damage.")
     youngsModulus = PYB11property("const Field<%(Dimension)s, Scalar>&", returnpolicy="reference_internal")
     longitudinalSoundSpeed = PYB11property("const Field<%(Dimension)s, Scalar>&", returnpolicy="reference_internal")
     flaws = PYB11property("const FlawStorageType&", returnpolicy="reference_internal",
                           doc="The raw set of flaw activation strains per point")
-    effectiveFlaws = PYB11property("const Field<%(Dimension)s, Scalar>&", returnpolicy="reference_internal",
-                                   doc="The processed flaw activation strain used per point -- depends on the choice for effectiveFlawAlgorithm")
     sumActivationEnergiesPerNode = PYB11property("Field<%(Dimension)s, Scalar>", 
                                                  doc="Compute a Field with the sum of the activation energies per node.")
     numFlawsPerNode = PYB11property("Field<%(Dimension)s, Scalar>",

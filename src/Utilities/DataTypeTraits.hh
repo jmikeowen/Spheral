@@ -9,11 +9,12 @@
 
 #include <stdint.h>
 #include <vector>
+#include <set>
 #include <string>
 #include <tuple>
 #include <unordered_map>
 #include "Geometry/Dimension.hh"
-#include "Geometry/polyclipper.hh"
+#include "Geometry/PolyClipperUtilities.hh"
 #include "RegisterMPIDataTypes.hh"
 #include "Utilities/DomainNode.hh"
 #include "RK/RKCorrectionParams.hh"
@@ -152,6 +153,15 @@ struct DataTypeTraits<std::vector<Value> > {
   static bool fixedSize() { return false; }
   static int numElements(const std::vector<Value>& x) { return x.size(); }
   static std::vector<Value> zero() { return std::vector<Value>(); }
+};
+
+//------------------------------------------------------------------------------
+template<typename Value>
+struct DataTypeTraits<std::set<Value> > {
+  typedef std::set<Value> ElementType;
+  static bool fixedSize() { return false; }
+  static int numElements(const std::set<Value>& x) { return x.size(); }
+  static std::set<Value> zero() { return std::set<Value>(); }
 };
 
 //------------------------------------------------------------------------------
@@ -446,38 +456,42 @@ struct DataTypeTraits<Dim<3>::FacetedVolume> {
 
 //------------------------------------------------------------------------------
 template<>
-struct DataTypeTraits<PolyClipper::Vertex2d> {
-  typedef PolyClipper::Vertex2d ElementType;
+struct DataTypeTraits<PolyClipperVertex2d> {
+  typedef PolyClipperVertex2d ElementType;
   static bool fixedSize() { return false; }
-  static int numElements(const ElementType&) { return (DataTypeTraits<Dim<2>::Vector>::numElements(Dim<2>::Vector::zero) + 4); }
-  static ElementType zero() { return PolyClipper::Vertex2d(); }
+  static int numElements(const ElementType& x) { return (DataTypeTraits<Dim<2>::Vector>::numElements(Dim<2>::Vector::zero) +
+                                                         2u + 
+                                                         2u +
+                                                         x.clips.size()); }
+  static ElementType zero() { return PolyClipperVertex2d(); }
 };
 
 template<>
-struct DataTypeTraits<PolyClipper::Vertex3d> {
-  typedef PolyClipper::Vertex3d ElementType;
+struct DataTypeTraits<PolyClipperVertex3d> {
+  typedef PolyClipperVertex3d ElementType;
   static bool fixedSize() { return false; }
   static int numElements(const ElementType& x) { return (DataTypeTraits<Dim<3>::Vector>::numElements(Dim<3>::Vector::zero) +
-                                                         x.neighbors.size() +
-                                                         2); }
-  static ElementType zero() { return PolyClipper::Vertex3d(); }
+                                                         x.neighbors.size() + 
+                                                         2u +
+                                                         x.clips.size()); }
+  static ElementType zero() { return PolyClipperVertex3d(); }
 };
 
 //------------------------------------------------------------------------------
 template<>
-struct DataTypeTraits<PolyClipper::Plane2d> {
+struct DataTypeTraits<PolyClipperPlane2d> {
   typedef double ElementType;
   static bool fixedSize() { return true; }
-  static int numElements(const PolyClipper::Plane2d&) { return 6; }
-  static PolyClipper::Plane2d zero() { return PolyClipper::Plane2d(); }
+  static int numElements(const PolyClipperPlane2d&) { return 4; }
+  static PolyClipperPlane2d zero() { return PolyClipperPlane2d(); }
 };
 
 template<>
-struct DataTypeTraits<PolyClipper::Plane3d> {
+struct DataTypeTraits<PolyClipperPlane3d> {
   typedef double ElementType;
   static bool fixedSize() { return true; }
-  static int numElements(const PolyClipper::Plane3d&) { return 8; }
-  static PolyClipper::Plane3d zero() { return PolyClipper::Plane3d(); }
+  static int numElements(const PolyClipperPlane3d&) { return 5; }
+  static PolyClipperPlane3d zero() { return PolyClipperPlane3d(); }
 };
 
 //------------------------------------------------------------------------------

@@ -35,7 +35,8 @@ class DataBase:
     @PYB11const
     def updateConnectivityMap(self,
                               computeGhostConnectivity = ("const bool", "false"),
-                              computeOverlapConnectivity = ("const bool", "false")):
+                              computeOverlapConnectivity = ("const bool", "false"),
+                              computeIntersectionConnectivity = ("const bool", "false")):
         "Update the internal connectivity map."
         return "void"
 
@@ -50,15 +51,17 @@ class DataBase:
     @PYB11const
     def connectivityMap(self,
                         computeGhostConnectivity=("const bool", "false"),
-                        computeOverlapConnectivity=("const bool", "false")):
-        "Get the connectivity map, optionally including ghost or overlap connectivity"
+                        computeOverlapConnectivity=("const bool", "false"),
+                        computeIntersectionConnectivity=("const bool", "false")):
+        "Get the connectivity map, optionally including ghost, overlap, or intersection connectivity"
         return "const ConnectivityMap<%(Dimension)s>&"
 
     @PYB11const
     def connectivityMapPtr(self,
                            computeGhostConnectivity=("const bool", "false"),
-                           computeOverlapConnectivity=("const bool", "false")):
-        "Get the connectivity map as a std::shared_ptr, optionally including ghost or overlap connectivity"
+                           computeOverlapConnectivity=("const bool", "false"),
+                           computeIntersectionConnectivity=("const bool", "false")):
+        "Get the connectivity map as a std::shared_ptr, optionally including ghost, overlap, or intersection connectivity"
         return "ConnectivityMapPtr"
 
     def appendNodeList(self, nodeList="SolidNodeList<%(Dimension)s>&"):
@@ -609,8 +612,6 @@ will get the new value regardless of resetValues."""
     solidPlasticStrain = PYB11property("FieldList<%(Dimension)s, Scalar>")
     solidPlasticStrainRate = PYB11property("FieldList<%(Dimension)s, Scalar>")
     solidDamage = PYB11property("FieldList<%(Dimension)s, SymTensor>")
-    solidEffectiveDamage = PYB11property("FieldList<%(Dimension)s, SymTensor>")
-    solidDamageGradient = PYB11property("FieldList<%(Dimension)s, Vector>")
     solidFragmentIDs = PYB11property("FieldList<%(Dimension)s, int>")
 
     globalNodeExtent = PYB11property("FieldList<%(Dimension)s, Vector>")

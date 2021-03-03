@@ -81,7 +81,7 @@ hessianRK(const FieldList<Dimension, DataType>& fieldList,
       auto&       gradFi = result_thread(nodeListi, i);
 
       // The coupling between these nodes.
-      const auto fij = nodeCoupling(nodeListi, i, nodeListj, j);
+      const auto fij = nodeCoupling(pairs[kk]);
       if (fij > 0.0) {
 
         // Find the effective weights of i->j and j->i.

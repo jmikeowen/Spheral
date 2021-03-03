@@ -15,7 +15,6 @@
 #include "TensorDamageModel.hh"
 #include "TensorStrainPolicy.hh"
 #include "TensorDamagePolicy.hh"
-#include "EffectiveTensorDamagePolicy.hh"
 #include "DamageGradientPolicy.hh"
 #include "Strength/SolidFieldNames.hh"
 #include "NodeList/SolidNodeList.hh"
@@ -51,24 +50,18 @@ template<typename Dimension>
 TensorDamageModel<Dimension>::
 TensorDamageModel(SolidNodeList<Dimension>& nodeList,
                   const TensorStrainAlgorithm strainAlgorithm,
-                  const EffectiveDamageAlgorithm effDamageAlgorithm,
-                  const bool useDamageGradient,
+                  const DamageCouplingAlgorithm damageCouplingAlgorithm,
                   const TableKernel<Dimension>& W,
                   const double crackGrowthMultiplier,
-                  const EffectiveFlawAlgorithm flawAlgorithm,
                   const double criticalDamageThreshold,
                   const bool damageInCompression,
                   const FlawStorageType& flaws):
-  DamageModel<Dimension>(nodeList, W, crackGrowthMultiplier, flawAlgorithm, flaws),
+  DamageModel<Dimension>(nodeList, W, crackGrowthMultiplier, damageCouplingAlgorithm, flaws),
   mStrain(SolidFieldNames::strainTensor, nodeList),
   mEffectiveStrain(SolidFieldNames::effectiveStrainTensor, nodeList),
   mDdamageDt(TensorDamagePolicy<Dimension>::prefix() + SolidFieldNames::scalarDamage, nodeList),
-  mNewEffectiveDamage(ReplaceState<Dimension, Field<Dimension, SymTensor> >::prefix() + SolidFieldNames::effectiveTensorDamage, nodeList),
-  mNewDamageGradient(ReplaceState<Dimension, Field<Dimension, Vector> >::prefix() + SolidFieldNames::damageGradient, nodeList),
   mStrainAlgorithm(strainAlgorithm),
-  mEffDamageAlgorithm(effDamageAlgorithm),
   mCriticalDamageThreshold(criticalDamageThreshold),
-  mUseDamageGradient(useDamageGradient),
   mDamageInCompression(damageInCompression) {
 }
 
@@ -93,9 +86,7 @@ evaluateDerivatives(const Scalar time,
                     const State<Dimension>& state,
                     StateDerivatives<Dimension>& derivs) const {
 
-  const double tiny = 1.0e-15;
-
-  // The base class determines the scalar magnitude of the damage evolution.
+  // Set the scalar magnitude of the damage evolution.
   const auto* nodeListPtr = &(this->nodeList());
   auto&       DDDt = derivs.field(state.buildFieldKey(TensorDamagePolicy<Dimension>::prefix() + SolidFieldNames::scalarDamage, nodeListPtr->name()), 0.0);
   this->computeScalarDDDt(dataBase,
@@ -103,122 +94,6 @@ evaluateDerivatives(const Scalar time,
                           time,
                           dt,
                           DDDt);
-
-  // We need to fill in the effective damage and perhaps the damage gradient.
-  // First, grab the pertinent state.
-  const auto& mass = state.field(state.buildFieldKey(HydroFieldNames::mass, nodeListPtr->name()), 0.0);
-  const auto& position = state.field(state.buildFieldKey(HydroFieldNames::position, nodeListPtr->name()), Vector::zero);
-  const auto& rho = state.field(state.buildFieldKey(HydroFieldNames::massDensity, nodeListPtr->name()), 0.0);
-  const auto& H = state.field(state.buildFieldKey(HydroFieldNames::H, nodeListPtr->name()), SymTensor::zero);
-  const auto& D = state.field(state.buildFieldKey(SolidFieldNames::tensorDamage, nodeListPtr->name()), SymTensor::zero);
-  auto&       Deff = derivs.field(state.buildFieldKey(EffectiveTensorDamagePolicy<Dimension>::prefix() + SolidFieldNames::effectiveTensorDamage, nodeListPtr->name()), SymTensor::zero);
-  auto&       gradD = derivs.field(state.buildFieldKey(DamageGradientPolicy<Dimension>::prefix() + SolidFieldNames::damageGradient, nodeListPtr->name()), Vector::zero);
-
-  // Get the kernel.
-  const auto& W = this->kernel();
-  //const auto etaMax2 = W.kernelExtent() * W.kernelExtent();
-
-  // The neighbor connectivity.
-  const auto& connectivityMap = dataBase.connectivityMap();
-  const auto& nodeLists = connectivityMap.nodeLists();
-  const auto  nodeListi = distance(nodeLists.begin(), find(nodeLists.begin(), nodeLists.end(), nodeListPtr));
-  CHECK(nodeListi < (int)nodeLists.size());
-  //const auto firstGhostNodei = nodeListPtr->firstGhostNode();
-
-  // Prepare to account for damage statistics.
-  Field<Dimension, Scalar> normalization("normalization", *nodeListPtr, 0.0);
-
-  // Iterate over the internal nodes in this NodeList.
-  const auto ni = connectivityMap.numNodes(nodeListi);
-#pragma omp parallel for
-  for (auto k = 0; k < ni; ++k) {
-    const auto i = connectivityMap.ithNode(nodeListi, k);
-
-    // State for node i.
-    const auto& mi = mass(i);
-    const auto& ri = position(i);
-    const auto& rhoi = rho(i);
-    const auto& Hi = H(i);
-    const auto  Hdeti = Hi.Determinant();
-    const auto& Di = D(i);
-    const auto  Dmagi = Di.Trace();
-    auto&       normalizationi = normalization(i);
-    auto&       Deffi = Deff(i);
-    auto&       gradDi = gradD(i);
-    CONTRACT_VAR(mi);
-    CHECK(mi > 0.0);
-    CHECK(rhoi > 0.0);
-    CHECK(Hdeti > 0.0);
-
-    // Scratch variables.
-    Scalar Wi, gWi;
-    auto Dmin = SymTensor::one;
-    auto Dmax = SymTensor::zero;
-
-    // Get the connectivity info for this node.  We only need to proceed if
-    // there are some nodes in this list.
-    const auto& connectivity = connectivityMap.connectivityForNode(nodeListPtr, i)[nodeListi];
-    if (connectivity.size() > 0) {
-
-      // Iterate over the neighbors.
-      for (auto jItr = connectivity.begin(); jItr < connectivity.end(); ++jItr) {
-        const auto j = *jItr;
-
-        // Get the state for node j
-        const auto& mj = mass(j);
-        const auto& rj = position(j);
-        const auto& Dj = D(j);
-        const auto  Dmagj = Dj.Trace();
-        CHECK(mj > 0.0);
-
-        // Node displacement and weighting.
-        const Vector etai = Hi*(ri - rj);
-        std::tie(Wi, gWi) = W.kernelAndGradValue(etai.magnitude(), Hdeti);
-        const auto gradWi = (Hi*etai.unitVector()) * gWi;
-
-        // Damage statistics
-        if (Dmagj < Dmin.Trace()) Dmin = Dj;
-        if (Dmagj > Dmax.Trace()) Dmax = Dj;
-        normalizationi += Wi;
-        Deffi += Wi * Dj;
-
-        // Increment the gradient.
-        gradDi += mj*(Dj - Di)*gradWi;
-      }
-    }
-
-    // Finish the effective damage
-    switch(mEffDamageAlgorithm) {
-      case EffectiveDamageAlgorithm::CopyDamage:
-        Deffi = Di;
-        break;
-
-      case EffectiveDamageAlgorithm::MaxDamage:
-        if (Dmax.Trace() > Dmagi) Deffi = Dmax;
-        break;
-
-      case EffectiveDamageAlgorithm::MinMaxDamage:
-        if (Dmax.Trace() <= Dmagi) {
-          Deffi = Di;
-        } else {
-          Deffi = Dmin;
-        }
-        break;
-
-      case EffectiveDamageAlgorithm::SampledDamage:
-        const auto Wi = W.kernelValue(0.0, Hdeti);
-        Deffi = (Deffi + Wi*Di)*safeInvVar(normalizationi + Wi, tiny);
-        break;
-    }
-
-    // Finish the gradient.
-    if (mUseDamageGradient) {
-      CHECK(rhoi > 0.0);
-      gradDi /= rhoi;
-    } else {
-      gradDi.Zero();
-    }
-  }
 }
 
 //------------------------------------------------------------------------------
@@ -268,46 +143,19 @@ registerState(DataBase<Dimension>& dataBase,
   state.enroll(mStrain);
   state.enroll(mEffectiveStrain, effectiveStrainPolicy);
 
-  // Register the damage and effective damage.
-  // Note we are overriding the default no-op policy for the effective damage
+  // Register the damage.
+  // Note we are overriding the default no-op policy for the damage
   // as originally registered by the SolidSPHHydroBase class.
   PolicyPointer damagePolicy(new TensorDamagePolicy<Dimension>(*this));
-  PolicyPointer effDamagePolicy(new EffectiveTensorDamagePolicy<Dimension>());
   state.enroll(this->nodeList().damage(), damagePolicy);
-  state.enroll(this->nodeList().effectiveDamage(), effDamagePolicy);
-
-  // If we're using the grad damage switch, override the policy for the updating
-  // the damage gradient.
-  if (mUseDamageGradient) {
-    PolicyPointer damageGradientPolicy(new DamageGradientPolicy<Dimension>());
-    state.enroll(this->nodeList().damageGradient(), damageGradientPolicy);
-  }
 
   // Mask out nodes beyond the critical damage threshold from setting the timestep.
   Key maskKey = state.buildFieldKey(HydroFieldNames::timeStepMask, this->nodeList().name());
   Field<Dimension, int>& mask = state.field(maskKey, 0);
   const Field<Dimension, SymTensor>& damage = this->nodeList().damage();
-  for (auto i = 0u; i != this->nodeList().numInternalNodes(); ++i) {
-    if (damage(i).Trace() > (int)mCriticalDamageThreshold) mask(i) = 0;
+  for (auto i = 0u; i < this->nodeList().numInternalNodes(); ++i) {
+    if (damage(i).Trace() > mCriticalDamageThreshold) mask(i) = 0;
   }
-
-  // // Damage some of the state variables.
-  // const auto* nodeListPtr = &(this->nodeList());
-  // const auto  KKey = State<Dimension>::buildFieldKey(SolidFieldNames::bulkModulus, nodeListPtr->name());
-  // const auto  muKey = State<Dimension>::buildFieldKey(SolidFieldNames::shearModulus, nodeListPtr->name());
-  // const auto  YKey = State<Dimension>::buildFieldKey(SolidFieldNames::yieldStrength, nodeListPtr->name());
-  // const auto  DKey = State<Dimension>::buildFieldKey(SolidFieldNames::tensorDamage, nodeListPtr->name());
-  // auto&       K = state.field(KKey, 0.0);
-  // auto&       mu = state.field(muKey, 0.0);
-  // auto&       Y = state.field(YKey, 0.0);
-  // const auto& D = state.field(DKey, SymTensor::zero);
-  // for (auto i = 0; i < nodeListPtr->numInternalNodes(); ++i) {
-  //   const auto fDi = std::max(0.0, std::min(1.0, 1.0 - D(i).eigenValues().maxElement() - 1.0e-5));
-  //   CHECK(fDi >= 0.0 && fDi <= 1.0);
-  //   K(i) *= fDi;
-  //   mu(i) *= fDi;
-  //   Y(i) *= fDi;
-  // }
 
   // Register the base classes stuff.
   DamageModel<Dimension>::registerState(dataBase, state);
@@ -322,8 +170,6 @@ TensorDamageModel<Dimension>::
 registerDerivatives(DataBase<Dimension>& /*dataBase*/,
                     StateDerivatives<Dimension>& derivs) {
   derivs.enroll(mDdamageDt);
-  derivs.enroll(mNewEffectiveDamage);
-  derivs.enroll(mNewDamageGradient);
 }
 
 //------------------------------------------------------------------------------
@@ -339,22 +185,14 @@ applyGhostBoundaries(State<Dimension>& state,
   typedef typename State<Dimension>::KeyType Key;
   const Key nodeListName = this->nodeList().name();
   const Key DKey = state.buildFieldKey(SolidFieldNames::tensorDamage, nodeListName);
-  const Key DeffKey = state.buildFieldKey(SolidFieldNames::effectiveTensorDamage, nodeListName);
-  const Key gradDKey = state.buildFieldKey(SolidFieldNames::damageGradient, nodeListName);
   CHECK(state.registered(DKey));
-  CHECK(state.registered(DeffKey));
-  CHECK(state.registered(gradDKey));
   Field<Dimension, SymTensor>& D = state.field(DKey, SymTensor::zero);
-  Field<Dimension, SymTensor>& Deff = state.field(DeffKey, SymTensor::zero);
-  Field<Dimension, Vector>& gradD = state.field(gradDKey, Vector::zero);
 
   // Apply ghost boundaries to the damage.
   for (ConstBoundaryIterator boundaryItr = this->boundaryBegin();
        boundaryItr != this->boundaryEnd();
        ++boundaryItr) {
     (*boundaryItr)->applyGhostBoundary(D);
-    (*boundaryItr)->applyGhostBoundary(Deff);
-    if (mUseDamageGradient) (*boundaryItr)->applyGhostBoundary(gradD);
   }
 }
 
@@ -371,22 +209,14 @@ enforceBoundaries(State<Dimension>& state,
   typedef typename State<Dimension>::KeyType Key;
   const Key nodeListName = this->nodeList().name();
   const Key DKey = state.buildFieldKey(SolidFieldNames::tensorDamage, nodeListName);
-  const Key DeffKey = state.buildFieldKey(SolidFieldNames::effectiveTensorDamage, nodeListName);
-  const Key gradDKey = state.buildFieldKey(SolidFieldNames::damageGradient, nodeListName);
   CHECK(state.registered(DKey));
-  CHECK(state.registered(DeffKey));
-  CHECK(state.registered(gradDKey));
   Field<Dimension, SymTensor>& D = state.field(DKey, SymTensor::zero);
-  Field<Dimension, SymTensor>& Deff = state.field(DeffKey, SymTensor::zero);
-  Field<Dimension, Vector>& gradD = state.field(gradDKey, Vector::zero);
 
   // Enforce!
   for (ConstBoundaryIterator boundaryItr = this->boundaryBegin(); 
        boundaryItr != this->boundaryEnd();
        ++boundaryItr) {
     (*boundaryItr)->enforceBoundary(D);
-    (*boundaryItr)->enforceBoundary(Deff);
-    if (mUseDamageGradient) (*boundaryItr)->enforceBoundary(gradD);
   }
 }
 

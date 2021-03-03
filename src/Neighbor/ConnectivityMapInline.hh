@@ -17,18 +17,21 @@ ConnectivityMap<Dimension>::
 ConnectivityMap(const NodeListIterator& begin,
                 const NodeListIterator& end,
                 const bool buildGhostConnectivity,
-                const bool buildOverlapConnectivity):
+                const bool buildOverlapConnectivity,
+                const bool buildIntersectionConnectivity):
   mNodeLists(),
-  mBuildGhostConnectivity(buildGhostConnectivity),
+  mBuildGhostConnectivity(buildGhostConnectivity or buildIntersectionConnectivity),
   mBuildOverlapConnectivity(buildOverlapConnectivity),
+  mBuildIntersectionConnectivity(buildIntersectionConnectivity),
   mOffsets(),
   mConnectivity(),
   mNodeTraversalIndices(),
-  mKeys(FieldStorageType::CopyFields) {
+  mKeys(FieldStorageType::CopyFields),
+  mCouplingPtr(std::make_shared<NodeCoupling>()) {
 
   // The private method does the grunt work of filling in the connectivity once we have
   // established the set of NodeLists.
-  this->rebuild(begin, end, buildGhostConnectivity, buildOverlapConnectivity);
+  this->rebuild(begin, end, mBuildGhostConnectivity, mBuildOverlapConnectivity, mBuildIntersectionConnectivity);
 
   // We'd better be valid after the constructor is finished!
   ENSURE(valid());
@@ -45,9 +48,11 @@ ConnectivityMap<Dimension>::
 rebuild(const NodeListIterator& begin,
         const NodeListIterator& end, 
         const bool buildGhostConnectivity,
-        const bool buildOverlapConnectivity) {
-  mBuildGhostConnectivity = buildGhostConnectivity;
+        const bool buildOverlapConnectivity,
+        const bool buildIntersectionConnectivity) {
+  mBuildGhostConnectivity = buildGhostConnectivity or buildIntersectionConnectivity;
   mBuildOverlapConnectivity = buildOverlapConnectivity;
+  mBuildIntersectionConnectivity = buildIntersectionConnectivity;
 
   // Copy the set of NodeLists in the order prescribed by the NodeListRegistrar.
   NodeListRegistrar<Dimension>& registrar = NodeListRegistrar<Dimension>::instance();
@@ -96,6 +101,17 @@ bool
 ConnectivityMap<Dimension>::
 buildOverlapConnectivity() const {
   return mBuildOverlapConnectivity;
+}
+
+//------------------------------------------------------------------------------
+// Are we computing intersection connectivity?
+//------------------------------------------------------------------------------
+template<typename Dimension>
+inline
+bool
+ConnectivityMap<Dimension>::
+buildIntersectionConnectivity() const {
+  return mBuildIntersectionConnectivity;
 }
 
 //------------------------------------------------------------------------------
@@ -336,6 +352,42 @@ ConnectivityMap<Dimension>::
 nodeList(const int index) const {
   REQUIRE(index >= 0 and index < (int)mNodeLists.size());
   return *(mNodeLists[index]);
+}
+
+//------------------------------------------------------------------------------
+// The NodeCoupling functor
+//------------------------------------------------------------------------------
+template<typename Dimension>
+NodeCoupling&
+ConnectivityMap<Dimension>::
+coupling() {
+  return *mCouplingPtr;
+}
+
+template<typename Dimension>
+const NodeCoupling&
+ConnectivityMap<Dimension>::
+coupling() const {
+  return *mCouplingPtr;
+}
+
+template<typename Dimension>
+void
+ConnectivityMap<Dimension>::
+coupling(typename ConnectivityMap<Dimension>::NodeCouplingPtr couplingPtr) {
+  mCouplingPtr = couplingPtr;
+}
+
+//------------------------------------------------------------------------------
+// intersection connectivity, if available
+//------------------------------------------------------------------------------
+template<typename Dimension>
+const std::vector<std::vector<int>>&
+ConnectivityMap<Dimension>::
+intersectionConnectivity(const NodePairIdxType& pair) const {
+  const auto itr = mIntersectionConnectivity.find(pair);
+  if (itr == mIntersectionConnectivity.end()) VERIFY2(false, "ERROR: attempt to lookup missing intersection connectivity for node pair " << pair);
+  return itr->second;
 }
 
 }

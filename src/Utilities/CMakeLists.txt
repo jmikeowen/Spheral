@@ -12,6 +12,9 @@ set(Utilities_inst
     medianPosition
     computeShepardsInterpolation
     overlayRemapFields
+    DamagedNodeCoupling
+    ThreePointDamagedNodeCoupling
+    DamageGradientNodeCoupling
    )
 
 set(Utilities_sources
@@ -42,7 +45,8 @@ set(Utilities_headers
     Bessel.hh
     CounterClockwiseComparator.hh
     DamagedNodeCoupling.hh
-    DamagedNodeCouplingWithFrags.hh
+    ThreePointDamagedNodeCoupling.hh
+    DamageGradientNodeCoupling.hh
     DBC.hh
     DomainNode.hh
     DomainNodeInline.hh
@@ -120,5 +124,3 @@ spheral_install_python_files(fitspline.py)
 
 spheral_add_cxx_library(Utilities)
 
-list(APPEND SPHERAL_CXX_LIBS Spheral_Utilities)
-set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

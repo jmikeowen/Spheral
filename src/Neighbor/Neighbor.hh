@@ -8,12 +8,12 @@
 
 #include "Field/Field.hh"
 #include "Geometry/Dimension.hh"
+#include "Geometry/GeomPlane.hh"
 
 #include <vector>
 
 namespace Spheral {
 
-template<typename Dimension> class GeomPlane;
 template<typename Dimension> class NodeList;
 template<typename Dimension, typename DataType> class Field;
 

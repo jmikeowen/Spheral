@@ -2,8 +2,8 @@
 // Construct a flaw distribution for a set of nodes according to a Weibull 
 // (power-law) distribution.
 //------------------------------------------------------------------------------
-#ifndef __Spheral_weibullFlawDistribution__
-#define __Spheral_weibullFlawDistribution__
+#ifndef __Spheral_weibullFlawDistributionBenzAsphaug__
+#define __Spheral_weibullFlawDistributionBenzAsphaug__
 
 #include <vector>
 
@@ -30,20 +30,6 @@ weibullFlawDistributionBenzAsphaug(double volume,
                                    const int minFlawsPerNode,
                                    const int minTotalFlaws,
                                    const Field<Dimension, int>& mask);
-
-//------------------------------------------------------------------------------
-// Implements the Owen algorithm, stochastically seeding flaws with a maximum
-// value per node chosen based on the volume of the node.
-//------------------------------------------------------------------------------
-template<typename Dimension>
-Field<Dimension, std::vector<double> >
-weibullFlawDistributionOwen(const unsigned seed,
-                            const double kWeibull,
-                            const double mWeibull,
-                            const FluidNodeList<Dimension>& nodeList,
-                            const int minFlawsPerNode,
-                            const double volumeMultiplier,
-                            const Field<Dimension, int>& mask);
 
 }
 

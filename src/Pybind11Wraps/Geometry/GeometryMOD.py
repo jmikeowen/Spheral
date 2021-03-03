@@ -12,7 +12,7 @@ PYB11preamble = ""
 # Define some useful type collections we're going to be wrapping in this module.
 geomtypes = ["Vector", "Tensor", "SymTensor", "ThirdRankTensor", "FourthRankTensor", "FifthRankTensor", "FacetedVolume"]
 
-PYB11namespaces = ["Spheral"]
+PYB11namespaces = ["Spheral", "PolyClipper"]
 
 # for ndim in (1, 2, 3):
 #     preamble += "typedef GeomPlane<Dim<%i>> Plane%id;\n" % (ndim, ndim)
@@ -40,6 +40,7 @@ PYB11includes = ['"Geometry/Dimension.hh"',
                  '"Geometry/innerDoubleProduct.hh"',
                  '"Geometry/aggregateFacetedVolumes.hh"',
                  '"Geometry/CellFaceFlag.hh"',
+                 '"Geometry/PolyClipperUtilities.hh"',
                  '"Field/Field.hh"',
                  '"Utilities/DataTypeTraits.hh"',
 
@@ -76,6 +77,138 @@ from Polyhedron import *
 from Facet2d import *
 from Facet3d import *
 from CellFaceFlag import *
+
+#-------------------------------------------------------------------------------
+# Spheral PolyClipper bindings (using Spheral Vectors)
+#-------------------------------------------------------------------------------
+# Define the PolyClipper Polygon and Polyhedron
+PolyClipperPolygon    = PYB11_bind_vector("PolyClipper::Vertex2d<Spheral::GeomVectorAdapter<2>>", opaque=True, local=False)
+PolyClipperPolyhedron = PYB11_bind_vector("PolyClipper::Vertex3d<Spheral::GeomVectorAdapter<3>>", opaque=True, local=False)
+from PolyClipperVertex2d import *
+from PolyClipperVertex3d import *
+from PolyClipperPlane import *
+PolyClipperPlane2d = PYB11TemplateClass(Plane, template_parameters="GeomVectorAdapter<2>")
+PolyClipperPlane3d = PYB11TemplateClass(Plane, template_parameters="GeomVectorAdapter<3>")
+
+# Polygon methods.
+@PYB11namespace("PolyClipper")
+def initializePolygon(poly = "PolyClipperPolygon&",
+                      positions = "const std::vector<Dim<2>::Vector>&",
+                      neighbors = "const std::vector<std::vector<int>>&"):
+    "Initialize a PolyClipper::Polygon from vertex positions and vertex neighbors."
+    return "void"
+
+@PYB11namespace("PolyClipper")
+@PYB11cppname("polygon2string<GeomVectorAdapter<2>>")
+def polygon2string(poly = "const PolyClipperPolygon&"):
+    "Return a formatted string representation for a PolyClipper::Polygon."
+    return "std::string"
+
+@PYB11implementation("""[](const PolyClipperPolygon& self) {
+                                                  double zerothMoment;
+                                                  Dim<2>::Vector firstMoment;
+                                                  moments(zerothMoment, firstMoment, self);
+                                                  return py::make_tuple(zerothMoment, firstMoment);
+                                                }""")
+@PYB11namespace("PolyClipper")
+@PYB11pycppname("moments")
+def momentsPolygon(poly = "const PolyClipperPolygon&"):
+    "Compute the zeroth and first moment of a PolyClipper::Polygon."
+    return "py::tuple"
+
+@PYB11namespace("PolyClipper")
+def clipPolygon(poly = "PolyClipperPolygon&",
+                planes = "const std::vector<PolyClipperPlane2d>&"):
+    "Clip a PolyClipper::Polygon with a collection of planes."
+    return "void"
+
+@PYB11namespace("PolyClipper")
+@PYB11pycppname("collapseDegenerates")
+def collapseDegeneratesPolygon(poly = "PolyClipperPolygon&",
+                               tol = "const double"):
+    "Collapse edges in a PolyClipper::Polygon below the given tolerance."
+    return "void"
+
+@PYB11namespace("PolyClipper")
+def extractFaces(poly = "const PolyClipperPolygon&"):
+    "Compute the faces (as pairs of vertex indices) for the Polygon"
+    return "std::vector<std::vector<int>>"
+
+@PYB11namespace("PolyClipper")
+def commonFaceClips(poly = "const PolyClipperPolygon&",
+                    faces = "const std::vector<std::vector<int>>&"):
+    "Find the common clipping planes for each face"
+    return "std::vector<std::set<int>>"
+
+@PYB11namespace("PolyClipper")
+def splitIntoTriangles(poly = "const PolyClipperPolygon&",
+                       tol = ("const double", "0.0")):
+    """Split a PolyClipper::Polygon into triangles.
+The result is returned as a vector<vector<int>>, where each inner vector is a triple of
+ints representing vertex indices in the input Polygon."""
+    return "std::vector<std::vector<int>>"
+
+#-------------------------------------------------------------------------------
+# Polyhedron methods.
+#-------------------------------------------------------------------------------
+@PYB11namespace("PolyClipper")
+def initializePolyhedron(poly = "PolyClipperPolyhedron&",
+                         positions = "const std::vector<Dim<3>::Vector>&",
+                         neighbors = "const std::vector<std::vector<int>>&"):
+    "Initialize a PolyClipper::Polyhedron from vertex positions and vertex neighbors."
+    return "void"
+
+@PYB11namespace("PolyClipper")
+@PYB11cppname("polyhedron2string<GeomVectorAdapter<3>>")
+def polyhedron2string(poly = "const PolyClipperPolyhedron&"):
+    "Return a formatted string representation for a PolyClipper::Polyhedron."
+    return "std::string"
+
+@PYB11implementation("""[](const PolyClipperPolyhedron& self) {
+                                                     double zerothMoment;
+                                                     Dim<3>::Vector firstMoment;
+                                                     moments(zerothMoment, firstMoment, self);
+                                                     return py::make_tuple(zerothMoment, firstMoment);
+                                                   }""")
+@PYB11namespace("PolyClipper")
+@PYB11pycppname("moments")
+def momentsPolyhedron(poly = "const PolyClipperPolyhedron&"):
+    "Compute the zeroth and first moment of a PolyClipper::Polyhedron."
+    return "py::tuple"
+
+@PYB11namespace("PolyClipper")
+def clipPolyhedron(poly = "PolyClipperPolyhedron&",
+                   planes = "const std::vector<PolyClipperPlane3d>&"):
+    "Clip a PolyClipper::Polyhedron with a collection of planes."
+    return "void"
+
+@PYB11namespace("PolyClipper")
+@PYB11pycppname("collapseDegenerates")
+def collapseDegeneratesPolyhedron(poly = "PolyClipperPolyhedron&",
+                                  tol = "const double"):
+    "Collapse edges in a PolyClipper::Polyhedron below the given tolerance."
+    return "void"
+
+@PYB11namespace("PolyClipper")
+@PYB11pycppname("extractFaces")
+def extractFacesPolyhedron(poly = "const PolyClipperPolyhedron&"):
+    "Compute the faces (as pairs of vertex indices) for the Polyhedron"
+    return "std::vector<std::vector<int>>"
+
+@PYB11namespace("PolyClipper")
+@PYB11pycppname("commonFaceClips")
+def commonFaceClipsPolyhedron(poly = "const PolyClipperPolyhedron&",
+                              faces = "const std::vector<std::vector<int>>&"):
+    "Find the common clipping planes for each face"
+    return "std::vector<std::set<int>>"
+
+@PYB11namespace("PolyClipper")
+def splitIntoTetrahedra(poly = "const PolyClipperPolyhedron&",
+                        tol = ("const double", "0.0")):
+    """Split a PolyClipper::Polyhedron into tetrahedra.
+The result is returned as a vector<vector<int>>, where each inner vector is a set of four
+ints representing vertex indices in the input Polyhedron."""
+    return "std::vector<std::vector<int>>"
 
 #-------------------------------------------------------------------------------
 # Vector standalone functions
@@ -137,6 +270,49 @@ computeEigenValues2 = PYB11TemplateFunction(computeEigenValues,
 computeEigenValues3 = PYB11TemplateFunction(computeEigenValues,
                                             template_parameters = "Dim<3>",
                                             pyname = "computeEigenValues")
+
+#-------------------------------------------------------------------------------
+# PolyClipper utility methods
+#-------------------------------------------------------------------------------
+@PYB11implementation('''[](const Dim<2>::FacetedVolume& Spheral_polygon) -> PolyClipperPolygon {
+                               PolyClipperPolygon polygon;
+                               convertToPolyClipper(polygon, Spheral_polygon);
+                               return polygon;
+                           }''')
+def convertToPolyClipper(Spheral_polygon = "const Dim<2>::FacetedVolume&"):
+    "Convert a Spheral::Polygon --> PolyClipper::Polygon"
+    return "PolyClipperPolygon"
+
+@PYB11implementation('''[](const PolyClipperPolygon& polygon) -> py::tuple {
+                               Dim<2>::FacetedVolume Spheral_polygon;
+                               auto clips = convertFromPolyClipper(Spheral_polygon, polygon);
+                               return py::make_tuple(Spheral_polygon, clips);
+                           }''')
+def convertFromPolyClipper(polygon = "const PolyClipperPolygon&"):
+    """Convert a PolyClipper::Polygon --> Spheral::Polygon
+Returns the set of planes responsible for clipping each Vertex"""
+    return "py::tuple"
+
+@PYB11implementation('''[](const Dim<3>::FacetedVolume& Spheral_polyhedron) -> PolyClipperPolyhedron {
+                               PolyClipperPolyhedron polyhedron;
+                               convertToPolyClipper(polyhedron, Spheral_polyhedron);
+                               return polyhedron;
+                           }''')
+@PYB11pycppname("convertToPolyClipper")
+def convertToPolyClipper3d(Spheral_polyhedron = "const Dim<3>::FacetedVolume&"):
+    "Convert a Spheral::Polyhedron --> PolyClipper::Polyhedron"
+    return "PolyClipperPolyhedron"
+
+@PYB11implementation('''[](const PolyClipperPolyhedron& polyhedron) -> py::tuple {
+                               Dim<3>::FacetedVolume Spheral_polyhedron;
+                               auto clips = convertFromPolyClipper(Spheral_polyhedron, polyhedron);
+                               return py::make_tuple(Spheral_polyhedron, clips);
+                           }''')
+@PYB11pycppname("convertFromPolyClipper")
+def convertFromPolyClipper3d(polyhedron = "const PolyClipperPolyhedron&"):
+    """Convert a PolyClipper::Polyhedron --> Spheral::Polyhedron
+Returns the set of planes responsible for clipping each Vertex"""
+    return "py::tuple"
 
 #-------------------------------------------------------------------------------
 # Inner product (with a double)

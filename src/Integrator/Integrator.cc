@@ -56,6 +56,7 @@ Integrator<Dimension>::Integrator():
   mRequireConnectivity(true),
   mRequireGhostConnectivity(false),
   mRequireOverlapConnectivity(false),
+  mRequireIntersectionConnectivity(false),
   mDataBasePtr(0),
   mPhysicsPackages(0),
   mRigorousBoundaries(false),
@@ -83,6 +84,7 @@ Integrator(DataBase<Dimension>& dataBase):
   mRequireConnectivity(true),
   mRequireGhostConnectivity(false),
   mRequireOverlapConnectivity(false),
+  mRequireIntersectionConnectivity(false),
   mDataBasePtr(&dataBase),
   mPhysicsPackages(0),
   mRigorousBoundaries(false),
@@ -150,6 +152,7 @@ operator=(const Integrator<Dimension>& rhs) {
     mRequireConnectivity = rhs.mRequireConnectivity;
     mRequireGhostConnectivity = rhs.mRequireGhostConnectivity;
     mRequireOverlapConnectivity = rhs.mRequireOverlapConnectivity;
+    mRequireIntersectionConnectivity = rhs.mRequireIntersectionConnectivity;
   }
   return *this;
 }
@@ -252,12 +255,14 @@ Integrator<Dimension>::preStepInitialize(State<Dimension>& state,
   mRequireConnectivity = false;
   mRequireGhostConnectivity = false;
   mRequireOverlapConnectivity = false;
+  mRequireIntersectionConnectivity = false;
   for (typename Integrator<Dimension>::ConstPackageIterator physicsItr = physicsPackagesBegin();
        physicsItr != physicsPackagesEnd();
        ++physicsItr) {
     mRequireConnectivity = (mRequireConnectivity or (*physicsItr)->requireConnectivity());
     mRequireGhostConnectivity = (mRequireGhostConnectivity or (*physicsItr)->requireGhostConnectivity());
     mRequireOverlapConnectivity = (mRequireOverlapConnectivity or (*physicsItr)->requireOverlapConnectivity());
+    mRequireIntersectionConnectivity = (mRequireIntersectionConnectivity or (*physicsItr)->requireIntersectionConnectivity());
   }
 
   // Intialize neighbors if need be.
@@ -272,7 +277,7 @@ Integrator<Dimension>::preStepInitialize(State<Dimension>& state,
 
   // Register the now updated connectivity with the state.
   if (mRequireConnectivity) {
-    state.enrollConnectivityMap(db.connectivityMapPtr(mRequireGhostConnectivity, mRequireOverlapConnectivity));
+    state.enrollConnectivityMap(db.connectivityMapPtr(mRequireGhostConnectivity, mRequireOverlapConnectivity, mRequireIntersectionConnectivity));
   }
 
   // Loop over the physics packages and perform any necessary initializations.
@@ -537,7 +542,7 @@ Integrator<Dimension>::setGhostNodes() {
   if (mRequireConnectivity) {
 
     // Update the connectivity.
-    db.updateConnectivityMap(mRequireGhostConnectivity, mRequireOverlapConnectivity);
+    db.updateConnectivityMap(mRequireGhostConnectivity, mRequireOverlapConnectivity, mRequireIntersectionConnectivity);
 
     // If we're culling ghost nodes, do it now.
     if (mCullGhostNodes and 

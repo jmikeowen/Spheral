@@ -151,6 +151,9 @@ public:
   // Some physics algorithms require overlap connectivity.
   virtual bool requireOverlapConnectivity() const;
 
+  // Some physics algorithms require intersection connectivity
+  virtual bool requireIntersectionConnectivity() const;
+
   // Does this package require reproducing kernel functions?
   virtual std::set<RKOrder> requireReproducingKernels() const;
 

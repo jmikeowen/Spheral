@@ -11,8 +11,9 @@ class NullStrength(StrengthModel):
     "NullStrength -- mimics a zero strength fluid"
 
     PYB11typedefs = """
-    typedef typename %(Dimension)s::Scalar Scalar;
-    typedef Field<%(Dimension)s, Scalar> ScalarField;
+    using Scalar = typename %(Dimension)s::Scalar;
+    using SymTensor = typename %(Dimension)s::SymTensor;
+    using ScalarField = Field<%(Dimension)s, Scalar>;
 """
 
     #...........................................................................

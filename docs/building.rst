@@ -27,7 +27,7 @@ I like to keep my build & install files separate from the git cloned source, so 
 
   git clone --recursive https://github.com/jmikeowen/Spheral
   mkdir -p Spheral_release/BUILD && cd Spheral_release/BUILD
-  cmake -DCMAKE_INSTALL_PREFIX=`chdir ..; pwd` ../../spheral
+  cmake -DCMAKE_INSTALL_PREFIX=`cd ..; pwd` ../../Spheral
   make -j<N> install
   ../python/bin/python2.7 -c "import Spheral"
 

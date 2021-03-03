@@ -37,7 +37,7 @@
 #include "Neighbor/ConnectivityMap.hh"
 #include "Utilities/timingUtilities.hh"
 #include "Utilities/safeInv.hh"
-#include "Utilities/DamagedNodeCouplingWithFrags.hh"
+#include "Utilities/NodeCoupling.hh"
 #include "SolidMaterial/SolidEquationOfState.hh"
 
 #include "CRKSPH/SolidCRKSPHHydroBaseRZ.hh"
@@ -313,8 +313,7 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
   const auto soundSpeed = state.fields(HydroFieldNames::soundSpeed, 0.0);
   const auto S = state.fields(SolidFieldNames::deviatoricStress, SymTensor::zero);
   const auto mu = state.fields(SolidFieldNames::shearModulus, 0.0);
-  const auto damage = state.fields(SolidFieldNames::effectiveTensorDamage, SymTensor::zero);
-  const auto gradDamage = state.fields(SolidFieldNames::damageGradient, Vector::zero);
+  const auto damage = state.fields(SolidFieldNames::tensorDamage, SymTensor::zero);
   const auto fragIDs = state.fields(SolidFieldNames::fragmentIDs, int(1));
   const auto pTypes = state.fields(SolidFieldNames::particleTypes, int(0));
   const auto corrections = state.fields(RKFieldNames::rkCorrections(order), RKCoefficients<Dimension>());
@@ -330,7 +329,6 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
   CHECK(S.size() == numNodeLists);
   CHECK(mu.size() == numNodeLists);
   CHECK(damage.size() == numNodeLists);
-  CHECK(gradDamage.size() == numNodeLists);
   CHECK(fragIDs.size() == numNodeLists);
   CHECK(pTypes.size() == numNodeLists);
   CHECK(corrections.size() == numNodeLists);
@@ -375,7 +373,7 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
   if (compatibleEnergy) pairAccelerations.resize(2*npairs + dataBase.numInternalNodes());
 
   // Build the functor we use to compute the effective coupling between nodes.
-  const DamagedNodeCouplingWithFrags<Dimension> coupling(damage, gradDamage, H, fragIDs);
+  const NodeCoupling coupling;
 
   // Walk all the interacting pairs.
 #pragma omp parallel
@@ -384,7 +382,6 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
     int i, j, nodeListi, nodeListj;
     Scalar Wi, gWi, Wj, gWj;
     Tensor QPiij, QPiji;
-    Scalar Pposi, Pnegi, Pposj, Pnegj;
     Vector gradWi, gradWj, gradWSPHi, gradWSPHj;
     Vector deltagrad, forceij, forceji;
     SymTensor sigmai, sigmaj;
@@ -483,6 +480,9 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
       const auto etaj = Hj*xij;
       const auto vij = vi - vj;
 
+      // Flag if this is a contiguous material pair or not.
+      const auto sameMatij = true; // nodeListi == nodeListj; // (nodeListi == nodeListj and fragIDi == fragIDj);
+
       // Flag if at least one particle is free (0).
       const auto freeParticle = (pTypei == 0 or pTypej == 0);
 
@@ -494,12 +494,12 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
       const auto gradWSPHj = (Hj*etaj.unitVector())*gWj;
 
       // Find the damaged pair weighting scaling.
-      const auto fij = coupling(nodeListi, i, nodeListj, j);
-      CHECK(fij >= 0.0 and fij <= 1.0);
+      const auto fDij = coupling(pairs[kk]);
+      CHECK(fDij >= 0.0 and fDij <= 1.0);
 
       // Zero'th and second moment of the node distribution -- used for the
       // ideal H calculation.
-      const auto fweightij = nodeListi == nodeListj ? 1.0 : mRZj*rhoi/(mRZi*rhoj);
+      const auto fweightij = sameMatij ? 1.0 : mj*rhoi/(mi*rhoj);
       const auto xij2 = xij.magnitude2();
       const auto thpt = xij.selfdyad()*safeInvVar(xij2*xij2*xij2);
       weightedNeighborSumi +=     fweightij*std::abs(gWi);
@@ -524,34 +524,30 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
       viscousWorkj += 0.5*weighti*weightj/mRZj*workQj;
 
       // Velocity gradient.
-      DvDxi -= weightj*vij.dyad(gradWj);
-      DvDxj += weighti*vij.dyad(gradWi);
-      localDvDxi -= fij*weightj*vij.dyad(gradWj);
-      localDvDxj += fij*weighti*vij.dyad(gradWi);
-
-      // We treat positive and negative pressures distinctly, so split 'em up.
-      Pposi = max(0.0, Pi),
-      Pnegi = min(0.0, Pi),
-      Pposj = max(0.0, Pj),
-      Pnegj = min(0.0, Pj);
+      DvDxi -= fDij * weightj*vij.dyad(gradWj);
+      DvDxj += fDij * weighti*vij.dyad(gradWi);
+      if (sameMatij) {
+        localDvDxi -= fDij * weightj*vij.dyad(gradWj);
+        localDvDxj += fDij * weighti*vij.dyad(gradWi);
+      }
 
       // Compute the stress tensors.
-      if (nodeListi == nodeListj) {
-        sigmai = Si - Pnegi*SymTensor::one;
-        sigmaj = Sj - Pnegj*SymTensor::one;
+      if (sameMatij) {
+        sigmai = fDij*Si - Pi * SymTensor::one;
+        sigmaj = fDij*Sj - Pj * SymTensor::one;
       } else {
-        sigmai.Zero();
-        sigmaj.Zero();
+        sigmai = -Pi * SymTensor::one;
+        sigmaj = -Pj * SymTensor::one;
       }
 
       // We decide between RK and CRK for the momentum and energy equations based on the surface condition.
       // Momentum
       forceij = (true ? // surfacePoint(nodeListi, i) <= 1 ? 
-                 0.5*weighti*weightj*((Pposi + Pposj)*deltagrad - fij*(sigmai + sigmaj)*deltagrad + Qaccij) :                // Type III CRK interpoint force.
-                 mi*weightj*(((Pposj - Pposi)*gradWj - fij*(sigmaj - sigmai)*gradWj)/rhoi + rhoi*QPiij.dot(gradWj)));        // RK
+                 0.5*weighti*weightj*(-(sigmai + sigmaj)*deltagrad + Qaccij) :                                               // Type III CRK interpoint force.
+                 mi*weightj*((-(sigmaj - sigmai)*gradWj)/rhoi + rhoi*QPiij.dot(gradWj)));                                    // RK
       forceji = (true ? // surfacePoint(nodeListj, j) <= 1 ?
-                 0.5*weighti*weightj*((Pposi + Pposj)*deltagrad - fij*(sigmai + sigmaj)*deltagrad + Qaccij) :                // Type III CRK interpoint force.
-                 mj*weighti*(((Pposj - Pposi)*gradWi - fij*(sigmaj - sigmai)*gradWi)/rhoj - rhoj*QPiji.dot(gradWi)));        // RK
+                 0.5*weighti*weightj*(-(sigmai + sigmaj)*deltagrad + Qaccij) :                                               // Type III CRK interpoint force.
+                 mj*weighti*((-(sigmaj - sigmai)*gradWi)/rhoj - rhoj*QPiji.dot(gradWi)));                                    // RK
       if (freeParticle) {
         DvDti -= forceij/mRZi;
         DvDtj += forceji/mRZj;
@@ -563,15 +559,15 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
 
       // Energy
       DepsDti += (true ? // surfacePoint(nodeListi, i) <= 1 ?
-                  0.5*weighti*weightj*(Pposj*vij.dot(deltagrad) - fij*sigmaj.dot(vij).dot(deltagrad) + workQi)/mRZi :           // CRK
-                  weightj*rhoi*QPiij.dot(vij).dot(gradWj));                                                                     // RK, Q term only -- adiabatic portion added later
+                  0.5*weighti*weightj*(-sigmaj.dot(vij).dot(deltagrad) + workQi)/mRZi :                                      // CRK
+                  weightj*rhoi*QPiij.dot(vij).dot(gradWj));                                                                  // RK, Q term only -- adiabatic portion added later
       DepsDtj += (true ? // surfacePoint(nodeListj, j) <= 1 ?
-                  0.5*weighti*weightj*(Pposi*vij.dot(deltagrad) - fij*sigmai.dot(vij).dot(deltagrad) + workQj)/mRZj :           // CRK
-                 -weighti*rhoj*QPiji.dot(vij).dot(gradWi));                                                                     // RK, Q term only -- adiabatic portion added later
+                  0.5*weighti*weightj*(-sigmai.dot(vij).dot(deltagrad) + workQj)/mRZj :                                      // CRK
+                 -weighti*rhoj*QPiji.dot(vij).dot(gradWi));                                                                  // RK, Q term only -- adiabatic portion added later
 
       // Estimate of delta v (for XSPH).
-      XSPHDeltaVi -= fij*weightj*Wj*vij;
-      XSPHDeltaVj += fij*weighti*Wi*vij;
+      XSPHDeltaVi -= fDij*weightj*Wj*vij;
+      XSPHDeltaVj += fDij*weighti*Wi*vij;
     }
 
     // Reduce the thread values to the master.

@@ -22,6 +22,6 @@ if (NOT ENABLE_CXXONLY)
     )
 
   install(CODE "execute_process( \
-    COMMAND bash ./scripts/spheral-setup-venv.sh \ 
+    COMMAND bash ${CMAKE_CURRENT_BINARY_DIR}/spheral-setup-venv.sh \ 
     )")
 endif()

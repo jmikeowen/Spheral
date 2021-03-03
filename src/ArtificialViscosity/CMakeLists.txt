@@ -41,5 +41,3 @@ set(ArtificialViscosity_headers
 
 spheral_add_cxx_library(ArtificialViscosity)
 
-list(APPEND SPHERAL_CXX_LIBS Spheral_ArtificialViscosity)
-set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

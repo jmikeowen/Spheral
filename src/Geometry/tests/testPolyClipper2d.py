@@ -93,9 +93,9 @@ class TestPolyClipper2d(unittest.TestCase):
     def test_initializePolygon(self):
         for points in self.pointSets:
             poly = Polygon(points, facets(points))
-            PCpoly = PolyClipper.Polygon()
-            PolyClipper.initializePolygon(PCpoly, points, vertexNeighbors(points))
-            vol, centroid = PolyClipper.moments(PCpoly)
+            PCpoly = PolyClipperPolygon()
+            initializePolygon(PCpoly, points, vertexNeighbors(points))
+            vol, centroid = moments(PCpoly)
             self.failUnless(vol == poly.volume,
                             "Volume comparison failure: %g != %g" % (vol, poly.volume))
             self.failUnless(centroid == poly.centroid,
@@ -105,27 +105,26 @@ class TestPolyClipper2d(unittest.TestCase):
     # collapseDegenerates
     #---------------------------------------------------------------------------
     def test_collapseDegenerates(self):
-        PCpoly0 = PolyClipper.Polygon()
-        PolyClipper.initializePolygon(PCpoly0, degenerate_square_points, vertexNeighbors(degenerate_square_points))
+        PCpoly0 = PolyClipperPolygon()
+        initializePolygon(PCpoly0, degenerate_square_points, vertexNeighbors(degenerate_square_points))
         assert len(PCpoly0) == len(degenerate_square_points)
-        PCpoly1 = PolyClipper.Polygon(PCpoly0)
-        PolyClipper.collapseDegenerates(PCpoly1, 1.0e-10)
+        PCpoly1 = PolyClipperPolygon(PCpoly0)
+        collapseDegenerates(PCpoly1, 1.0e-10)
         assert len(PCpoly1) == 4
-        vol0, centroid0 = PolyClipper.moments(PCpoly0)
-        vol1, centroid1 = PolyClipper.moments(PCpoly1)
+        vol0, centroid0 = moments(PCpoly0)
+        vol1, centroid1 = moments(PCpoly1)
         assert vol1 == vol0
         assert centroid1 == centroid0
 
     #---------------------------------------------------------------------------
     # Spheral::Polygon --> PolyClipper::Polygon
     #---------------------------------------------------------------------------
-    def testConvertToPolygon(self):
+    def testConvertToPolyClipper(self):
         for points in self.pointSets:
             poly = Polygon(points, facets(points))
-            PCpoly = PolyClipper.Polygon()
-            PolyClipper.convertToPolygon(PCpoly, poly)
+            PCpoly = convertToPolyClipper(poly)
             assert len(poly.vertices) == len(PCpoly)
-            vol, centroid = PolyClipper.moments(PCpoly)
+            vol, centroid = moments(PCpoly)
             self.failUnless(vol == poly.volume,
                             "Volume comparison failure: %g != %g" % (vol, poly.volume))
             self.failUnless(centroid == poly.centroid,
@@ -135,13 +134,12 @@ class TestPolyClipper2d(unittest.TestCase):
     #---------------------------------------------------------------------------
     # PolyClipper::Polygon --> Spheral::Polygon
     #---------------------------------------------------------------------------
-    def testConvertFromPolygon(self):
+    def testConvertFromPolyClipper(self):
         for points in self.pointSets:
-            PCpoly = PolyClipper.Polygon()
-            PolyClipper.initializePolygon(PCpoly, points, vertexNeighbors(points))
+            PCpoly = PolyClipperPolygon()
+            initializePolygon(PCpoly, points, vertexNeighbors(points))
             poly0 = Polygon(points, facets(points))
-            poly1 = Polygon()
-            PolyClipper.convertFromPolygon(poly1, PCpoly)
+            poly1, clips = convertFromPolyClipper(PCpoly)
             assert poly1 == poly0
 
     #---------------------------------------------------------------------------
@@ -149,8 +147,8 @@ class TestPolyClipper2d(unittest.TestCase):
     #---------------------------------------------------------------------------
     def testClipInternalOnePlane(self):
         for points in self.pointSets:
-            PCpoly = PolyClipper.Polygon()
-            PolyClipper.initializePolygon(PCpoly, points, vertexNeighbors(points))
+            PCpoly = PolyClipperPolygon()
+            initializePolygon(PCpoly, points, vertexNeighbors(points))
             poly = Polygon(points, facets(points))
             for i in xrange(self.ntests):
                 planes1, planes2 = [], []
@@ -158,16 +156,14 @@ class TestPolyClipper2d(unittest.TestCase):
                             rangen.uniform(0.0, 1.0))
                 phat = Vector(rangen.uniform(-1.0, 1.0), 
                               rangen.uniform(-1.0, 1.0)).unitVector()
-                planes1.append(PolyClipper.Plane2d(p0,  phat))
-                planes2.append(PolyClipper.Plane2d(p0, -phat))
-                PCchunk1 = PolyClipper.Polygon(PCpoly)
-                PCchunk2 = PolyClipper.Polygon(PCpoly)
-                PolyClipper.clipPolygon(PCchunk1, planes1)
-                PolyClipper.clipPolygon(PCchunk2, planes2)
-                chunk1 = Polygon()
-                chunk2 = Polygon()
-                PolyClipper.convertFromPolygon(chunk1, PCchunk1)
-                PolyClipper.convertFromPolygon(chunk2, PCchunk2)
+                planes1.append(PolyClipperPlane2d(p0,  phat))
+                planes2.append(PolyClipperPlane2d(p0, -phat))
+                PCchunk1 = PolyClipperPolygon(PCpoly)
+                PCchunk2 = PolyClipperPolygon(PCpoly)
+                clipPolygon(PCchunk1, planes1)
+                clipPolygon(PCchunk2, planes2)
+                chunk1, clips = convertFromPolyClipper(PCchunk1)
+                chunk2, clips = convertFromPolyClipper(PCchunk2)
                 success = fuzzyEqual(chunk1.volume + chunk2.volume, poly.volume)
                 if not success:
                     print "Failed on pass ", i
@@ -175,8 +171,8 @@ class TestPolyClipper2d(unittest.TestCase):
                     print "Poly:\n", poly
                     print "Chunk 1:\n ", chunk1
                     print "Chunk 2:\n ", chunk2
-                    vol1, cent1 = PolyClipper.moments(PCchunk1)
-                    vol2, cent2 = PolyClipper.moments(PCchunk2)
+                    vol1, cent1 = moments(PCchunk1)
+                    vol2, cent2 = moments(PCchunk2)
                     print "Vol check: %g + %g = %g" % (vol1, vol2, vol1 + vol2)
                     writePolyhedronOBJ(poly, "poly.obj")
                     writePolyhedronOBJ(chunk1, "chunk_ONE.obj")
@@ -191,8 +187,8 @@ class TestPolyClipper2d(unittest.TestCase):
     #---------------------------------------------------------------------------
     def testRedundantClip(self):
         for points in self.pointSets:
-            PCpoly = PolyClipper.Polygon()
-            PolyClipper.initializePolygon(PCpoly, points, vertexNeighbors(points))
+            PCpoly = PolyClipperPolygon()
+            initializePolygon(PCpoly, points, vertexNeighbors(points))
             poly = Polygon(points, facets(points))
             for i in xrange(self.ntests):
                 planes1, planes2 = [], []
@@ -200,17 +196,15 @@ class TestPolyClipper2d(unittest.TestCase):
                             rangen.uniform(0.0, 1.0))
                 phat = Vector(rangen.uniform(-1.0, 1.0), 
                               rangen.uniform(-1.0, 1.0)).unitVector()
-                planes1.append(PolyClipper.Plane2d(p0,  phat))
-                planes2.append(PolyClipper.Plane2d(p0,  phat))
-                planes2.append(PolyClipper.Plane2d(p0,  phat))
-                PCchunk1 = PolyClipper.Polygon(PCpoly)
-                PCchunk2 = PolyClipper.Polygon(PCpoly)
-                PolyClipper.clipPolygon(PCchunk1, planes1)
-                PolyClipper.clipPolygon(PCchunk2, planes2)
-                chunk1 = Polygon()
-                chunk2 = Polygon()
-                PolyClipper.convertFromPolygon(chunk1, PCchunk1)
-                PolyClipper.convertFromPolygon(chunk2, PCchunk2)
+                planes1.append(PolyClipperPlane2d(p0,  phat))
+                planes2.append(PolyClipperPlane2d(p0,  phat))
+                planes2.append(PolyClipperPlane2d(p0,  phat))
+                PCchunk1 = PolyClipperPolygon(PCpoly)
+                PCchunk2 = PolyClipperPolygon(PCpoly)
+                clipPolygon(PCchunk1, planes1)
+                clipPolygon(PCchunk2, planes2)
+                chunk1, clips = convertFromPolyClipper(PCchunk1)
+                chunk2, clips = convertFromPolyClipper(PCchunk2)
                 success = fuzzyEqual(chunk1.volume, chunk2.volume)
                 if not success:
                     print "Failed on pass ", i
@@ -218,8 +212,8 @@ class TestPolyClipper2d(unittest.TestCase):
                     print "Poly:\n", poly
                     print "Chunk 1:\n ", chunk1
                     print "Chunk 2:\n ", chunk2
-                    vol1, cent1 = PolyClipper.moments(PCchunk1)
-                    vol2, cent2 = PolyClipper.moments(PCchunk2)
+                    vol1, cent1 = moments(PCchunk1)
+                    vol2, cent2 = moments(PCchunk2)
                     print "Vol check: %g = %g" % (vol1, vol2)
                     writePolyhedronOBJ(poly, "poly.obj")
                     writePolyhedronOBJ(chunk1, "chunk_ONE.obj")
@@ -240,12 +234,10 @@ class TestPolyClipper2d(unittest.TestCase):
                 phat = Vector(cos(theta), sin(theta))
                 p0 = poly.centroid + r*phat
                 planes = []
-                planes.append(PolyClipper.Plane2d(p0, -phat))
-                PCchunk = PolyClipper.Polygon()
-                PolyClipper.convertToPolygon(PCchunk, poly)
-                PolyClipper.clipPolygon(PCchunk, planes)
-                chunk = Polygon()
-                PolyClipper.convertFromPolygon(chunk, PCchunk)
+                planes.append(PolyClipperPlane2d(p0, -phat))
+                PCchunk = convertToPolyClipper(poly)
+                clipPolygon(PCchunk, planes)
+                chunk, clips = convertFromPolyClipper(PCchunk)
                 success = (chunk.volume == poly.volume)
                 if not success:
                     writePolyhedronOBJ(poly, "poly.obj")
@@ -265,12 +257,10 @@ class TestPolyClipper2d(unittest.TestCase):
                 theta = rangen.uniform(0.0, 2.0*pi)
                 phat = Vector(cos(theta), sin(theta))
                 p0 = poly.centroid + r*phat
-                planes.append(PolyClipper.Plane2d(p0, phat))
-                PCchunk = PolyClipper.Polygon()
-                PolyClipper.convertToPolygon(PCchunk, poly)
-                PolyClipper.clipPolygon(PCchunk, planes)
-                chunk = Polygon()
-                PolyClipper.convertFromPolygon(chunk, PCchunk)
+                planes.append(PolyClipperPlane2d(p0, phat))
+                PCchunk = convertToPolyClipper(poly)
+                clipPolygon(PCchunk, planes)
+                chunk, clips = convertFromPolyClipper(PCchunk)
                 success = (chunk.volume == 0.0)
                 if not success:
                     writePolyhedronOBJ(poly, "poly.obj")
@@ -283,8 +273,8 @@ class TestPolyClipper2d(unittest.TestCase):
     #---------------------------------------------------------------------------
     def testClipInternalTwoPlanes(self):
         for points in self.pointSets:
-            PCpoly = PolyClipper.Polygon()
-            PolyClipper.initializePolygon(PCpoly, points, vertexNeighbors(points))
+            PCpoly = PolyClipperPolygon()
+            initializePolygon(PCpoly, points, vertexNeighbors(points))
             poly = Polygon(points, facets(points))
             for i in xrange(self.ntests):
                 p0 = Vector(rangen.uniform(0.0, 1.0),
@@ -294,33 +284,29 @@ class TestPolyClipper2d(unittest.TestCase):
                 norm2 = Vector(rangen.uniform(-1.0, 1.0), 
                                rangen.uniform(-1.0, 1.0)).unitVector()
                 planes1 = []
-                planes1.append(PolyClipper.Plane2d(p0,  norm1))
-                planes1.append(PolyClipper.Plane2d(p0,  norm2))
+                planes1.append(PolyClipperPlane2d(p0,  norm1))
+                planes1.append(PolyClipperPlane2d(p0,  norm2))
                 planes2 = []
-                planes2.append(PolyClipper.Plane2d(p0,  norm1))
-                planes2.append(PolyClipper.Plane2d(p0, -norm2))
+                planes2.append(PolyClipperPlane2d(p0,  norm1))
+                planes2.append(PolyClipperPlane2d(p0, -norm2))
                 planes3 = []
-                planes3.append(PolyClipper.Plane2d(p0, -norm1))
-                planes3.append(PolyClipper.Plane2d(p0,  norm2))
+                planes3.append(PolyClipperPlane2d(p0, -norm1))
+                planes3.append(PolyClipperPlane2d(p0,  norm2))
                 planes4 = []
-                planes4.append(PolyClipper.Plane2d(p0, -norm1))
-                planes4.append(PolyClipper.Plane2d(p0, -norm2))
-                PCchunk1 = PolyClipper.Polygon(PCpoly)
-                PCchunk2 = PolyClipper.Polygon(PCpoly)
-                PCchunk3 = PolyClipper.Polygon(PCpoly)
-                PCchunk4 = PolyClipper.Polygon(PCpoly)
-                PolyClipper.clipPolygon(PCchunk1, planes1)
-                PolyClipper.clipPolygon(PCchunk2, planes2)
-                PolyClipper.clipPolygon(PCchunk3, planes3)
-                PolyClipper.clipPolygon(PCchunk4, planes4)
-                chunk1 = Polygon(poly)
-                chunk2 = Polygon(poly)
-                chunk3 = Polygon(poly)
-                chunk4 = Polygon(poly)
-                PolyClipper.convertFromPolygon(chunk1, PCchunk1)
-                PolyClipper.convertFromPolygon(chunk2, PCchunk2)
-                PolyClipper.convertFromPolygon(chunk3, PCchunk3)
-                PolyClipper.convertFromPolygon(chunk4, PCchunk4)
+                planes4.append(PolyClipperPlane2d(p0, -norm1))
+                planes4.append(PolyClipperPlane2d(p0, -norm2))
+                PCchunk1 = PolyClipperPolygon(PCpoly)
+                PCchunk2 = PolyClipperPolygon(PCpoly)
+                PCchunk3 = PolyClipperPolygon(PCpoly)
+                PCchunk4 = PolyClipperPolygon(PCpoly)
+                clipPolygon(PCchunk1, planes1)
+                clipPolygon(PCchunk2, planes2)
+                clipPolygon(PCchunk3, planes3)
+                clipPolygon(PCchunk4, planes4)
+                chunk1, clips = convertFromPolyClipper(PCchunk1)
+                chunk2, clips = convertFromPolyClipper(PCchunk2)
+                chunk3, clips = convertFromPolyClipper(PCchunk3)
+                chunk4, clips = convertFromPolyClipper(PCchunk4)
                 success = fuzzyEqual(chunk1.volume + chunk2.volume + chunk3.volume + chunk4.volume, poly.volume)
                 if not success:
                     writePolyhedronOBJ(poly, "poly.obj")
@@ -341,10 +327,10 @@ class TestPolyClipper2d(unittest.TestCase):
     #---------------------------------------------------------------------------
     def testSplitIntoTriangles(self):
         for points in self.convexPointSets:
-            PCpoly = PolyClipper.Polygon()
-            PolyClipper.initializePolygon(PCpoly, points, vertexNeighbors(points))
-            tris = PolyClipper.splitIntoTriangles(PCpoly)
-            vol0, centroid0 = PolyClipper.moments(PCpoly)
+            PCpoly = PolyClipperPolygon()
+            initializePolygon(PCpoly, points, vertexNeighbors(points))
+            tris = splitIntoTriangles(PCpoly)
+            vol0, centroid0 = moments(PCpoly)
             volTris = 0.0
             centroidTris = Vector()
             for inds in tris:

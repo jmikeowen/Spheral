@@ -225,7 +225,7 @@ computeHullSumMassDensity(const ConnectivityMap<Dimension>& connectivityMap,
              jItr != connectivity.end();
              ++jItr) {
           const unsigned j = *jItr;
-          if (nodeCoupling(nodeListi, i, nodeListi, j) > 0.0) {
+          if (nodeCoupling(NodePairIdxType(i, nodeListi, j, nodeListi)) > 0.0) {
             const Vector& rj = position(nodeListi, j);
             const Vector rji = rj - ri;
             const Scalar etai2 = (Hi*rji).magnitude2();

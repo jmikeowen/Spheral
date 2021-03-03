@@ -430,11 +430,11 @@ def dumpPhysicsState(stateThingy,
     # What did we get passed?
     if max([isinstance(stateThingy, x) for x in [Integrator1d, Integrator2d, Integrator3d]]):
         integrator = stateThingy
-        dataBase = integrator.dataBase()
-        state = eval("State%id(integrator.dataBase(), integrator.physicsPackages())" % integrator.dataBase().nDim)
+        dataBase = integrator.dataBase
+        state = eval("State%id(integrator.dataBase, integrator.physicsPackages())" % integrator.dataBase.nDim)
         derivs = None
         if dumpDerivatives:
-            derivs = eval("StateDerivatives%id(integrator.dataBase(), integrator.physicsPackages())" % integrator.dataBase().nDim)
+            derivs = eval("StateDerivatives%id(integrator.dataBase, integrator.physicsPackages())" % integrator.dataBase.nDim)
         currentTime = integrator.currentTime
         currentCycle = integrator.currentCycle
     elif max([isinstance(stateThingy, x) for x in [State1d, State2d, State3d]]):
@@ -554,8 +554,8 @@ def dumpPhysicsState2Lattice(stateThingy,
     # What did we get passed?
     if max([isinstance(stateThingy, x) for x in [Integrator2d, Integrator3d]]):
         integrator = stateThingy
-        dataBase = integrator.dataBase()
-        state = eval("State%id(integrator.dataBase(), integrator.physicsPackages())" % integrator.dataBase().nDim)
+        dataBase = integrator.dataBase
+        state = eval("State%id(integrator.dataBase, integrator.physicsPackages())" % integrator.dataBase.nDim)
         currentTime = integrator.currentTime
         currentCycle = integrator.currentCycle
     elif max([isinstance(stateThingy, x) for x in [State2d, State3d]]):
@@ -582,7 +582,7 @@ def dumpPhysicsState2Lattice(stateThingy,
 
     # If requested, set ghost node info.
     if dumpGhosts and not integrator is None:
-        derivs = eval("StateDerivatives%id(integrator.dataBase(), integrator.physicsPackages())" % nDim)
+        derivs = eval("StateDerivatives%id(integrator.dataBase, integrator.physicsPackages())" % nDim)
         integrator.setGhostNodes()
         integrator.applyGhostBoundaries(state, derivs)
 

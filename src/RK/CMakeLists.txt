@@ -55,5 +55,3 @@ set(RK_headers
 
 spheral_add_cxx_library(RK)
 
-list(APPEND SPHERAL_CXX_LIBS Spheral_RK)
-set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

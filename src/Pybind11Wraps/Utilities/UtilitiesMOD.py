@@ -49,7 +49,25 @@ PYB11includes += ['"Utilities/packElement.hh"',
                   '"Utilities/DomainNode.hh"',
                   '"Utilities/NodeCoupling.hh"',
                   '"Utilities/DamagedNodeCoupling.hh"',
-                  '"Utilities/DamagedNodeCouplingWithFrags.hh"']
+                  '"Utilities/ThreePointDamagedNodeCoupling.hh"',
+                  '"Utilities/DamageGradientNodeCoupling.hh"']
+
+#-------------------------------------------------------------------------------
+# Preamble
+#-------------------------------------------------------------------------------
+PYB11preamble += """
+extern Timer TIME_Spheral;
+
+namespace Spheral {
+void startRootTimer() {
+  TIME_Spheral.start();
+}
+
+void stopRootTimer() {
+  TIME_Spheral.stop();
+}
+}
+"""
 
 #-------------------------------------------------------------------------------
 # Namespaces
@@ -238,7 +256,8 @@ def computeShepardsInterpolation(fieldList = "const FieldList<%(Dimension)s, %(D
 for ndim in dims:
     exec('''
 DamagedNodeCoupling%(ndim)id = PYB11TemplateClass(DamagedNodeCoupling, template_parameters="%(Dimension)s")
-DamagedNodeCouplingWithFrags%(ndim)id = PYB11TemplateClass(DamagedNodeCouplingWithFrags, template_parameters="%(Dimension)s")
+ThreePointDamagedNodeCoupling%(ndim)id = PYB11TemplateClass(ThreePointDamagedNodeCoupling, template_parameters="%(Dimension)s")
+DamageGradientNodeCoupling%(ndim)id = PYB11TemplateClass(DamageGradientNodeCoupling, template_parameters="%(Dimension)s")
 
 # Functors
 VectorScalarFunctor%(ndim)id = PYB11TemplateClass(SpheralFunctor, template_parameters=("%(Vector)s", "double"))
@@ -399,6 +418,14 @@ def simpsonsIntegrationDouble(function = "const PythonBoundFunctors::SpheralFunc
     "Numerically integrate 'function' in the range (x0, x1) via Simpsons rule"
     return "double"
 
+def startRootTimer():
+    "Start the root Spheral Timer."
+    return "void"
+
+def stopRootTimer():
+    "Stop the root Spheral Timer."
+    return "void"
+
 #-------------------------------------------------------------------------------
 # packElement/unpackElement
 #-------------------------------------------------------------------------------
@@ -446,6 +473,16 @@ def closestPointOnSegment(p = "const %(Vector)s&",
     return "%(Vector)s"
 
 @PYB11template("Vector")
+@PYB11cppname("closestPointOnSegment")
+def closestPointOnSegment1(p = "const %(Vector)s&",
+                           a0 = "const %(Vector)s&",
+                           a1 = "const %(Vector)s&",
+                           result = "%(Vector)s&"):
+    """Find the point on a line segment (a0,a1) closest to point (p).
+This version return True if the closest point on the line is bounded by the segment, and False otherwise."""
+    return "bool"
+
+@PYB11template("Vector")
 def pointPlaneDistance(point = "const %(Vector)s&",
                        origin = "const %(Vector)s&",
                        unitNormal = "const %(Vector)s&"):
@@ -469,6 +506,7 @@ Currently only works single NodeList -> single NodeList, no boundaries."""
 for ndim in (x for x in dims if x in (2, 3)):
     exec('''
 closestPointOnSegment%(ndim)id = PYB11TemplateFunction(closestPointOnSegment, template_parameters="%(Vector)s", pyname="closestPointOnSegment")
+closestPointOnSegment1%(ndim)id = PYB11TemplateFunction(closestPointOnSegment1, template_parameters="%(Vector)s", pyname="closestPointOnSegment")
 pointPlaneDistance%(ndim)id = PYB11TemplateFunction(pointPlaneDistance, template_parameters="%(Vector)s", pyname="pointPlaneDistance")
 overlayRemapFields%(ndim)id = PYB11TemplateFunction(overlayRemapFields, template_parameters="Dim<%(ndim)i>", pyname="overlayRemapFields")
 ''' % {"ndim"   : ndim,

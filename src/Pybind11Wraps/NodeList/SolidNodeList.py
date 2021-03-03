@@ -83,18 +83,6 @@ class SolidNodeList(FluidNodeList):
 
     @PYB11const
     @PYB11returnpolicy("reference_internal")
-    def effectiveDamage(self):
-        "The effective damage field"
-        return "const SymTensorField&"
-
-    @PYB11const
-    @PYB11returnpolicy("reference_internal")
-    def damageGradient(self):
-        "The damage gradient field"
-        return "const VectorField&"
-
-    @PYB11const
-    @PYB11returnpolicy("reference_internal")
     def fragmentIDs(self):
         "The fragment IDs field"
         return "const IntField&"

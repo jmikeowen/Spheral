@@ -41,35 +41,12 @@ Timer   TIME_Polyhedron_BB_R2          ("Polyhedron::setBoundingBox - Rinterior2
 Timer TIME_Polyhedron_convex           ("Polyhedron::convex", TIME_Spheral);
 
 //------------------------------------------------------------------------------
-// PolyClipper2d timers
+// PolyClipper timers
 //------------------------------------------------------------------------------
 Timer TIME_PC2d_convertto           ("Spheral::Polygon -> PolyClipper::Polygon", TIME_Spheral);
 Timer TIME_PC2d_convertfrom         ("PolyClipper::Polygon -> Spheral::Polygon", TIME_Spheral);
-Timer TIME_PC2d_copy                ("Copy PolyClipper::Polygon", TIME_Spheral);
-Timer TIME_PC2d_moments             ("Compute polygon moments", TIME_Spheral);
-Timer TIME_PC2d_clip                ("clipPolygon", TIME_Spheral);
-Timer   TIME_PC2d_planes            ("Apply clip planes (clipPolygon)", TIME_PC2d_clip);
-Timer   TIME_PC2d_checkverts        ("Clip vertices", TIME_PC2d_planes);
-Timer   TIME_PC2d_insertverts       ("Insert new vertices", TIME_PC2d_planes);
-Timer   TIME_PC2d_hanging           ("Link hanging vertices", TIME_PC2d_planes);
-Timer   TIME_PC2d_compress          ("Compress to active vertices", TIME_PC2d_planes);
-Timer TIME_PC2d_collapseDegenerates ("Remove degenerate edges/vertices", TIME_Spheral);
-
-//------------------------------------------------------------------------------
-// PolyClipper3d timers
-//------------------------------------------------------------------------------
 Timer TIME_PC3d_convertto("Spheral::Polyhedron -> PolyClipper::Polyhedron", TIME_Spheral);
 Timer TIME_PC3d_convertfrom("PolyClipper::Polyhedron -> Spheral::Polyhedron", TIME_Spheral);
-Timer TIME_PC3d_copy("Copy PolyClipper::Polyhedron", TIME_Spheral);
-Timer TIME_PC3d_moments("Compute polyhedron moments", TIME_Spheral);
-Timer TIME_PC3d_clip("clipPolyhedron", TIME_Spheral);
-Timer   TIME_PC3d_planes("Apply clip planes (clipPolyhedron)", TIME_PC3d_clip);
-Timer   TIME_PC3d_checkverts("Clip vertices", TIME_PC3d_planes);
-Timer   TIME_PC3d_insertverts("Insert new vertices", TIME_PC3d_planes);
-Timer   TIME_PC3d_planeverts("Relink in-plane vertices", TIME_PC3d_planes);
-Timer   TIME_PC3d_linknew("Link hanging vertices", TIME_PC3d_planes);
-Timer   TIME_PC3d_compress("Compress to active vertices", TIME_PC3d_planes);
-Timer TIME_PC3d_collapseDegenerates ("Remove degenerate edges/vertices", TIME_Spheral);
 
 //------------------------------------------------------------------------------
 // ConnectivityMap
@@ -79,6 +56,8 @@ Timer TIME_ConnectivityMap_cutConnectivity("ConnectivityMap::cutConnectivity", T
 Timer TIME_ConnectivityMap_valid("ConnectivityMap::valid", TIME_Spheral);
 Timer TIME_ConnectivityMap_computeConnectivity("ConnectivityMap::computeConnectivity", TIME_Spheral);
 Timer TIME_ConnectivityMap_computeOverlapConnectivity("ConnectivityMap::computeOverlapConnectivity", TIME_ConnectivityMap_computeConnectivity);
+Timer TIME_ConnectivityMap_computeIntersectionConnectivity("ConnectivityMap::intersectionConnectivity", TIME_Spheral);
+Timer TIME_ConnectivityMap_precomputeIntersectionConnectivity("ConnectivityMap::precomputeIntersectionConnectivity", TIME_ConnectivityMap_computeConnectivity);
 
 //------------------------------------------------------------------------------
 // CRKSPH
@@ -154,6 +133,23 @@ Timer TIME_CheapRK2EndStep        ("Advance to end of step  ", TIME_CheapRK2);
 Timer TIME_CheapRK2Finalize       ("postStepFinalize        ", TIME_CheapRK2);
 Timer TIME_CheapRK2EnforceBound   ("Enforce boundaries      ", TIME_CheapRK2);
 
+//------------------------------------------------------------------------------
+// Verlet (2nd order) integrator
+//------------------------------------------------------------------------------
+Timer TIME_Verlet                 ("Root Verlet Integrator  ", TIME_Spheral);
+Timer TIME_VerletPreInit          ("preStepInitialize       ", TIME_Verlet);
+Timer TIME_VerletCopyPos0         ("Copy initial position   ", TIME_Verlet);
+Timer TIME_VerletDt               ("Set dt                  ", TIME_Verlet);
+Timer TIME_VerletCopyState0       ("Copy initial state      ", TIME_Verlet);
+Timer TIME_VerletEvalDerivs1      ("Eval initial derivs     ", TIME_Verlet);
+Timer TIME_VerletPredict1         ("Predict mid-point state ", TIME_Verlet);
+Timer TIME_VerletDtCheck          ("Check timestep validity ", TIME_Verlet);
+Timer TIME_VerletMidPointCopy     ("Copy mid-point state    ", TIME_Verlet);
+Timer TIME_VerletPredict2         ("Predict final state     ", TIME_Verlet);
+Timer TIME_VerletEvalDerivs2      ("Eval final derivs       ", TIME_Verlet);
+Timer TIME_VerletUpdateState      ("Correct final state     ", TIME_Verlet);
+Timer TIME_VerletFinalize         ("postStepFinalize        ", TIME_Verlet);
+
 // //------------------------------------------------------------------------------
 // // NestedGridNeighbor
 // //------------------------------------------------------------------------------
@@ -191,6 +187,36 @@ Timer TIME_SPHevalDerivs         ("SPH evaluateDerivates          ", TIME_SPH);
 Timer TIME_SPHevalDerivs_initial ("SPH evaluateDerivates (initial)", TIME_SPHevalDerivs);
 Timer TIME_SPHevalDerivs_pairs   ("SPH evaluateDerivates (pairs)  ", TIME_SPHevalDerivs);
 Timer TIME_SPHevalDerivs_final   ("SPH evaluateDerivates (final)  ", TIME_SPHevalDerivs);
+
+//------------------------------------------------------------------------------
+// SolidSPH 
+//------------------------------------------------------------------------------
+Timer TIME_SolidSPH                   ("SolidSPH base timer                 ", TIME_Physics);
+Timer TIME_SolidSPHinitializeStartup  ("SolidSPH initializeProblemStartup   ", TIME_SolidSPH);
+Timer TIME_SolidSPHregister           ("SolidSPH register                   ", TIME_SolidSPH);
+Timer TIME_SolidSPHregisterDerivs     ("SolidSPH registerDerivatives        ", TIME_SolidSPH);
+Timer TIME_SolidSPHpreStepInitialize  ("SolidSPH preStepInitialize (step)   ", TIME_SolidSPH);
+Timer TIME_SolidSPHinitialize         ("SolidSPH initialize (evalderivs)    ", TIME_SolidSPH);
+Timer TIME_SolidSPHfinalizeDerivs     ("SolidSPH finalizeDerivatives        ", TIME_SolidSPH);
+Timer TIME_SolidSPHghostBounds        ("SolidSPH ghost boundaries           ", TIME_SolidSPH);
+Timer TIME_SolidSPHupdateVol          ("SolidSPH updateVolume               ", TIME_SolidSPH);
+Timer TIME_SolidSPHenforceBounds      ("SolidSPH enforceBoundaries          ", TIME_SolidSPH);
+Timer TIME_SolidSPHevalDerivs         ("SolidSPH evaluateDerivates          ", TIME_SolidSPH);
+Timer TIME_SolidSPHevalDerivs_initial ("SolidSPH evaluateDerivates (initial)", TIME_SolidSPHevalDerivs);
+Timer TIME_SolidSPHevalDerivs_pairs   ("SolidSPH evaluateDerivates (pairs)  ", TIME_SolidSPHevalDerivs);
+Timer TIME_SolidSPHevalDerivs_final   ("SolidSPH evaluateDerivates (final)  ", TIME_SolidSPHevalDerivs);
+
+//------------------------------------------------------------------------------
+// Damage
+//------------------------------------------------------------------------------
+Timer TIME_Damage                       ("Damage base timer                 ", TIME_Physics);
+Timer TIME_DamageModel_finalize         ("DamageModel::finalize             ", TIME_Damage);
+Timer TIME_ThreePointCoupling           ("3-pt damage coupling constructor  ", TIME_Damage);
+Timer TIME_ThreePointCoupling_initial   ("3-pt damage compute flags         ", TIME_Damage);
+Timer TIME_ThreePointCoupling_pairs     ("3-pt damage loop over pairs       ", TIME_Damage);
+Timer TIME_DamageGradientCoupling       ("damage gradient coupling ctor     ", TIME_Damage);
+Timer TIME_DamageGradientCoupling_grad  ("damage gradient compute grad      ", TIME_Damage);
+Timer TIME_DamageGradientCoupling_pairs ("damage gradient loop over pairs   ", TIME_Damage);
 
 // //------------------------------------------------------------------------------
 // // MASH NodeList

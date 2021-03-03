@@ -7,7 +7,7 @@
 #include "YieldStrengthPolicy.hh"
 #include "NodeList/SolidNodeList.hh"
 #include "SolidMaterial/StrengthModel.hh"
-#include "SolidFieldNames.hh"
+#include "Strength/SolidFieldNames.hh"
 #include "Hydro/HydroFieldNames.hh"
 #include "DataBase/UpdatePolicyBase.hh"
 #include "DataBase/IncrementState.hh"
@@ -29,6 +29,7 @@ YieldStrengthPolicy():
                                                                    HydroFieldNames::specificThermalEnergy,
                                                                    HydroFieldNames::pressure,
                                                                    SolidFieldNames::plasticStrain,
+                                                                   SolidFieldNames::tensorDamage,
                                                                    IncrementState<Dimension, Scalar>::prefix() + SolidFieldNames::plasticStrain) {
 }
 
@@ -56,27 +57,28 @@ update(const KeyType& key,
   StateBase<Dimension>::splitFieldKey(key, fieldKey, nodeListKey);
   REQUIRE(fieldKey == SolidFieldNames::yieldStrength and 
           nodeListKey == UpdatePolicyBase<Dimension>::wildcard());
-  FieldList<Dimension, Scalar> stateFields = state.fields(fieldKey, Scalar());
-  const unsigned numFields = stateFields.numFields();
+  auto stateFields = state.fields(fieldKey, Scalar());
+  const auto numFields = stateFields.numFields();
 
   // Get the mass density, specific thermal energy, pressure,
   // plastic strain, and plastic strain rate from the state.
-  const FieldList<Dimension, Scalar> massDensity = state.fields(HydroFieldNames::massDensity, 0.0);
-  const FieldList<Dimension, Scalar> energy = state.fields(HydroFieldNames::specificThermalEnergy, 0.0);
-  const FieldList<Dimension, Scalar> P = state.fields(HydroFieldNames::pressure, 0.0);
-  const FieldList<Dimension, Scalar> PS = state.fields(SolidFieldNames::plasticStrain, 0.0);
-  const FieldList<Dimension, Scalar> PSR = derivs.fields(SolidFieldNames::plasticStrainRate, 0.0);
+  const auto massDensity = state.fields(HydroFieldNames::massDensity, 0.0);
+  const auto energy = state.fields(HydroFieldNames::specificThermalEnergy, 0.0);
+  const auto P = state.fields(HydroFieldNames::pressure, 0.0);
+  const auto PS = state.fields(SolidFieldNames::plasticStrain, 0.0);
+  const auto PSR = derivs.fields(SolidFieldNames::plasticStrainRate, 0.0);
+  const auto D = state.fields(SolidFieldNames::tensorDamage, SymTensor::zero);
 
   // Walk the individual fields.
-  for (unsigned k = 0; k != numFields; ++k) {
+  for (auto k = 0u; k < numFields; ++k) {
 
     // Get the strength model.  This cast is ugly, but is a work-around for now.
-    const SolidNodeList<Dimension>* solidNodeListPtr = dynamic_cast<const SolidNodeList<Dimension>*>(stateFields[k]->nodeListPtr());
+    const auto* solidNodeListPtr = dynamic_cast<const SolidNodeList<Dimension>*>(stateFields[k]->nodeListPtr());
     CHECK(solidNodeListPtr != 0);
-    const StrengthModel<Dimension>& strengthModel = solidNodeListPtr->strengthModel();
+    const auto& strengthModel = solidNodeListPtr->strengthModel();
 
     // Now set the yield strength.
-    strengthModel.yieldStrength(*stateFields[k], *massDensity[k], *energy[k], *P[k], *PS[k], *PSR[k]);
+    strengthModel.yieldStrength(*stateFields[k], *massDensity[k], *energy[k], *P[k], *PS[k], *PSR[k], *D[k]);
   }
 }
 

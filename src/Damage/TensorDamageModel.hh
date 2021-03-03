@@ -67,11 +67,9 @@ public:
   // Constructors, destructor.
   TensorDamageModel(SolidNodeList<Dimension>& nodeList,
                     const TensorStrainAlgorithm strainAlgorithm,
-                    const EffectiveDamageAlgorithm effDamageAlgorithm,
-                    const bool useDamageGradient,
+                    const DamageCouplingAlgorithm damageCouplingAlgorithm,
                     const TableKernel<Dimension>& W,
                     const double crackGrowthMultiplier,
-                    const EffectiveFlawAlgorithm flawAlgorithm,
                     const double criticalDamageThreshold,
                     const bool damageInCompression,
                     const FlawStorageType& flaws);
@@ -85,46 +83,38 @@ public:
                            const Scalar dt,
                            const DataBase<Dimension>& dataBase,
                            const State<Dimension>& state,
-                           StateDerivatives<Dimension>& derivatives) const;
+                           StateDerivatives<Dimension>& derivatives) const override;
 
   // Vote on a time step.
   virtual TimeStepType dt(const DataBase<Dimension>& dataBase, 
                           const State<Dimension>& state,
                           const StateDerivatives<Dimension>& derivs,
-                          const Scalar currentTime) const;
+                          const Scalar currentTime) const override;
 
   // Register our state.
   virtual void registerState(DataBase<Dimension>& dataBase,
-                             State<Dimension>& state);
+                             State<Dimension>& state) override;
 
   // Register the derivatives/change fields for updating state.
   virtual void registerDerivatives(DataBase<Dimension>& dataBase,
-                                   StateDerivatives<Dimension>& derivs);
+                                   StateDerivatives<Dimension>& derivs) override;
 
   // Apply boundary conditions to the physics specific fields.
   virtual void applyGhostBoundaries(State<Dimension>& state,
-                                    StateDerivatives<Dimension>& derivs);
+                                    StateDerivatives<Dimension>& derivs) override;
 
   // Enforce boundary conditions for the physics specific fields.
   virtual void enforceBoundaries(State<Dimension>& state,
-                                 StateDerivatives<Dimension>& derivs);
+                                 StateDerivatives<Dimension>& derivs) override;
   //...........................................................................
 
   // Provide access to the state fields we maintain.
   const Field<Dimension, SymTensor>& strain() const;
   const Field<Dimension, SymTensor>& effectiveStrain() const;
   const Field<Dimension, Scalar>& DdamageDt() const;
-  const Field<Dimension, SymTensor>& newEffectiveDamage() const;
-  const Field<Dimension, Vector>& newDamageGradient() const;
 
-  // The algorithms being used to update the strain and effective damage.
+  // The algorithms to update the strain.
   TensorStrainAlgorithm strainAlgorithm() const;
-  EffectiveDamageAlgorithm effectiveDamageAlgorithm() const;
-
-  // Flag to determine if we compute the gradient of the damage at the start 
-  // of a timestep.
-  bool useDamageGradient() const;
-  void useDamageGradient(bool x);
 
   // Flag to determine if damage in compression is allowed.
   bool damageInCompression() const;
@@ -146,15 +136,12 @@ protected:
   Field<Dimension, SymTensor> mStrain;
   Field<Dimension, SymTensor> mEffectiveStrain;
   Field<Dimension, Scalar> mDdamageDt;
-  Field<Dimension, SymTensor> mNewEffectiveDamage;
-  Field<Dimension, Vector> mNewDamageGradient;
 
 private:
   //--------------------------- Private Interface ---------------------------//
   TensorStrainAlgorithm mStrainAlgorithm;
-  EffectiveDamageAlgorithm mEffDamageAlgorithm;
   double mCriticalDamageThreshold;
-  bool mUseDamageGradient, mDamageInCompression;
+  bool mDamageInCompression;
 
   // No default constructor, copying or assignment.
   TensorDamageModel();

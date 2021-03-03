@@ -353,12 +353,12 @@ computeDPDrho(const Scalar massDensity,
   const double dpdrho_cold = mC0*mC0*ack;
 
   // Put the whole thing together, depending on the thermal energy.
-  // if (mu <= 0.0 or eps < 0.0) {
-  //   return dpdrho_cold;
-  // } else {
+  if (mu <= 0.0 or eps < 0.0) {
+    return dpdrho_cold;
+  } else {
     const double Prho2 = this->pressure(massDensity, specificThermalEnergy)/(rho*rho);
     return std::max(0.0, dpdrho_cold + max(0.0, mb*eps + mb*Prho2));
-  // }
+  }
 }
 
 //------------------------------------------------------------------------------

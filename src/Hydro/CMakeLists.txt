@@ -48,5 +48,3 @@ set(Hydro_headers
 
 spheral_add_cxx_library(Hydro)
 
-list(APPEND SPHERAL_CXX_LIBS Spheral_Hydro)
-set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

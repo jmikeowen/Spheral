@@ -77,8 +77,9 @@ CollinsStrength<Dimension>::
 shearModulus(Field<Dimension, Scalar>& shearModulus,
              const Field<Dimension, Scalar>& density,
              const Field<Dimension, Scalar>& specificThermalEnergy,
-             const Field<Dimension, Scalar>& pressure) const {
-  mShearModulusModel.shearModulus(shearModulus, density, specificThermalEnergy, pressure);
+             const Field<Dimension, Scalar>& pressure,
+             const Field<Dimension, SymTensor>& damage) const {
+  mShearModulusModel.shearModulus(shearModulus, density, specificThermalEnergy, pressure, damage);
 }
 
 //------------------------------------------------------------------------------
@@ -92,22 +93,18 @@ yieldStrength(Field<Dimension, Scalar>& yieldStrength,
               const Field<Dimension, Scalar>& /*specificThermalEnergy*/,
               const Field<Dimension, Scalar>& pressure,
               const Field<Dimension, Scalar>& /*plasticStrain*/,
-              const Field<Dimension, Scalar>& /*plasticStrainRate*/) const {
-
-  // Do a janky extraction of the damage (unknown time level) from the NodeList.  Better
-  // be a SolidNodeList since we're using strength!
-  const auto& nodes = dynamic_cast<const SolidNodeList<Dimension>&>(yieldStrength.nodeList());
-  const auto& Dfield = nodes.damage();
+              const Field<Dimension, Scalar>& /*plasticStrainRate*/,
+              const Field<Dimension, SymTensor>& damage) const {
 
   const auto n = density.numInternalElements();
   const auto YdiffInv = safeInvVar(mYm - mY0);
-  for (unsigned i = 0; i != n; ++i) {
+#pragma omp for
+  for (unsigned i = 0; i < n; ++i) {
     const auto Pi = std::max(0.0, pressure(i));
     const auto Yi = mY0 + mmui*Pi/(1.0 + mmui*Pi*YdiffInv);
     const auto Yd = std::min(Yi, mmud*Pi);
     CHECK(Yi >= 0.0 and Yd >= 0.0);
-    const auto Di = Dfield(i).Trace()/Dimension::nDim;
-    CHECK(Di >= 0.0 and Di <= 1.0);
+    const auto Di = std::max(0.0, std::min(1.0, damage(i).eigenValues().maxElement()));
     yieldStrength(i) = (1.0 - Di)*Yi + Di*Yd;
     CHECK(yieldStrength(i) >= 0.0);
   }
@@ -123,8 +120,9 @@ soundSpeed(Field<Dimension, Scalar>& soundSpeed,
            const Field<Dimension, Scalar>& density,
            const Field<Dimension, Scalar>& specificThermalEnergy,
            const Field<Dimension, Scalar>& pressure,
-           const Field<Dimension, Scalar>& fluidSoundSpeed) const {
-  mShearModulusModel.soundSpeed(soundSpeed, density, specificThermalEnergy, pressure, fluidSoundSpeed);
+           const Field<Dimension, Scalar>& fluidSoundSpeed,
+           const Field<Dimension, SymTensor>& damage) const {
+  mShearModulusModel.soundSpeed(soundSpeed, density, specificThermalEnergy, pressure, fluidSoundSpeed, damage);
 }
 
 //------------------------------------------------------------------------------

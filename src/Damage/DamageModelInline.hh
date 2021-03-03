@@ -3,6 +3,25 @@
 namespace Spheral {
 
 //------------------------------------------------------------------------------
+// Do we require ghost-ghost or intersection connectivity?
+//------------------------------------------------------------------------------
+template<typename Dimension>
+inline
+bool
+DamageModel<Dimension>::
+requireGhostConnectivity() const {
+  return mDamageCouplingAlgorithm == DamageCouplingAlgorithm::ThreePointDamage;
+}
+
+template<typename Dimension>
+inline
+bool
+DamageModel<Dimension>::
+requireIntersectionConnectivity() const {
+  return mComputeIntersectConnectivity;
+}
+
+//------------------------------------------------------------------------------
 // The effective critical number of nodes per smoothing scale, below which we
 // assume all flaws are active on a node.
 //------------------------------------------------------------------------------
@@ -33,11 +52,7 @@ DamageModel<Dimension>::
 flawsForNode(const size_t index) const {
   REQUIRE(index < mNodeList.numInternalNodes());
   REQUIRE(mFlaws.nodeListPtr() == &mNodeList);
-  if (mEffectiveFlawAlgorithm == EffectiveFlawAlgorithm::FullSpectrumFlaws) {
-    return mFlaws(index);
-  } else {
-    return std::vector<double>(1, mEffectiveFlaws(index));
-  }
+  return mFlaws(index);
 }
 
 //------------------------------------------------------------------------------
@@ -77,10 +92,18 @@ crackGrowthMultiplier() const {
 
 template<typename Dimension>
 inline
-EffectiveFlawAlgorithm
+DamageCouplingAlgorithm
 DamageModel<Dimension>::
-effectiveFlawAlgorithm() const {
-  return mEffectiveFlawAlgorithm;
+damageCouplingAlgorithm() const {
+  return mDamageCouplingAlgorithm;
+}
+
+template<typename Dimension>
+inline
+const NodeCoupling&
+DamageModel<Dimension>::
+nodeCoupling() const {
+  return *mNodeCouplingPtr;
 }
 
 //------------------------------------------------------------------------------
@@ -119,17 +142,6 @@ typename DamageModel<Dimension>::FlawStorageType&
 DamageModel<Dimension>::
 flaws() {
   return mFlaws;
-}
-
-//------------------------------------------------------------------------------
-// Access the computed effective flaw activation strain per node.
-//------------------------------------------------------------------------------
-template<typename Dimension>
-inline
-const Field<Dimension, typename Dimension::Scalar>&
-DamageModel<Dimension>::
-effectiveFlaws() const {
-  return mEffectiveFlaws;
 }
 
 }

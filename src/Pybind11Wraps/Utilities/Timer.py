@@ -41,7 +41,8 @@ class Timer:
 
     @PYB11static
     def TimerSummary(self,
-                     fname=("const std::string", '"time.table"')):
+                     fname=("const std::string", '"time.table"'),
+                     printAllTimers=("const bool", "false")):
         return "void"
 
     #...........................................................................

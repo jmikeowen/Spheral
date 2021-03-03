@@ -9,7 +9,9 @@ PYB11includes = ['"Geometry/Dimension.hh"',
                  "<vector>",
                  "<map>",
                  "<set>",
-                 "<string>"]
+                 "<string>",
+                 '"polyclipper2d.hh"',
+                 '"polyclipper3d.hh"']
 
 PYB11preamble = """
 typedef Spheral::GeomPlane<Spheral::Dim<1>> Plane1d;
@@ -93,6 +95,9 @@ PYB11opaque = ["std::vector<char>",
                "std::vector<Plane1d>",
                "std::vector<Plane2d>",
                "std::vector<Plane3d>",
+
+               "std::vector<PolyClipper::Vertex2d<>>",
+               "std::vector<PolyClipper::Vertex3d<>>",
 
                "std::vector<RKCoefficients<Dim<1>>>",
                "std::vector<RKCoefficients<Dim<2>>>",

@@ -24,9 +24,6 @@ PYB11includes += ['"SPH/SPHHydroBase.hh"',
                   '"SPH/SPHHydroBaseGSRZ.hh"',
                   '"SPH/SolidSPHHydroBase.hh"',
                   '"SPH/SolidSPHHydroBaseRZ.hh"',
-                  '"Utilities/NodeCoupling.hh"',
-                  '"Utilities/DamagedNodeCoupling.hh"',
-                  '"Utilities/DamagedNodeCouplingWithFrags.hh"',
                   '"FileIO/FileIO.hh"',
                   '"ArtificialViscosity/ArtificialViscosity.hh"']
 

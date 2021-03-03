@@ -113,6 +113,12 @@ class Physics:
 
     @PYB11virtual
     @PYB11const
+    def requireIntersectionConnectivity(self):
+        "Some physics algorithms require intersection connectivity to be constructed."
+        return "bool"
+
+    @PYB11virtual
+    @PYB11const
     def requireReproducingKernels(self):
         "Some physics algorithms require reproducing kernels."
         return "std::set<RKOrder>"

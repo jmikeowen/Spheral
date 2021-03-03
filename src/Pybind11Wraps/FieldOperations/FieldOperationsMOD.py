@@ -55,6 +55,18 @@ def gradient(fieldList = "const FieldList<%(Dimension)s, %(DataType)s>&",
     "Calculate the gradient of the given FieldList."
     return "FieldList<%(Dimension)s, typename MathTraits<%(Dimension)s, %(DataType)s>::GradientType>"
 
+@PYB11cppname("gradient")
+@PYB11template("Dimension", "DataType")
+def gradientVec(fieldList = "const FieldList<%(Dimension)s, std::vector<%(DataType)s>>&",
+                position = "const FieldList<%(Dimension)s, typename %(Dimension)s::Vector>&",
+                weight = "const FieldList<%(Dimension)s, typename %(Dimension)s::Scalar>&",
+                mass = "const FieldList<%(Dimension)s, typename %(Dimension)s::Scalar>&",
+                rho = "const FieldList<%(Dimension)s, typename %(Dimension)s::Scalar>&",
+                Hfield = "const FieldList<%(Dimension)s, typename %(Dimension)s::SymTensor>&",
+                kernel = "const TableKernel<%(Dimension)s>&"):
+    "Calculate the gradient of the given FieldList."
+    return "FieldList<%(Dimension)s, std::vector<typename MathTraits<%(Dimension)s, %(DataType)s>::GradientType>>"
+
 @PYB11template("Dimension", "DataType")
 def divergence(fieldList = "const FieldList<%(Dimension)s, %(DataType)s>&",
                position = "const FieldList<%(Dimension)s, typename %(Dimension)s::Vector>&",
@@ -365,6 +377,9 @@ smoothSymTensorFields%(ndim)id = PYB11TemplateFunction(smoothFields, template_pa
 gradientScalar%(ndim)id = PYB11TemplateFunction(gradient, template_parameters=("%(Dimension)s", "%(Scalar)s"), pyname="gradient")
 gradientVector%(ndim)id = PYB11TemplateFunction(gradient, template_parameters=("%(Dimension)s", "%(Vector)s"), pyname="gradient")
 
+gradientStdVectorScalar%(ndim)id = PYB11TemplateFunction(gradientVec, template_parameters=("%(Dimension)s", "%(Scalar)s"), pyname="gradient")
+gradientStdVectorVector%(ndim)id = PYB11TemplateFunction(gradientVec, template_parameters=("%(Dimension)s", "%(Vector)s"), pyname="gradient")
+    
 divergenceVector%(ndim)id = PYB11TemplateFunction(divergence, template_parameters=("%(Dimension)s", "%(Vector)s"), pyname="divergence")
 divergenceTensor%(ndim)id = PYB11TemplateFunction(divergence, template_parameters=("%(Dimension)s", "%(Tensor)s"), pyname="divergence")
 divergenceSymTensor%(ndim)id = PYB11TemplateFunction(divergence, template_parameters=("%(Dimension)s", "%(SymTensor)s"), pyname="divergence")

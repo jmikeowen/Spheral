@@ -43,5 +43,3 @@ spheral_install_python_files(SVPHHydros.py)
 
 spheral_add_cxx_library(SVPH)
 
-list(APPEND SPHERAL_CXX_LIBS Spheral_SVPH)
-set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

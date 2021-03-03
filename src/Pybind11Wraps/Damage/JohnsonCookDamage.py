@@ -86,7 +86,6 @@ class JohnsonCookDamage(Physics):
     nodeList = PYB11property("const SolidNodeList<%(Dimension)s>&", returnpolicy="reference_internal")
     failureStrain = PYB11property("const Field<%(Dimension)s, Scalar>&", returnpolicy="reference_internal")
     meltSpecificEnergy = PYB11property("const Field<%(Dimension)s, Scalar>&", returnpolicy="reference_internal")
-    newEffectiveDamage = PYB11property("const Field<%(Dimension)s, SymTensor>&", returnpolicy="reference_internal")
     D1 = PYB11property("const Field<%(Dimension)s, Scalar>&", returnpolicy="reference_internal")
     D2 = PYB11property("const Field<%(Dimension)s, Scalar>&", returnpolicy="reference_internal")
     D3 = PYB11property("double")

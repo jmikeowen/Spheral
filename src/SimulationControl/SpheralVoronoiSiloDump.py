@@ -436,6 +436,16 @@ def dumpPhysicsState(stateThingy,
     if boundaries is None:
         boundaries = eval("vector_of_Boundary%id()" % dataBase.nDim)
 
+    # Make sure the ghost nodes are set for the Voronoi tessellation work
+    for nodes in dataBase.nodeLists():
+        nodes.numGhostNodes = 0
+        nodes.neighbor().updateNodes()
+    for bc in boundaries:
+        bc.setAllGhostNodes(dataBase)
+        bc.finalizeGhostBoundary()
+        for nodes in dataBase.nodeLists():
+            nodes.neighbor().updateNodes()
+
     # Did the user specify any data to be dumped?
     if not fields:
         fields = []
@@ -524,7 +534,7 @@ def dumpPhysicsState(stateThingy,
         computeVoronoiVolume(dataBase.globalPosition, 
                              dataBase.globalHfield,
                              dataBase.connectivityMap(),
-                             dataBase.solidEffectiveDamage,
+                             dataBase.solidDamage,
                              bounds,
                              holes,
                              boundaries,

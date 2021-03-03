@@ -207,7 +207,6 @@ sampleMultipleFieldsMash(const FieldListSet<Dimension>& fieldListSet,
           const Vector rij = ri - rj;
           const Scalar etai = (Hi*rij).magnitude();
           const Scalar etaj = (Hj*rij).magnitude();
-          CHECK(etai >= 0.0 && etaj >= 0.0);
 
           // Calculate the kernel estimates for each node.
           Scalar Wi = kernel(etai, 1.0);

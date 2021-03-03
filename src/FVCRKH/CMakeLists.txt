@@ -33,5 +33,3 @@ install(FILES       ${FVCRKH_headers}
         DESTINATION include/FVCRKH
         )
 
-list(APPEND SPHERAL_CXX_LIBS Spheral_FVCRKH)
-set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

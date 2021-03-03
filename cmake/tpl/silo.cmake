@@ -1,6 +1,6 @@
 set(SILO_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/${lib_name})
-set(SILO_CACHE "${CACHE_DIR}/silo-4.10.2-bsd.tar.gz")
-set(SILO_URL "https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/silo/silo-4.10.2/silo-4.10.2-bsd.tar.gz")
+set(SILO_CACHE "${CACHE_DIR}/silo-4.10.2-bsd.tgz")
+set(SILO_URL "https://wci.llnl.gov/sites/wci/files/2021-01/silo-4.10.2-bsd.tgz")
 set(SILO_MD5 "MD5=60fef9ce373daf1e9cc8320cfa509bc5")
 set(SILO_SRC_DIR ${SILO_PREFIX}/src/silo)
 

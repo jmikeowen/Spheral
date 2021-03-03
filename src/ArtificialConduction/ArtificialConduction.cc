@@ -306,7 +306,8 @@ dt(const DataBase<Dimension>& dataBase,
     const FieldList<Dimension, Scalar> soundSpeed = state.fields(HydroFieldNames::soundSpeed, 0.0);
     const FieldList<Dimension, Scalar> vsigMax = state.fields("Maximum Artificial Cond Signal Speed", 0.0);
     const ConnectivityMap<Dimension>& connectivityMap = dataBase.connectivityMap(this->requireGhostConnectivity(),
-                                                                                 this->requireOverlapConnectivity());
+                                                                                 this->requireOverlapConnectivity(),
+                                                                                 this->requireIntersectionConnectivity());
     //const int numNodeLists = connectivityMap.nodeLists().size();
 
     // Initialize the return value to some impossibly high value.

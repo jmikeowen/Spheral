@@ -9,9 +9,11 @@
 #define __Spheral_DamageModel_hh__
 
 #include "Physics/Physics.hh"
+#include "Utilities/NodeCoupling.hh"
 #include "DataOutput/registerWithRestart.hh"
 
 #include <vector>
+#include <memory>
 
 // Forward declarations.
 namespace Spheral {
@@ -35,6 +37,13 @@ enum class EffectiveFlawAlgorithm {
   SampledFlaws = 4,
 };
 
+enum class DamageCouplingAlgorithm {
+  DirectDamage = 0,
+  PairMaxDamage = 1,
+  DamageGradient = 2,
+  ThreePointDamage = 3,
+};
+
 template<typename Dimension>
 class DamageModel: public Physics<Dimension> {
 
@@ -46,6 +55,7 @@ public:
   typedef typename Dimension::Tensor Tensor;
   typedef typename Dimension::SymTensor SymTensor;
   typedef typename Physics<Dimension>::TimeStepType TimeStepType;
+  typedef typename std::shared_ptr<NodeCoupling> NodeCouplingPtr;
 
   typedef typename Physics<Dimension>::ConstBoundaryIterator ConstBoundaryIterator;
   typedef Field<Dimension, std::vector<double> > FlawStorageType;
@@ -54,7 +64,7 @@ public:
   DamageModel(SolidNodeList<Dimension>& nodeList,
               const TableKernel<Dimension>& W,
               const double crackGrowthMultiplier,
-              const EffectiveFlawAlgorithm flawAlgorithm,
+              const DamageCouplingAlgorithm damageCouplingAlgorithm,
               const FlawStorageType& flaws);
   virtual ~DamageModel();
 
@@ -69,23 +79,27 @@ public:
 
   //...........................................................................
   // Provide a subset of the required physics package interface.
-  // Descendant classes must complete the set!
-  virtual void preStepInitialize(const DataBase<Dimension>& dataBase, 
-                                 State<Dimension>& state,
-                                 StateDerivatives<Dimension>& derivs) override;
-
   virtual void registerState(DataBase<Dimension>& dataBase,
                              State<Dimension>& state) override;
 
   virtual 
-  void postStateUpdate(const Scalar time, 
-                       const Scalar dt,
-                       const DataBase<Dimension>& dataBase, 
-                       State<Dimension>& state,
-                       StateDerivatives<Dimension>& derivatives) override;
+  void initialize(const Scalar time,
+                  const Scalar dt,
+                  const DataBase<Dimension>& dataBase,
+                  State<Dimension>& state,
+                  StateDerivatives<Dimension>& derivatives) override;
+
+  virtual void finalize(const Scalar time, 
+                        const Scalar dt,
+                        DataBase<Dimension>& dataBase, 
+                        State<Dimension>& state,
+                        StateDerivatives<Dimension>& derivs);
+
+  virtual bool requireGhostConnectivity() const override;
+
+  virtual bool requireIntersectionConnectivity() const override;
 
   //...........................................................................
-
   // Optional method to cull the set of flaws to the single weakest one on
   // each point.
   void cullToWeakestFlaws();
@@ -102,7 +116,8 @@ public:
 
   // Important local parameters.
   double crackGrowthMultiplier() const;
-  EffectiveFlawAlgorithm effectiveFlawAlgorithm() const;
+  DamageCouplingAlgorithm damageCouplingAlgorithm() const;
+  const NodeCoupling& nodeCoupling() const;
 
   // Allow the user to specify a set of nodes to be excluded from damage.
   std::vector<int> excludeNodes() const;
@@ -115,9 +130,6 @@ public:
   // Access the flaw field.
   const FlawStorageType& flaws() const;
   FlawStorageType& flaws();
-
-  // The effective flaw for each node.
-  const Field<Dimension, Scalar>& effectiveFlaws() const;
 
   // Compute a Field with the sum of the activation energies per node.
   Field<Dimension, Scalar> sumActivationEnergiesPerNode() const;
@@ -140,21 +152,18 @@ public:
 protected:
   //-------------------------- Protected Interface --------------------------//
   FlawStorageType mFlaws;
-  Field<Dimension, Scalar> mEffectiveFlaws;
 
 private:
   //--------------------------- Private Interface ---------------------------//
   SolidNodeList<Dimension>& mNodeList;
   const TableKernel<Dimension>& mW;
-  double mCrackGrowthMultiplier;
-  EffectiveFlawAlgorithm mEffectiveFlawAlgorithm;
-
+  double mCrackGrowthMultiplier, mCriticalNodesPerSmoothingScale;
+  DamageCouplingAlgorithm mDamageCouplingAlgorithm;
   Field<Dimension, Scalar> mYoungsModulus;
   Field<Dimension, Scalar> mLongitudinalSoundSpeed;
-
   Field<Dimension, int> mExcludeNode;
-
-  double mCriticalNodesPerSmoothingScale;
+  NodeCouplingPtr mNodeCouplingPtr;
+  bool mComputeIntersectConnectivity;
 
   // The restart registration.
   RestartRegistrationType mRestart;

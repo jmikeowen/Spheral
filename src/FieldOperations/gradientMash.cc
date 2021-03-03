@@ -95,7 +95,6 @@ gradientMash(const FieldList<Dimension, DataType>& fieldList,
             const Vector etaj = Hj*rij;
             const Vector etaiNorm = etai.unitVector();
             const Vector etajNorm = etaj.unitVector();
-            CHECK(etai >= 0.0 && etaj >= 0.0);
 
             // Get the symmetrized kernel gradient for this node pair.
             Scalar Wij;
@@ -233,7 +232,6 @@ gradientMash2(const FieldList<Dimension, DataType>& fieldList,
           const Vector rij = ri - rj;
           const Vector etai = Hi*rij;
           const Vector etaj = Hj*rij;
-          CHECK(etai >= 0.0 && etaj >= 0.0);
 
           // Get the symmetrized kernel weighting for this node pair.
           Scalar Wij;
@@ -335,7 +333,6 @@ gradientMash2(const FieldList<Dimension, DataType>& fieldList,
           const Vector etaj = Hj*rij;
           const Vector etaiNorm = etai.unitVector();
           const Vector etajNorm = etaj.unitVector();
-          CHECK(etai >= 0.0 && etaj >= 0.0);
 
           // Get the symmetrized kernel gradient for this node pair.
           Scalar Wij;
@@ -438,7 +435,6 @@ gradientMash2(const FieldList<Dimension, DataType>& fieldList,
           const Vector etaj = Hj*rij;
           const Vector etaiNorm = etai.unitVector();
           const Vector etajNorm = etaj.unitVector();
-          CHECK(etai >= 0.0 && etaj >= 0.0);
 
           // Get the symmetrized kernel gradient for this node pair.
           Scalar Wij;

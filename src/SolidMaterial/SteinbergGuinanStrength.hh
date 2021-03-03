@@ -20,7 +20,8 @@ class SteinbergGuinanStrength: public StrengthModel<Dimension> {
 
 public:
   //--------------------------- Public Interface ---------------------------//
-  typedef typename Dimension::Scalar Scalar;
+  using Scalar = typename Dimension::Scalar;
+  using SymTensor = typename Dimension::SymTensor;
 
   // Constructors, destructor.
   SteinbergGuinanStrength(const SolidEquationOfState<Dimension>& eos,
@@ -52,23 +53,27 @@ public:
 
   // Override the required generic interface.
   virtual bool providesSoundSpeed() const override { return true; }
+
   virtual void shearModulus(Field<Dimension, Scalar>& shearModulus,
                             const Field<Dimension, Scalar>& density,
                             const Field<Dimension, Scalar>& specificThermalEnergy,
-                            const Field<Dimension, Scalar>& pressure) const override;
+                            const Field<Dimension, Scalar>& pressure,
+                            const Field<Dimension, SymTensor>& damage) const override;
 
   virtual void yieldStrength(Field<Dimension, Scalar>& yieldStrength,
                              const Field<Dimension, Scalar>& density,
                              const Field<Dimension, Scalar>& specificThermalEnergy,
                              const Field<Dimension, Scalar>& pressure,
                              const Field<Dimension, Scalar>& plasticStrain,
-                             const Field<Dimension, Scalar>& plasticStrainRate) const override;
+                             const Field<Dimension, Scalar>& plasticStrainRate,
+                             const Field<Dimension, SymTensor>& damage) const override;
 
   virtual void soundSpeed(Field<Dimension, Scalar>& soundSpeed,
                           const Field<Dimension, Scalar>& density,
                           const Field<Dimension, Scalar>& specificThermalEnergy,
                           const Field<Dimension, Scalar>& pressure,
-                          const Field<Dimension, Scalar>& fluidSoundSpeed) const override;
+                          const Field<Dimension, Scalar>& fluidSoundSpeed,
+                          const Field<Dimension, SymTensor>& damage) const override;
 
   // Steinberg-Guinan also can provide melt and cold energies.
   virtual void meltSpecificEnergy(Field<Dimension, Scalar>& meltSpecificEnergy,

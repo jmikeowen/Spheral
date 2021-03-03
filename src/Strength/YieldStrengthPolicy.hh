@@ -24,8 +24,9 @@ class YieldStrengthPolicy:
 public:
   //--------------------------- Public Interface ---------------------------//
   // Useful typedefs
-  typedef typename Dimension::Scalar Scalar;
-  typedef typename UpdatePolicyBase<Dimension>::KeyType KeyType;
+  using Scalar = typename Dimension::Scalar;
+  using SymTensor = typename Dimension::SymTensor;
+  using KeyType = typename UpdatePolicyBase<Dimension>::KeyType;
 
   // Constructors, destructor.
   YieldStrengthPolicy();

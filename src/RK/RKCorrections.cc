@@ -93,7 +93,7 @@ initializeProblemStartup(DataBase<Dimension>& dataBase) {
   const auto  H = dataBase.fluidHfield();
   const auto  position = dataBase.fluidPosition();
   const auto  massDensity = dataBase.fluidMassDensity();
-  const auto  damage = dataBase.solidEffectiveDamage();
+  const auto  damage = dataBase.solidDamage();
   
   // Compute the volumes
   computeRKVolumes(connectivityMap, W,
@@ -288,7 +288,7 @@ preStepInitialize(const DataBase<Dimension>& dataBase,
   const auto  mass = state.fields(HydroFieldNames::mass, 0.0);
   const auto  H = state.fields(HydroFieldNames::H, SymTensor::zero);
   const auto  position = state.fields(HydroFieldNames::position, Vector::zero);
-  const auto  damage = state.fields(SolidFieldNames::effectiveTensorDamage, SymTensor::zero);
+  const auto  damage = state.fields(SolidFieldNames::tensorDamage, SymTensor::zero);
   const auto  massDensity = state.fields(HydroFieldNames::massDensity, 0.0);
   auto        volume = state.fields(HydroFieldNames::volume, 0.0);
   auto        surfacePoint = state.fields(HydroFieldNames::surfacePoint, 0);

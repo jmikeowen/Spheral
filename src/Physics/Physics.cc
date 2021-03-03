@@ -207,6 +207,16 @@ requireOverlapConnectivity() const {
 }
 
 //------------------------------------------------------------------------------
+// By default assume intersect connectivity is not needed.
+//------------------------------------------------------------------------------
+template<typename Dimension>
+bool
+Physics<Dimension>::
+requireIntersectionConnectivity() const {
+  return false;
+}
+
+//------------------------------------------------------------------------------
 // By default assume reproducing kernels are not needed.
 //------------------------------------------------------------------------------
 template<typename Dimension>

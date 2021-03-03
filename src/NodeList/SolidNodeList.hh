@@ -56,14 +56,9 @@ public:
   const Field<Dimension, Scalar>& plasticStrain() const;
   const Field<Dimension, Scalar>& plasticStrainRate() const;
 
-  // The tensor damage and it's gradient.
+  // The tensor damage
   Field<Dimension, SymTensor>& damage();
-  Field<Dimension, SymTensor>& effectiveDamage();
-  Field<Dimension, Vector>& damageGradient();
-
   const Field<Dimension, SymTensor>& damage() const;
-  const Field<Dimension, SymTensor>& effectiveDamage() const;
-  const Field<Dimension, Vector>& damageGradient() const;
 
   // The fragment ID field.
   Field<Dimension, int>& fragmentIDs();
@@ -90,8 +85,6 @@ private:
   Field<Dimension, Scalar> mPlasticStrain;
   Field<Dimension, Scalar> mPlasticStrainRate;
   Field<Dimension, SymTensor> mDamage;
-  Field<Dimension, SymTensor> mEffectiveDamage;
-  Field<Dimension, Vector> mDamageGradient;
   Field<Dimension, int> mFragmentIDs;
   Field<Dimension, int> mParticleTypes;
 

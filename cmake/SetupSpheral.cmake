@@ -22,6 +22,12 @@ if (NOT ENABLE_WARNINGS)
 endif()
 message("-- compiler warnings ${ENABLE_WARNINGS}")
 
+option(ENABLE_UNUSED_VARIABLE_WARNINGS "show unused variable compiler warnings" ON)
+if (NOT ENABLE_UNUSED_VARIABLE_WARNINGS)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable -Wno-unused-parameter")
+endif()
+message("-- compiler unused variable warnings ${ENABLE_UNUSED_VARIABLE_WARNINGS}")
+
 #-------------------------------------------------------------------------------
 # Configure and Include blt
 #-------------------------------------------------------------------------------
@@ -119,6 +125,11 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}")
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+#-------------------------------------------------------------------------------
+# We need the set of Spheral C++ libraries globally
+#-------------------------------------------------------------------------------
+set_property(GLOBAL PROPERTY SPHERAL_CXX_LIBS)
 
 if (NOT BUILD_TPL_ONLY)
   #-------------------------------------------------------------------------------
