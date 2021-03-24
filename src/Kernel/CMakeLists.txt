@@ -20,7 +20,8 @@ set(Kernel_inst
     )
 
 
-set(Kernel_sources )
+set(Kernel_sources
+    SphericalTableKernel.cc)
 
 instantiate(Kernel_inst Kernel_sources)
 

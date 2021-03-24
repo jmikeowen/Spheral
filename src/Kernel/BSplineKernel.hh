@@ -35,14 +35,14 @@ public:
   ~BSplineKernel();
 
   // Return the kernel weight for a given normalized distance or position.
-  double kernelValue(double etaMagnitude, double Hdet) const;
+  double kernelValue(double etaMagnitude, const double Hdet) const;
 
   // Return the gradient value for a given normalized distance or position.
-  double gradValue(double etaMagnitude, double Hdet) const;
+  double gradValue(double etaMagnitude, const double Hdet) const;
 
   // Return the second derivative value for a given normalized distance or
   // position.
-  double grad2Value(double etaMagnitude, double Hdet) const;
+  double grad2Value(double etaMagnitude, const double Hdet) const;
 
 };
 

@@ -62,7 +62,7 @@ GaussianKernel<Dimension>::~GaussianKernel() {
 template<typename Dimension>
 inline
 double
-GaussianKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) const {
+GaussianKernel<Dimension>::kernelValue(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
   return this->volumeNormalization()*Hdet*exp(-etaMagnitude*etaMagnitude);
@@ -74,7 +74,7 @@ GaussianKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) const {
 template<typename Dimension>
 inline
 double
-GaussianKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
+GaussianKernel<Dimension>::gradValue(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
   return -2.0*etaMagnitude*kernelValue(etaMagnitude, Hdet);
@@ -86,7 +86,7 @@ GaussianKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
 template<typename Dimension>
 inline
 double
-GaussianKernel<Dimension>::grad2Value(double etaMagnitude, double Hdet) const {
+GaussianKernel<Dimension>::grad2Value(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
   return 2.0*(2.0*etaMagnitude*etaMagnitude - 1)*kernelValue(etaMagnitude, Hdet);

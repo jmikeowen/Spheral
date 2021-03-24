@@ -41,11 +41,11 @@ public:
   static const GeomVector one;
 
   // Constructors.
-  explicit GeomVector(const double x = 0.0,
-                      const double y = 0.0,
-                      const double z = 0.0);
+  GeomVector(const double x = 0.0,
+             const double y = 0.0,
+             const double z = 0.0);
   GeomVector(const GeomVector& vec);
-  template<typename Derived> explicit GeomVector(const Eigen::MatrixBase<Derived>& vec);
+  template<typename Derived> GeomVector(const Eigen::MatrixBase<Derived>& vec);
 
   // Destructor.
   ~GeomVector();

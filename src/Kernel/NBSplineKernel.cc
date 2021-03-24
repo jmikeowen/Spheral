@@ -16,7 +16,7 @@ namespace Spheral {
 //------------------------------------------------------------------------------
 template<typename Dimension>
 double
-NBSplineKernel<Dimension>::kernelValue(double eta, double Hdet) const {
+NBSplineKernel<Dimension>::kernelValue(double eta, const double Hdet) const {
   REQUIRE(eta >= 0.0);
   REQUIRE(Hdet >= 0.0);
 
@@ -44,7 +44,7 @@ NBSplineKernel<Dimension>::kernelValue(double eta, double Hdet) const {
 //------------------------------------------------------------------------------
 template<typename Dimension>
 double
-NBSplineKernel<Dimension>::gradValue(double eta, double Hdet) const {
+NBSplineKernel<Dimension>::gradValue(double eta, const double Hdet) const {
   REQUIRE(eta >= 0.0);
   REQUIRE(Hdet >= 0.0);
 
@@ -72,7 +72,7 @@ NBSplineKernel<Dimension>::gradValue(double eta, double Hdet) const {
 //------------------------------------------------------------------------------
 template<typename Dimension>
 double
-NBSplineKernel<Dimension>::grad2Value(double eta, double Hdet) const {
+NBSplineKernel<Dimension>::grad2Value(double eta, const double Hdet) const {
   REQUIRE(eta >= 0.0);
   REQUIRE(Hdet >= 0.0);
 

@@ -46,7 +46,7 @@ BSplineKernel<Dimension>::~BSplineKernel() {
 template<typename Dimension>
 inline
 double
-BSplineKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) const {
+BSplineKernel<Dimension>::kernelValue(double etaMagnitude, const double Hdet) const {
   REQUIRE(etaMagnitude >= 0.0);
   REQUIRE(Hdet >= 0.0);
 
@@ -66,7 +66,7 @@ BSplineKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) const {
 template<typename Dimension>
 inline
 double
-BSplineKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
+BSplineKernel<Dimension>::gradValue(double etaMagnitude, const double Hdet) const {
   REQUIRE(etaMagnitude >= 0.0);
   REQUIRE(Hdet >= 0.0);
 
@@ -85,7 +85,7 @@ BSplineKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
 template<typename Dimension>
 inline
 double
-BSplineKernel<Dimension>::grad2Value(double etaMagnitude, double Hdet) const {
+BSplineKernel<Dimension>::grad2Value(double etaMagnitude, const double Hdet) const {
   REQUIRE(etaMagnitude >= 0.0);
   REQUIRE(Hdet >= 0.0);
 

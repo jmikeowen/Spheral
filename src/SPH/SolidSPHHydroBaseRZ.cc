@@ -17,7 +17,6 @@
 #include "Strength/SolidFieldNames.hh"
 #include "NodeList/SolidNodeList.hh"
 #include "Strength/DeviatoricStressPolicy.hh"
-#include "Strength/RZPlasticStrainPolicy.hh"
 #include "DataBase/State.hh"
 #include "DataBase/StateDerivatives.hh"
 #include "DataBase/IncrementFieldList.hh"
@@ -33,6 +32,7 @@
 #include "Utilities/timingUtilities.hh"
 #include "Utilities/safeInv.hh"
 #include "SolidMaterial/SolidEquationOfState.hh"
+#include "Geometry/GeometryRegistrar.hh"
 
 #include "SolidSPHHydroBaseRZ.hh"
 
@@ -138,10 +138,8 @@ SolidSPHHydroBaseRZ::
 void
 SolidSPHHydroBaseRZ::
 initializeProblemStartup(DataBase<Dim<2> >& dataBase) {
-
-  // Call the ancestor.
+  GeometryRegistrar::coords(CoordinateType::RZ);
   SolidSPHHydroBase<Dim<2> >::initializeProblemStartup(dataBase);
-  dataBase.isRZ = true;
 }
 
 //------------------------------------------------------------------------------
@@ -157,14 +155,14 @@ registerState(DataBase<Dim<2> >& dataBase,
   // Call the ancestor.
   SolidSPHHydroBase<Dim<2> >::registerState(dataBase, state);
 
-  // Reregister the plastic strain policy to the RZ specialized version
-  // that accounts for the theta-theta component of the stress.  Also the deviatoric stress.
-  auto ps = state.fields(SolidFieldNames::plasticStrain, 0.0);
-  auto S = state.fields(SolidFieldNames::deviatoricStress, SymTensor::zero);
-  PolicyPointer plasticStrainPolicy(new RZPlasticStrainPolicy());
-  PolicyPointer deviatoricStressPolicy(new DeviatoricStressPolicy<Dim<2>>(false));
-  state.enroll(ps, plasticStrainPolicy);
-  state.enroll(S, deviatoricStressPolicy);
+  // // Reregister the plastic strain policy to the RZ specialized version
+  // // that accounts for the theta-theta component of the stress.  Also the deviatoric stress.
+  // auto ps = state.fields(SolidFieldNames::plasticStrain, 0.0);
+  // auto S = state.fields(SolidFieldNames::deviatoricStress, SymTensor::zero);
+  // PolicyPointer plasticStrainPolicy(new RZPlasticStrainPolicy());
+  // PolicyPointer deviatoricStressPolicy(new DeviatoricStressPolicy<Dim<2>>(false));
+  // state.enroll(ps, plasticStrainPolicy);
+  // state.enroll(S, deviatoricStressPolicy);
 
   // Are we using the compatible energy evolution scheme?
   // If so we need to override the ordinary energy registration with a specialized version.

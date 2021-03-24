@@ -92,7 +92,7 @@ PiGaussianKernel<Dimension>::~PiGaussianKernel() {
 template<typename Dimension>
 inline
 double
-PiGaussianKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) const {
+PiGaussianKernel<Dimension>::kernelValue(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
   CHECK(mK > 0.0);
@@ -106,7 +106,7 @@ PiGaussianKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) const
 template<typename Dimension>
 inline
 double
-PiGaussianKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
+PiGaussianKernel<Dimension>::gradValue(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
   CHECK(mK > 0.0);
@@ -120,7 +120,7 @@ PiGaussianKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
 template<typename Dimension>
 inline
 double
-PiGaussianKernel<Dimension>::grad2Value(double etaMagnitude, double Hdet) const {
+PiGaussianKernel<Dimension>::grad2Value(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
   CHECK(mK > 0.0);

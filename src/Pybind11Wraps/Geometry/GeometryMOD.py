@@ -41,6 +41,7 @@ PYB11includes = ['"Geometry/Dimension.hh"',
                  '"Geometry/aggregateFacetedVolumes.hh"',
                  '"Geometry/CellFaceFlag.hh"',
                  '"Geometry/PolyClipperUtilities.hh"',
+                 '"Geometry/GeometryRegistrar.hh"',
                  '"Field/Field.hh"',
                  '"Utilities/DataTypeTraits.hh"',
 
@@ -77,6 +78,13 @@ from Polyhedron import *
 from Facet2d import *
 from Facet3d import *
 from CellFaceFlag import *
+from GeometryRegistrar import *
+
+#-------------------------------------------------------------------------------
+# Enums
+#-------------------------------------------------------------------------------
+CoordinateType = PYB11enum(("Cartesian", "Spherical", "RZ"), export_values=True,
+                           doc="The coorindate system types")
 
 #-------------------------------------------------------------------------------
 # Spheral PolyClipper bindings (using Spheral Vectors)

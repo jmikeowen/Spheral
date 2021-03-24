@@ -46,7 +46,7 @@ QuarticSplineKernel<Dimension>::~QuarticSplineKernel() {
 template<typename Dimension>
 inline
 double
-QuarticSplineKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) const {
+QuarticSplineKernel<Dimension>::kernelValue(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
 
@@ -66,7 +66,7 @@ QuarticSplineKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) co
 template<typename Dimension>
 inline
 double
-QuarticSplineKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
+QuarticSplineKernel<Dimension>::gradValue(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
 
@@ -85,7 +85,7 @@ QuarticSplineKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) cons
 template<typename Dimension>
 inline
 double
-QuarticSplineKernel<Dimension>::grad2Value(double etaMagnitude, double Hdet) const {
+QuarticSplineKernel<Dimension>::grad2Value(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
 

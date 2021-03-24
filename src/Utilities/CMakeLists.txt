@@ -19,6 +19,7 @@ set(Utilities_inst
 
 set(Utilities_sources
     DBC.cc
+    QuadraticInterpolator.cc
     Process.cc
     KeyTraits.cc
     PeanoHilbertTransform.cc

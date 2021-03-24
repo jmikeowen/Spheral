@@ -47,6 +47,7 @@
 #include "Utilities/globalBoundingVolumes.hh"
 #include "Mesh/Mesh.hh"
 #include "CRKSPH/volumeSpacing.hh"
+#include "Geometry/GeometryRegistrar.hh"
 
 #include "SPHHydroBaseRZ.hh"
 
@@ -129,7 +130,7 @@ SPHHydroBaseRZ::
 void
 SPHHydroBaseRZ::
 initializeProblemStartup(DataBase<Dim<2> >& dataBase) {
-  dataBase.isRZ = true;
+  GeometryRegistrar::coords(CoordinateType::RZ);
   SPHHydroBase<Dim<2> >::initializeProblemStartup(dataBase);
 }
 

@@ -49,7 +49,7 @@ W4SplineKernel<Dimension>::~W4SplineKernel() {
 template<typename Dimension>
 inline
 double
-W4SplineKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) const {
+W4SplineKernel<Dimension>::kernelValue(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
 
@@ -73,7 +73,7 @@ W4SplineKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) const {
 template<typename Dimension>
 inline
 double
-W4SplineKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
+W4SplineKernel<Dimension>::gradValue(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
 
@@ -94,7 +94,7 @@ W4SplineKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
 template<typename Dimension>
 inline
 double
-W4SplineKernel<Dimension>::grad2Value(double etaMagnitude, double Hdet) const {
+W4SplineKernel<Dimension>::grad2Value(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
 

@@ -7,6 +7,7 @@
 #include "NodeList/SmoothingScaleBase.hh"
 #include "Utilities/allReduce.hh"
 #include "Distributed/Communicator.hh"
+#include "Geometry/GeometryRegistrar.hh"
 
 #include <ctime>
 using std::vector;
@@ -170,7 +171,7 @@ iterateIdealH(DataBase<Dimension>& dataBase,
           // Compute the node-node weighting
           auto fweightij = 1.0;
           if (nodeListi != nodeListj) {
-            if (dataBase.isRZ) {
+            if (GeometryRegistrar::coords() == CoordinateType::RZ){
               ri = abs(posi.y());
               rj = abs(posj.y());
               mRZi = mi/(2.0*M_PI*ri);

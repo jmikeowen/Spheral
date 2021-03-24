@@ -65,7 +65,7 @@ HatKernel<Dimension>::~HatKernel() {
 template<typename Dimension>
 inline
 double
-HatKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) const {
+HatKernel<Dimension>::kernelValue(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
 
@@ -82,7 +82,7 @@ HatKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) const {
 template<typename Dimension>
 inline
 double
-HatKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
+HatKernel<Dimension>::gradValue(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
 
@@ -99,7 +99,7 @@ HatKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
 template<typename Dimension>
 inline
 double
-HatKernel<Dimension>::grad2Value(double /*etaMagnitude*/, double /*Hdet*/) const {
+HatKernel<Dimension>::grad2Value(double /*etaMagnitude*/, const double /*Hdet*/) const {
   return 0.0;
 }
 

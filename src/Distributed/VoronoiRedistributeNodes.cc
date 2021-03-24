@@ -351,7 +351,7 @@ redistributeNodes(DataBase<Dimension>& dataBase,
   const FieldList<Dimension, int> globalIDs = globalNodeIDs(dataBase);
 
   // Compute the work and number density per node.
-  const TableKernel<Dimension> W(BSplineKernel<Dimension>(), 100);
+  const TableKernel<Dimension> W(BSplineKernel<Dimension>(), 100u);
   FieldList<Dimension, Scalar> workField = dataBase.newGlobalFieldList(1.0, "work");
   if (this->workBalance()) { // or mBalanceGenerators) {
 

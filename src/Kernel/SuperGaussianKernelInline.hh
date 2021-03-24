@@ -51,7 +51,7 @@ SuperGaussianKernel<Dimension>::~SuperGaussianKernel() {
 template<typename Dimension>
 inline
 double
-SuperGaussianKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) const {
+SuperGaussianKernel<Dimension>::kernelValue(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
   double etaMagnitude2 = etaMagnitude*etaMagnitude;
@@ -64,7 +64,7 @@ SuperGaussianKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) co
 template<typename Dimension>
 inline
 double
-SuperGaussianKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
+SuperGaussianKernel<Dimension>::gradValue(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
   double etaMagnitude2 = etaMagnitude*etaMagnitude;
@@ -78,7 +78,7 @@ SuperGaussianKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) cons
 template<typename Dimension>
 inline
 double
-SuperGaussianKernel<Dimension>::grad2Value(double etaMagnitude, double Hdet) const {
+SuperGaussianKernel<Dimension>::grad2Value(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
   double etaMagnitude2 = etaMagnitude*etaMagnitude;

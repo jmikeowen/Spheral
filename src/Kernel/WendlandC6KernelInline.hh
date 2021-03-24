@@ -46,7 +46,7 @@ WendlandC6Kernel<Dimension>::~WendlandC6Kernel() {
 template<typename Dimension>
 inline
 double
-WendlandC6Kernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) const {
+WendlandC6Kernel<Dimension>::kernelValue(double etaMagnitude, const double Hdet) const {
   REQUIRE(etaMagnitude >= 0.0);
   REQUIRE(Hdet >= 0.0);
 
@@ -66,7 +66,7 @@ WendlandC6Kernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) const
 template<typename Dimension>
 inline
 double
-WendlandC6Kernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
+WendlandC6Kernel<Dimension>::gradValue(double etaMagnitude, const double Hdet) const {
   REQUIRE(etaMagnitude >= 0.0);
   REQUIRE(Hdet >= 0.0);
 
@@ -87,7 +87,7 @@ WendlandC6Kernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
 template<typename Dimension>
 inline
 double
-WendlandC6Kernel<Dimension>::grad2Value(double etaMagnitude, double Hdet) const {
+WendlandC6Kernel<Dimension>::grad2Value(double etaMagnitude, const double Hdet) const {
   REQUIRE(etaMagnitude >= 0.0);
   REQUIRE(Hdet >= 0.0);
 

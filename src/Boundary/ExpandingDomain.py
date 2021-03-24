@@ -586,7 +586,7 @@ class ExpandingDomain:
                 
                 mass = activeNodeLists[i].mass()
                 pos  = activeNodeLists[i].positions()
-                if self.activeDatabase.isRZ:
+                if GeometryRegistrar.coords == CoordinateType.RZ:
                     for k in self.constBC[i].nodeIndices:
                         mass[k] *= 2.0*math.pi*pos[k].y
 

@@ -86,7 +86,7 @@ matchKernelExtent(double extent) {
 //------------------------------------------------------------------------------
 template<typename Dimension>
 double
-HKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
+HKernel<Dimension>::gradValue(double etaMagnitude, const double Hdet) const {
   REQUIRE(etaMagnitude >= 0.0);
   REQUIRE(Hdet >= 0.0);
 
@@ -107,7 +107,7 @@ HKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
 //------------------------------------------------------------------------------
 template<typename Dimension>
 double
-HKernel<Dimension>::grad2Value(double etaMagnitude, double Hdet) const {
+HKernel<Dimension>::grad2Value(double etaMagnitude, const double Hdet) const {
   REQUIRE(etaMagnitude >= 0.0);
   REQUIRE(Hdet >= 0.0);
 

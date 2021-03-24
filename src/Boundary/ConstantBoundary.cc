@@ -8,6 +8,7 @@
 #include "Field/FieldList.hh"
 #include "Field/Field.hh"
 #include "Field/FieldBase.hh"
+#include "Geometry/GeometryRegistrar.hh"
 #include "Utilities/planarReflectingOperator.hh"
 #include "Utilities/DBC.hh"
 
@@ -196,7 +197,7 @@ ConstantBoundary<Dimension>::initializeProblemStartup(const bool final) {
   storeFieldValues(*mNodeListPtr, nodeIDs, mBufferedValues);
 
   // If we're in cylindrical symmetry (RZ) we need to convert the mass to mass/(2*pi*r).
-  if (mDataBase.isRZ) {
+  if (GeometryRegistrar::coords() == CoordinateType::RZ){
     const auto& pos = mNodeListPtr->positions();
     const auto& mass = mNodeListPtr->mass();
     std::vector<char> buffer;

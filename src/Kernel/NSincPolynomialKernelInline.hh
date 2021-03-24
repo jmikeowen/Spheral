@@ -51,7 +51,7 @@ NSincPolynomialKernel<Dimension>::~NSincPolynomialKernel() {
 template<typename Dimension>
 inline
 double
-NSincPolynomialKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) const {
+NSincPolynomialKernel<Dimension>::kernelValue(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
 
@@ -78,7 +78,7 @@ NSincPolynomialKernel<Dimension>::kernelValue(double etaMagnitude, double Hdet) 
 template<typename Dimension>
 inline
 double
-NSincPolynomialKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) const {
+NSincPolynomialKernel<Dimension>::gradValue(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
 
@@ -105,7 +105,7 @@ NSincPolynomialKernel<Dimension>::gradValue(double etaMagnitude, double Hdet) co
 template<typename Dimension>
 inline
 double
-NSincPolynomialKernel<Dimension>::grad2Value(double etaMagnitude, double Hdet) const {
+NSincPolynomialKernel<Dimension>::grad2Value(double etaMagnitude, const double Hdet) const {
   CHECK(etaMagnitude >= 0.0);
   CHECK(Hdet >= 0.0);
 

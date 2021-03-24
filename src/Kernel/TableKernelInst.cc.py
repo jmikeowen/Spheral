@@ -41,7 +41,7 @@ for Wname in ("BSplineKernel",
               "WendlandC6Kernel",
               "ExpInvKernel"):
     text += """
-    template TableKernel< Dim< %%(ndim)s > >::TableKernel(const %(Wname)s< Dim< %%(ndim)s > >&, const int, const double);
+    template TableKernel< Dim< %%(ndim)s > >::TableKernel(const %(Wname)s< Dim< %%(ndim)s > >&, const unsigned, const double);
 //    template void TableKernel< Dim< %%(ndim)s > >::augment(const %(Wname)s< Dim< %%(ndim)s > >&);
 """ % {"Wname" : Wname}
 

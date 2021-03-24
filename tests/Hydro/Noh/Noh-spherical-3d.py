@@ -175,7 +175,7 @@ eos = GammaLawGasMKS(gamma, mu)
 #-------------------------------------------------------------------------------
 # Interpolation kernels.
 #-------------------------------------------------------------------------------
-WT = TableKernel(NBSplineKernel(order), 1000)
+WT = TableKernel(NBSplineKernel(order), 10)
 output("WT")
 kernelExtent = WT.kernelExtent
 

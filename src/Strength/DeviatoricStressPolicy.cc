@@ -13,6 +13,7 @@
 #include "Material/EquationOfState.hh"
 #include "Field/Field.hh"
 #include "Field/FieldList.hh"
+#include "Geometry/GeometryRegistrar.hh"
 #include "Utilities/DBC.hh"
 
 namespace Spheral {
@@ -22,9 +23,8 @@ namespace Spheral {
 //------------------------------------------------------------------------------
 template<typename Dimension>
 DeviatoricStressPolicy<Dimension>::
-DeviatoricStressPolicy(const bool zeroTrace):
-  IncrementFieldList<Dimension, typename Dimension::SymTensor>(),
-  mZeroTrace(zeroTrace) {
+DeviatoricStressPolicy():
+  IncrementFieldList<Dimension, typename Dimension::SymTensor>() {
 }
 
 //------------------------------------------------------------------------------
@@ -53,14 +53,20 @@ update(const KeyType& /*key*/,
   const auto DSDt = derivs.fields(IncrementFieldList<Dimension, SymTensor>::prefix() + 
                                   SolidFieldNames::deviatoricStress, SymTensor::zero);
 
+  // We only want to enforce zeroing the trace in Cartesian coordinates.   In RZ or R
+  // we assume the missing components on the diagonal sum to -Trace(S).
+  const auto zeroTrace = GeometryRegistrar::coords() == CoordinateType::Cartesian;
+
   // Iterate over the internal nodes.
   const auto numFields = S.numFields();
   for (auto k = 0u; k < numFields; ++k) {
     const auto n = S[k]->numInternalElements();
     for (auto i = 0u; i < n; ++i) {
-      auto S0 = S(k,i) + multiplier*(DSDt(k,i));                          // Elastic prediction for the new deviatoric stress
-      if (mZeroTrace) S0 -= SymTensor::one * S0.Trace()/Dimension::nDim;  // Ensure the deviatoric stress is traceless (all but RZ)
-      CHECK(fuzzyEqual(S0.Trace(), 0.0));
+      auto S0 = S(k,i) + multiplier*(DSDt(k,i));               // Elastic prediction for the new deviatoric stress
+      if (zeroTrace) {
+        S0 -= SymTensor::one * S0.Trace()/Dimension::nDim;     // Ensure the deviatoric stress is traceless (all but RZ and spherical)
+        CHECK(fuzzyEqual(S0.Trace(), 0.0));
+      }
 
       // Purely elastic flow.  The plastic yielding is accounted for when we update the plastic strain.
       S(k,i) = S0;

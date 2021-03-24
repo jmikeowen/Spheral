@@ -1961,8 +1961,5 @@ DataBase<Dimension>::valid() const {
 template<typename Dimension>
 int DataBase<Dimension>::nDim = Dimension::nDim;
 
-template<typename Dimension>
-bool DataBase<Dimension>::isRZ = false;
-
 }
 

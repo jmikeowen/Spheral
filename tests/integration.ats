@@ -14,6 +14,9 @@ source("../src/Geometry/tests/testPolyhedron.py")
 source("../src/Geometry/tests/testPolyClipper2d.py")
 source("../src/Geometry/tests/testPolyClipper3d.py")
 
+# Kernel unit tests
+source("../src/Kernel/tests/testBicubicSphericalKernel.py")
+
 # Boundary unit tests
 source("../src/Boundary/tests/testPeriodicBoundary-1d.py")
 source("../src/Boundary/tests/testPeriodicBoundary-2d.py")
@@ -56,6 +59,8 @@ source("../src/Utilities/tests/testDistances3d.py")
 source("../src/Utilities/tests/testSegmentIntersectPolygonEdges.py")
 source("../src/Utilities/tests/testSegmentIntersectPolyhedronEdges.py")
 source("../src/Utilities/tests/testSimpsonsIntegration.py")
+source("../src/Utilities/tests/testQuadraticInterpolator.py")
+source("../src/Utilities/tests/testBiQuadraticInterpolator.py")
 
 # Mesh tests.
 source("../src/Mesh/tests/testLineMesh.py")

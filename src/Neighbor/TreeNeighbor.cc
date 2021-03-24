@@ -188,7 +188,7 @@ setMasterList(int nodeID,
               const bool ghostConnectivity) const {
   CHECK(valid());
   const auto& nodeList = this->nodeList();
-  CHECK(nodeID >= 0 and nodeID < int(nodeList.numInternalNodes()));
+  CHECK(nodeID >= 0 and size_t(nodeID) < nodeList.numInternalNodes());
   const auto& positions = nodeList.positions();
   const auto& Hfield = nodeList.Hfield();
   this->setMasterList(positions(nodeID), Hfield(nodeID), masterList, coarseNeighbors, ghostConnectivity);

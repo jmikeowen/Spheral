@@ -39,6 +39,7 @@
 #include "Utilities/SpheralFunctions.hh"
 #include "Geometry/innerProduct.hh"
 #include "Geometry/outerProduct.hh"
+#include "Geometry/GeometryRegistrar.hh"
 
 #include "CRKSPHHydroBaseRZ.hh"
 
@@ -108,7 +109,8 @@ CRKSPHHydroBaseRZ::
 void
 CRKSPHHydroBaseRZ::
 initializeProblemStartup(DataBase<Dim<2> >& dataBase) {
-  dataBase.isRZ = true;
+  
+  GeometryRegistrar::coords(CoordinateType::RZ);
 
   // Correct the mass to mass/r.
   auto mass = dataBase.fluidMass();

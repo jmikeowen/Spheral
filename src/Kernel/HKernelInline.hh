@@ -11,7 +11,7 @@ template<typename Dimension>
 inline
 double
 HKernel<Dimension>::
-kernelValue(double etaMagnitude, double Hdet) const {
+kernelValue(double etaMagnitude, const double Hdet) const {
   REQUIRE(etaMagnitude >= 0.0);
   REQUIRE(Hdet >= 0.0);
 

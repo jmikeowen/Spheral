@@ -107,7 +107,7 @@ def hadesDump(integrator,
                           materials = materials,
                           time = integrator.currentTime,
                           cycle = integrator.currentCycle,
-                          RZ = db.isRZ)
+                          RZ = (GeometryRegistrar.coords == CoordinateType.RZ))
 
     mpi.barrier()
     print "hadesDump finished: required %0.2f seconds" % (time.clock() - t0)

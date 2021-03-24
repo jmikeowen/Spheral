@@ -10,6 +10,7 @@
 #include "Field/Field.hh"
 #include "Field/FieldBase.hh"
 #include "Hydro/HydroFieldNames.hh"
+#include "Geometry/GeometryRegistrar.hh"
 #include "Utilities/allReduce.hh"
 #include "Utilities/planarReflectingOperator.hh"
 #include "Utilities/DBC.hh"
@@ -285,7 +286,7 @@ InflowOutflowBoundary<Dimension>::initializeProblemStartup(const bool /*final*/)
     for (const auto& p: posvals) packElement(p, posbuf);
 
     // IF RZ adjust ghost masses
-    if (mDataBase.isRZ){
+    if (GeometryRegistrar::coords() == CoordinateType::RZ){
       auto& mass = nodeList.mass();
       const auto masskey = StateBase<Dimension>::key(mass);
       auto massitr = mBufferedValues.find(masskey);

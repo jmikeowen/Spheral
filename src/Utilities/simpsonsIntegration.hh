@@ -22,8 +22,11 @@ simpsonsIntegration(const Function& function,
                     const unsigned numBins) {
 
   // Pre-conditions.
-  VERIFY2(x0 < x1, "Require integration range ordered:  " << x0 << " !< " << x1);
+  VERIFY2(x0 <= x1, "Require integration range ordered:  " << x0 << " !< " << x1);
   VERIFY2(numBins > 1 and numBins % 2 == 0, "Require numBins a non-zero multiple of 2.");
+
+  // Possible quick answer?
+  if (x0 == x1) return 0.0;
 
   // Prepare our variables.
   unsigned i;
@@ -33,7 +36,7 @@ simpsonsIntegration(const Function& function,
   const Value dx = (x1 - x0)/numBins;
 
   // Walk the bins and accumulate the answer.
-  for (i = 0; i != numBins + 1; ++i) {
+  for (i = 0u; i < numBins + 1u; ++i) {
     integrand = function(x0 + i*dx);
     if (i == 0 or i == numBins) {
       result += integrand;

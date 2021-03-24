@@ -15,7 +15,7 @@ QuinticSplineKernel<Dimension>::~QuinticSplineKernel() {
 //------------------------------------------------------------------------------
 template<typename Dimension>
 double
-QuinticSplineKernel<Dimension>::kernelValue(double eta, double Hdet) const {
+QuinticSplineKernel<Dimension>::kernelValue(double eta, const double Hdet) const {
   REQUIRE(eta >= 0.0);
   REQUIRE(Hdet >= 0.0);
   if (eta < 1.0/3.0) {
@@ -37,7 +37,7 @@ QuinticSplineKernel<Dimension>::kernelValue(double eta, double Hdet) const {
 //------------------------------------------------------------------------------
 template<typename Dimension>
 double
-QuinticSplineKernel<Dimension>::gradValue(double eta, double Hdet) const {
+QuinticSplineKernel<Dimension>::gradValue(double eta, const double Hdet) const {
   REQUIRE(eta >= 0.0);
   REQUIRE(Hdet >= 0.0);
   if (eta < 1.0/3.0) {
@@ -59,7 +59,7 @@ QuinticSplineKernel<Dimension>::gradValue(double eta, double Hdet) const {
 //------------------------------------------------------------------------------
 template<typename Dimension>
 double
-QuinticSplineKernel<Dimension>::grad2Value(double eta, double Hdet) const {
+QuinticSplineKernel<Dimension>::grad2Value(double eta, const double Hdet) const {
   REQUIRE(eta >= 0.0);
   REQUIRE(Hdet >= 0.0);
   if (eta < 1.0/3.0) {
