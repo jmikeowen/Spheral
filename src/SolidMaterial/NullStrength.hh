@@ -16,7 +16,8 @@ template<typename Dimension>
 class NullStrength: public StrengthModel<Dimension> {
 public:
   //--------------------------- Public Interface ---------------------------//
-  typedef typename Dimension::Scalar Scalar;
+  using Scalar = typename Dimension::Scalar;
+  using SymTensor = typename Dimension::SymTensor;
 
   // Constructors, destructor.
   NullStrength() {};
@@ -26,14 +27,16 @@ public:
   virtual void shearModulus(Field<Dimension, Scalar>& shearModulus,
                             const Field<Dimension, Scalar>& density,
                             const Field<Dimension, Scalar>& specificThermalEnergy,
-                            const Field<Dimension, Scalar>& pressure) const;
+                            const Field<Dimension, Scalar>& pressure,
+                            const Field<Dimension, SymTensor>& damage) const override;
 
   virtual void yieldStrength(Field<Dimension, Scalar>& yieldStrength,
                              const Field<Dimension, Scalar>& density,
                              const Field<Dimension, Scalar>& specificThermalEnergy,
                              const Field<Dimension, Scalar>& pressure,
                              const Field<Dimension, Scalar>& plasticStrain,
-                             const Field<Dimension, Scalar>& plasticStrainRate) const;
+                             const Field<Dimension, Scalar>& plasticStrainRate,
+                             const Field<Dimension, SymTensor>& damage) const override;
 
 private:
   //--------------------------- Private Interface ---------------------------//
@@ -53,7 +56,8 @@ NullStrength<Dimension>::
 shearModulus(Field<Dimension, Scalar>& shearModulus,
              const Field<Dimension, Scalar>& /*density*/,
              const Field<Dimension, Scalar>& /*specificThermalEnergy*/,
-             const Field<Dimension, Scalar>& /*pressure*/) const {
+             const Field<Dimension, Scalar>& /*pressure*/,
+             const Field<Dimension, SymTensor>& /*damage*/) const {
   shearModulus = 0.0;
 }
 
@@ -69,7 +73,8 @@ yieldStrength(Field<Dimension, Scalar>& yieldStrength,
               const Field<Dimension, Scalar>& /*specificThermalEnergy*/,
               const Field<Dimension, Scalar>& /*pressure*/,
               const Field<Dimension, Scalar>& /*plasticStrain*/,
-              const Field<Dimension, Scalar>& /*plasticStrainRate*/) const {
+              const Field<Dimension, Scalar>& /*plasticStrainRate*/,
+              const Field<Dimension, SymTensor>& /*damage*/) const {
   yieldStrength = 0.0;
 }
 

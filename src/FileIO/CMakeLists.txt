@@ -23,5 +23,3 @@ spheral_install_python_files(
 
 spheral_add_cxx_library(FileIO)
 
-list(APPEND SPHERAL_CXX_LIBS Spheral_FileIO)
-set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

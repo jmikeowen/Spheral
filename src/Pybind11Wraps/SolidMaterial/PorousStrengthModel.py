@@ -26,8 +26,9 @@ this parameter, so we store alpha locally and only allow Field updates of the
 pressure (forbidding the single value P lookup the EOS usually allows)."""
 
     PYB11typedefs = """
-    typedef typename %(Dimension)s::Scalar Scalar;
-    typedef Field<%(Dimension)s, Scalar> ScalarField;
+    using Scalar = typename %(Dimension)s::Scalar;
+    using SymTensor = typename %(Dimension)s::SymTensor;
+    using ScalarField = Field<%(Dimension)s, Scalar>;
 """
 
     #...........................................................................
@@ -55,7 +56,8 @@ pressure (forbidding the single value P lookup the EOS usually allows)."""
                    density = "const Field<%(Dimension)s, Scalar>&",
                    specificThermalEnergy = "const Field<%(Dimension)s, Scalar>&",
                    pressure = "const Field<%(Dimension)s, Scalar>&",
-                   fluidSoundSpeed = "const Field<%(Dimension)s, Scalar>&"):
+                   fluidSoundSpeed = "const Field<%(Dimension)s, Scalar>&",
+                   damage = "const Field<%(Dimension)s, SymTensor>&"):
         return "void"
 
     @PYB11virtual

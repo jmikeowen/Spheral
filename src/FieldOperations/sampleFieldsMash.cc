@@ -120,7 +120,6 @@ sampleFieldsMash(const FieldList<Dimension, DataType>& fieldList,
           const Vector rij = ri - rj;
           const Vector etai = Hi*rij;
           const Vector etaj = Hj*rij;
-          CHECK(etai >= 0.0 && etaj >= 0.0);
 
           // Calculate the kernel estimates for each node.
           Scalar Wi = kernel(etai, 1.0);

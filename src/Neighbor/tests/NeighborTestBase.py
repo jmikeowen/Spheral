@@ -190,8 +190,8 @@ class NeighborTestBase:
         from SpheralTestUtilities import findNeighborNodes, checkNeighbors
         import time
 
-        self.dataBase.updateConnectivityMap(False, False)
-        cm = self.dataBase.connectivityMap(False, False)
+        self.dataBase.updateConnectivityMap(False, False, False)
+        cm = self.dataBase.connectivityMap(False, False, False)
 
         # Iterate over the NodeLists.
         for iNL, inodes in enumerate(self.dataBase.nodeLists()):
@@ -228,8 +228,8 @@ class NeighborTestBase:
         from SpheralTestUtilities import findNeighborNodes, checkNeighbors
         import time
 
-        self.dataBase.updateConnectivityMap(False, False)
-        cm = self.dataBase.connectivityMap(False, False)
+        self.dataBase.updateConnectivityMap(False, False, False)
+        cm = self.dataBase.connectivityMap(False, False, False)
         numNodeLists = self.dataBase.numNodeLists
 
         # Build the answer based on the node neighbors
@@ -266,8 +266,8 @@ class NeighborTestBase:
         from SpheralTestUtilities import findNeighborNodes, findOverlapNeighbors, findOverlapRegion, checkNeighbors
         import time
 
-        self.dataBase.updateConnectivityMap(False, True)
-        cm = self.dataBase.connectivityMap(False, True)
+        self.dataBase.updateConnectivityMap(False, True, False)
+        cm = self.dataBase.connectivityMap(False, True, False)
         pos = self.dataBase.globalPosition
         H = self.dataBase.globalHfield
 
@@ -337,6 +337,50 @@ class NeighborTestBase:
                         sys.stdin.flush()
                         raise RuntimeError, "Failed test"
                 print "    Passed for node %i" % i
+
+        return
+
+    #---------------------------------------------------------------------------
+    # Test ConnectivityMap intersection methods
+    #---------------------------------------------------------------------------
+    def testConnectivityComputeIntersection(self):
+        from SpheralTestUtilities import findNeighborNodes, findOverlapNeighbors, findOverlapRegion, checkNeighbors
+        import time
+
+        self.dataBase.updateConnectivityMap(False, True, True)
+        numNodeLists = self.dataBase.numNodeLists
+        cm = self.dataBase.connectivityMap(False, True, True)
+        pairs = list(cm.nodePairList)
+        pos = self.dataBase.globalPosition
+        H = self.dataBase.globalHfield
+
+        # Compute the actual intersection of two points for a NodeList
+        # Returns a list of Python sets (per NodeList)
+        def intersectionAnswer(pair):
+            neighborsi = cm.connectivityForNode(pair.i_list, pair.i_node)
+            neighborsj = cm.connectivityForNode(pair.j_list, pair.j_node)
+            result = [set(neighborsi[kNL]) & set(neighborsj[kNL]) for kNL in xrange(numNodeLists)]
+            result[pair.i_list].add(pair.i_node)
+            result[pair.j_list].add(pair.j_node)
+            return result
+
+        # Make our vector<vector<int>> into a list of sets for comparison with the answer
+        def convertToSets(neighbors):
+            assert len(neighbors) == numNodeLists
+            return [set(x) for x in neighbors]
+
+        # Randomly select pairs to test
+        for pair in random.sample(pairs, self.ncheck):
+            print "Checking ", pair
+            answer = intersectionAnswer(pair)
+            assert len(intersect0) == numNodeLists
+            assert len(intersect1) == numNodeLists
+            print answer
+            print intersect0
+            print intersect1
+            self.assertEqual(intersect0, answer,
+                            ("\nIntersection computed from Neighbor set intersections does not match: \nintersect0: %s\nanswer: %s\n" % (intersect0, answer)))
+            print "    Passed for pair ", pair
 
         return
 

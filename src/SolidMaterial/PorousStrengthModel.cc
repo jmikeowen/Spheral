@@ -41,15 +41,17 @@ PorousStrengthModel<Dimension>::
 shearModulus(Field<Dimension, Scalar>& shearModulus,
              const Field<Dimension, Scalar>& density,
              const Field<Dimension, Scalar>& specificThermalEnergy,
-             const Field<Dimension, Scalar>& pressure) const {
+             const Field<Dimension, Scalar>& pressure,
+             const Field<Dimension, SymTensor>& damage) const {
   REQUIRE(density.nodeListPtr() == shearModulus.nodeListPtr());
   REQUIRE(specificThermalEnergy.nodeListPtr() == shearModulus.nodeListPtr());
   REQUIRE(pressure.nodeListPtr() == shearModulus.nodeListPtr());
+  REQUIRE(damage.nodeListPtr() == shearModulus.nodeListPtr());
   REQUIRE(mAlphaPtr->nodeListPtr() == shearModulus.nodeListPtr());
 
   // The base model sets the solid (compacted) value.
   const Field<Dimension, Scalar> rhoS = (*mAlphaPtr)*density;
-  mSolidStrength.shearModulus(shearModulus, rhoS, specificThermalEnergy, pressure);
+  mSolidStrength.shearModulus(shearModulus, rhoS, specificThermalEnergy, pressure, damage);
 
   // Now apply the porosity modifier.
   const unsigned n = shearModulus.numInternalElements();
@@ -69,17 +71,19 @@ yieldStrength(Field<Dimension, Scalar>& yieldStrength,
               const Field<Dimension, Scalar>& specificThermalEnergy,
               const Field<Dimension, Scalar>& pressure,
               const Field<Dimension, Scalar>& plasticStrain,
-              const Field<Dimension, Scalar>& plasticStrainRate) const {
+              const Field<Dimension, Scalar>& plasticStrainRate,
+              const Field<Dimension, SymTensor>& damage) const {
   REQUIRE(density.nodeListPtr() == yieldStrength.nodeListPtr());
   REQUIRE(specificThermalEnergy.nodeListPtr() == yieldStrength.nodeListPtr());
   REQUIRE(pressure.nodeListPtr() == yieldStrength.nodeListPtr());
+  REQUIRE(damage.nodeListPtr() == yieldStrength.nodeListPtr());
   REQUIRE(plasticStrain.nodeListPtr() == yieldStrength.nodeListPtr());
   REQUIRE(plasticStrainRate.nodeListPtr() == yieldStrength.nodeListPtr());
   REQUIRE(mAlphaPtr->nodeListPtr() == yieldStrength.nodeListPtr());
 
   // The base model sets the solid (compacted) value.
   const Field<Dimension, Scalar> rhoS = (*mAlphaPtr)*density;
-  mSolidStrength.yieldStrength(yieldStrength, rhoS, specificThermalEnergy, pressure, plasticStrain, plasticStrainRate);
+  mSolidStrength.yieldStrength(yieldStrength, rhoS, specificThermalEnergy, pressure, plasticStrain, plasticStrainRate, damage);
 
   // Now apply the porosity modifier.
   const unsigned n = yieldStrength.numInternalElements();
@@ -98,8 +102,9 @@ soundSpeed(Field<Dimension, Scalar>& soundSpeed,
            const Field<Dimension, Scalar>& density,
            const Field<Dimension, Scalar>& specificThermalEnergy,
            const Field<Dimension, Scalar>& pressure,
-           const Field<Dimension, Scalar>& fluidSoundSpeed) const {
-  mSolidStrength.soundSpeed(soundSpeed, density, specificThermalEnergy, pressure, fluidSoundSpeed);
+           const Field<Dimension, Scalar>& fluidSoundSpeed,
+           const Field<Dimension, SymTensor>& damage) const {
+  mSolidStrength.soundSpeed(soundSpeed, density, specificThermalEnergy, pressure, fluidSoundSpeed, damage);
 }
 
 //------------------------------------------------------------------------------

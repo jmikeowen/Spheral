@@ -56,7 +56,6 @@ public:
   const SolidNodeList<Dimension>& nodeList() const;
   const Field<Dimension, Scalar>& failureStrain() const;
   const Field<Dimension, Scalar>& meltSpecificEnergy() const;
-  const Field<Dimension, SymTensor>& newEffectiveDamage() const;
   const Field<Dimension, Scalar>& D1() const;
   const Field<Dimension, Scalar>& D2() const;
   double D3() const;
@@ -108,7 +107,6 @@ private:
   //--------------------------- Private Interface ---------------------------//
   SolidNodeList<Dimension>& mNodeList;
   Field<Dimension, Scalar> mD1, mD2, mFailureStrain, mMeltSpecificEnergy;
-  Field<Dimension, SymTensor> mNewEffectiveDamage;
   double mD3, mD4, mD5, mepsilondot0, mTcrit, msigmamax, mefailmin;
 
   // The restart registration.

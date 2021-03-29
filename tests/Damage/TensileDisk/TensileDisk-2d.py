@@ -33,16 +33,19 @@ commandLine(
     # Geometry and initial conditions
     R0 = 1.0,
     nr = 100,
-    vr0 = 1e-2,
-    thetaFactor = 0.5,        # one of (0.5, 1.0, 2.0) -- how much of disk geometry to generate
+    vr0 = 5e-3,
+    thetaFactor = 2.0,        # one of (0.5, 1.0, 2.0) -- how much of disk geometry to generate
     constantBoundary = True,  # force constant expansion on outer boundary nodes
 
     # Parameters for the time dependent strain and cracking.
     DamageModelConstructor = GradyKippTensorDamageOwen,
+    useDamage = True,
+    damageCoupling = ThreePointDamage,
 
     # Hydro
+    nPerh = 4.01,
     crksph = False,     # Use CRK hydro?
-    asph = True,        # Just the H tensor evolution -- applies to all hydros
+    asph = False,        # Just the H tensor evolution -- applies to all hydros
     hminratio = 0.05,
     XSPH = False,
     densityUpdate = IntegrateDensity,
@@ -71,7 +74,7 @@ commandLine(
     restartStep = 500,
     plotFlaws = False,
     clearDirectories = False,
-    dataDirBase = "dumps-TensileRod-2d",
+    dataDirBase = "dumps-TensileDisk-2d",
     outputFile = "None",
 
     # Should we restart (-1 => find most advanced available restart)
@@ -84,12 +87,8 @@ assert not (evolveTotalEnergy and compatibleEnergy), "ERROR, can only select one
 
 if crksph:
     hydroname = os.path.join("CRKSPH", str(volumeType))
-    nPerh = 1.51
-    order = 5
 else:
     hydroname = "SPH"
-    nPerh = 1.51
-    order = 5
 if asph:
     hydroname = "A" + hydroname
 
@@ -97,7 +96,9 @@ dataDir = os.path.join(dataDirBase,
                        "vr0=%g" % vr0,
                        "thetaFactor=%g" % thetaFactor,
                        hydroname,
+                       "useDamage=%s" % useDamage,
                        DamageModelConstructor.__name__,
+                       "damageCoupling=%s" % damageCoupling,
                        "nr=%i" % nr)
 restartDir = os.path.join(dataDir, "restarts")
 restartBaseName = os.path.join(restartDir, "TensileDisk-%i" % nr)
@@ -189,17 +190,11 @@ mpi.barrier()
 rho0 = 7.9
 etamin = 0.5
 etamax = 1.5
-eos = GruneisenEquationOfState(rho0,    # reference density  
-                               etamin,  # etamin             
-                               etamax,  # etamax             
-                               0.457,   # C0                 
-                               1.49,    # S1                 
-                               0.0,     # S2                 
-                               0.0,     # S3                 
-                               1.93,    # gamma0             
-                               0.5,     # b                  
-                               55.350,  # atomic weight
-                               units)
+eos = GruneisenEquationOfState("steel",
+                               etamin = etamin,
+                               etamax = etamax,
+                               units = units)
+rho0 = eos.referenceDensity
 coldFit = NinthOrderPolynomialFit(-1.06797724e-2,
                                   -2.06872020e-2,
                                    8.24893246e-1,
@@ -237,7 +232,7 @@ strengthModel = SteinbergGuinanStrength(eos,
 # Create our interpolation kernels -- one for normal hydro interactions, and
 # one for use with the artificial viscosity
 #-------------------------------------------------------------------------------
-WT = TableKernel(NBSplineKernel(order), 1000)
+WT = TableKernel(WendlandC4Kernel(), 1000)
 output("WT")
 
 #-------------------------------------------------------------------------------
@@ -368,10 +363,7 @@ kWeibullFactor = 1.0
 mWeibullFactor = 1.0
 randomSeed = 548928513
 strainType = PseudoPlasticStrain # BenzAsphaugStrain #
-damageMethod = MinMaxDamage # SampledDamage # CopyDamage # 
-useDamageGradient = False
 cullToWeakestFlaws = False
-effectiveFlawAlgorithm = FullSpectrumFlaws
 damageInCompression = False
 negativePressureInDamage = False
 volumeMultiplier = 1.0
@@ -396,32 +388,25 @@ bD2 = 2.0      # Weibull
 eps0D2 = 0.165 # Weibull
 
 if DamageModelConstructor is GradyKippTensorDamage:
-    damageModel = DamageModelConstructor(nodes,
-                                         kWeibull,
-                                         mWeibull,
-                                         volume,
-                                         1.0,
-                                         WT,
-                                         randomSeed,
-                                         strainType,
-                                         damageMethod,
-                                         useDamageGradient,
-                                         flawAlgorithm = effectiveFlawAlgorithm,
+    damageModel = DamageModelConstructor(nodeList = nodes,
+                                         kWeibull = kWeibull,
+                                         mWeibull = mWeibull,
+                                         volume = volume,
+                                         kernel = WT,
+                                         seed = randomSeed,
+                                         strainAlgorithm = strainType,
+                                         damageCouplingAlgorithm = damageCoupling,
                                          damageInCompression = damageInCompression)
 
 elif DamageModelConstructor is GradyKippTensorDamageOwen:
-    damageModel = DamageModelConstructor(nodes,
-                                         kWeibull,
-                                         mWeibull,
-                                         WT,
-                                         randomSeed,
-                                         volumeMultiplier,
-                                         strainType,
-                                         damageMethod,
-                                         useDamageGradient,
-                                         0.4,
-                                         effectiveFlawAlgorithm,
-                                         numFlawsPerNode,
+    damageModel = DamageModelConstructor(nodeList = nodes,
+                                         kWeibull = kWeibull,
+                                         mWeibull = mWeibull,
+                                         kernel = WT,
+                                         seed = randomSeed,
+                                         strainAlgorithm = strainType,
+                                         minFlawsPerNode = numFlawsPerNode,
+                                         damageCouplingAlgorithm = damageCoupling,
                                          damageInCompression = damageInCompression)
 
 elif DamageModelConstructor is JohnsonCookDamageWeibull:
@@ -465,11 +450,6 @@ if isinstance(damageModel, JohnsonCookDamage):
     vizFields += [damageModel.D1(), damageModel.D2()]
 
 output("damageModel")
-if DamageModelConstructor in (GradyKippTensorDamageBenzAsphaug, GradyKippTensorDamageOwen):
-    output("damageModel.useDamageGradient")
-    output("damageModel.effectiveDamageAlgorithm")
-    output("damageModel.effectiveFlawAlgorithm")
-    output("damageModel.effectiveStrain")
 
 if cullToWeakestFlaws:
     damageModel.cullToWeakestFlaws()
@@ -477,7 +457,8 @@ if cullToWeakestFlaws:
 # damageModel.excludeNodes = controlNodes
 output("damageModel")
 
-packages.append(damageModel)
+if useDamage:
+    packages.append(damageModel)
 
 #-------------------------------------------------------------------------------
 # Construct a time integrator.

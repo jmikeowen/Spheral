@@ -1,9 +1,10 @@
 cd @CMAKE_INSTALL_PREFIX@
 echo "Creating Spheral virtual python environment ..."
-@python_DIR@/bin/virtualenv -p @PYTHON_EXE@ --system-site-packages .venv
+@PYTHON_EXE@ @python_DIR@/bin/virtualenv -p @PYTHON_EXE@ --system-site-packages .venv
 
 echo "Installing Spheral ..."
 cp @polytope_DIR@/lib/python2.7/site-packages/polytope/polytope.so @CMAKE_INSTALL_PREFIX@/.venv/lib/python2.7/site-packages/
+cp @polyclipper_DIR@/PolyClipper.so @CMAKE_INSTALL_PREFIX@/.venv/lib/python2.7/site-packages/
 cp Spheral.pth .venv/lib/python2.7/site-packages/
 mkdir -p .venv/lib/python2.7/site-packages/Spheral
 cd - > /dev/null

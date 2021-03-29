@@ -1,4 +1,5 @@
 import copy
+import sys
 from SpheralCompiledPackages import *
 from MaterialPropertiesLib import SpheralMaterialPropertiesLib
 
@@ -27,11 +28,9 @@ GradyKippTensorDamageBenzAsphaug is constructed with the following arguments:
         kernel              : (required) the interpolation kernel to use
         seed                : (optional) random number seed for flaw generation.
         strainAlgorithm     : (optional) defaults to "BenzAsphaugStrain"
-        effectiveDamageAlgorithm : (optional) defaults to "CopyDamage".
-        useDamageGradient   : (optional) defaults to "False"
-        crackGrowthMultiplier : (optional) defaults to "0.4"
-        flawAlgorithm       : (optional) defaults to "FullSpectrumFlaws"
-        criticalDamageThreshold : (optional) defaults to 3.0
+        damageCouplingAlgorithm : (optional) defaults to "PairMaxDamage"
+        crackGrowthMultiplier   : (optional) defaults to "0.4"
+        criticalDamageThreshold : (optional) defaults to 4.0 (inactive)
         minFlawsPerNode     : (optional) defaults to "1"
         minTotalFlaws       : (optional) defaults to "1"
         mask                : (optional) a field of flags: a node with zero implies
@@ -53,11 +52,9 @@ GradyKippTensorDamageOwen is constructed with the following arguments:
         seed                : (optional) random number seed for flaw generation.
         volumeMultiplier    : (optional) Multiplies the total volume.
         strainAlgorithm     : (optional) defaults to "PsuedoPlasticStrain"
-        effectiveDamageAlgorithm : (optional) defaults to "CopyDamage".
-        useDamageGradient   : (optional) defaults to "False"
-        crackGrowthMultiplier : (optional) defaults to "0.4"
-        flawAlgorithm       : (optional) defaults to "FullSpectrumFlaws"
-        criticalDamageThreshold : (optional) defaults to 3.0
+        damageCouplingAlgorithm : (optional) defaults to "PairMaxDamage"
+        crackGrowthMultiplier   : (optional) defaults to "0.4"
+        criticalDamageThreshold : (optional) defaults to 4.0 (inactive)
         minFlawsPerNode     : (optional) defaults to "1"
         mask                : (optional) a field of flags: a node with zero implies
                               do not initialize flaws on that node.  default=None
@@ -82,12 +79,10 @@ class GradyKippTensorDamageBenzAsphaug%(dim)s(TensorDamageModel%(dim)s):
         # Arguments needed to build the damage model.
         damage_kwargs = {"nodeList"                 : None,
                          "strainAlgorithm"          : BenzAsphaugStrain,
-                         "effectiveDamageAlgorithm" : CopyDamage,
-                         "useDamageGradient"        : False,
+                         "damageCouplingAlgorithm"  : PairMaxDamage,
                          "kernel"                   : None,
                          "crackGrowthMultiplier"    : 0.4,
-                         "flawAlgorithm"            : FullSpectrumFlaws,
-                         "criticalDamageThreshold"  : 3.0,
+                         "criticalDamageThreshold"  : 4.0,
                          "damageInCompression"      : False}
 
         # Arguments needed to build the Weibull distribution.
@@ -104,6 +99,11 @@ class GradyKippTensorDamageBenzAsphaug%(dim)s(TensorDamageModel%(dim)s):
         # Extra arguments for our convenient constructor.
         convenient_kwargs = {"materialName"          : None,
                              "units"                 : None}
+
+        # Deprecated arguments.
+        deprecated_kwargs = ["effectiveDamageAlgorithm",
+                             "useDamageGradient",
+                             "flawAlgorithm"]
 
         # The order of all arguments in the original constructor for these classes.
         backCompatOrder = ["nodeList",
@@ -122,10 +122,10 @@ class GradyKippTensorDamageBenzAsphaug%(dim)s(TensorDamageModel%(dim)s):
                            "minFlawsPerNode",
                            "minTotalFlaws"]
         for x in backCompatOrder:
-            assert (x in weibull_kwargs) or (x in damage_kwargs)
+            assert (x in weibull_kwargs) or (x in damage_kwargs) or (x in deprecated_kwargs)
 
         # Check the input arguments.
-        validKeys = damage_kwargs.keys() + weibull_kwargs.keys() + convenient_kwargs.keys()
+        validKeys = damage_kwargs.keys() + weibull_kwargs.keys() + convenient_kwargs.keys() + deprecated_kwargs
         for argname in kwargs:
             if not argname in validKeys:
                 raise ValueError, ("ERROR: argument %%s not a valid option.\\n" %% argname +
@@ -159,13 +159,17 @@ class GradyKippTensorDamageBenzAsphaug%(dim)s(TensorDamageModel%(dim)s):
         # Process the other user arguments.
         for iarg in xrange(len(args)):
             argname = backCompatOrder[iarg]
+            if argname in deprecated_kwargs:
+                sys.stdout.write("WARNING: constructor argument %%s is deprecated and will be ignored.\\n" %% argname)
             if argname in damage_kwargs:
                 damage_kwargs[argname] = args[iarg]
             if argname in weibull_kwargs:
                 weibull_kwargs[argname] = args[iarg]
 
-        # Process any keyword arguments.
+        # Process any keyword arguments.  Note we already removed any deprecated keywords.
         for argname in kwargs:
+            if argname in deprecated_kwargs:
+                sys.stdout.write("WARNING: constructor argument %%s is deprecated and will be ignored.\\n" %% argname)
             if argname in damage_kwargs:
                 damage_kwargs[argname] = kwargs[argname]
             if argname in weibull_kwargs:
@@ -229,13 +233,11 @@ class GradyKippTensorDamageOwen%(dim)s(TensorDamageModel%(dim)s):
 
         # Arguments needed to build the damage model.
         damage_kwargs = {"nodeList"                 : None,
-                         "strainAlgorithm"          : BenzAsphaugStrain,
-                         "effectiveDamageAlgorithm" : CopyDamage,
-                         "useDamageGradient"        : False,
+                         "strainAlgorithm"          : PseudoPlasticStrain,
+                         "damageCouplingAlgorithm"  : PairMaxDamage,
                          "kernel"                   : None,
                          "crackGrowthMultiplier"    : 0.4,
-                         "flawAlgorithm"            : FullSpectrumFlaws,
-                         "criticalDamageThreshold"  : 3.0,
+                         "criticalDamageThreshold"  : 4.0,
                          "damageInCompression"      : False}
 
         # Arguments needed to build the Weibull distribution.
@@ -250,6 +252,11 @@ class GradyKippTensorDamageOwen%(dim)s(TensorDamageModel%(dim)s):
         # Extra arguments for our convenient constructor.
         convenient_kwargs = {"materialName"          : None,
                              "units"                 : None}
+
+        # Deprecated arguments.
+        deprecated_kwargs = ["effectiveDamageAlgorithm",
+                             "useDamageGradient",
+                             "flawAlgorithm"]
 
         # The order of all arguments in the original constructor for these classes.
         backCompatOrder = ["nodeList",
@@ -266,12 +273,14 @@ class GradyKippTensorDamageOwen%(dim)s(TensorDamageModel%(dim)s):
                            "criticalDamageThreshold",
                            "minFlawsPerNode"]
         for x in backCompatOrder:
-            assert (x in weibull_kwargs) or (x in damage_kwargs)
+            assert (x in weibull_kwargs) or (x in damage_kwargs) or (x in deprecated_kwargs)
 
         # Check the input arguments.
-        validKeys = damage_kwargs.keys() + weibull_kwargs.keys() + convenient_kwargs.keys()
+        validKeys = damage_kwargs.keys() + weibull_kwargs.keys() + convenient_kwargs.keys() + deprecated_kwargs
         for argname in kwargs:
-            if not argname in validKeys:
+            if argname in deprecated_kwargs:
+                sys.stdout.write("WARNING: constructor argument %%s is deprecated and will be ignored.\\n" %% argname)
+            elif not argname in validKeys:
                 raise ValueError, ("ERROR: argument %%s not a valid option.\\n" %% argname +
                                    expectedUsageStringO)
 
@@ -303,6 +312,8 @@ class GradyKippTensorDamageOwen%(dim)s(TensorDamageModel%(dim)s):
         # Process the other user arguments.
         for iarg in xrange(len(args)):
             argname = backCompatOrder[iarg]
+            if argname in deprecated_kwargs:
+                sys.stdout.write("WARNING: constructor argument %%s is deprecated and will be ignored.\\n" %% argname)
             if argname in damage_kwargs:
                 damage_kwargs[argname] = args[iarg]
             if argname in weibull_kwargs:
@@ -310,6 +321,8 @@ class GradyKippTensorDamageOwen%(dim)s(TensorDamageModel%(dim)s):
 
         # Process any keyword arguments.
         for argname in kwargs:
+            if argname in deprecated_kwargs:
+                sys.stdout.write("WARNING: constructor argument %%s is deprecated and will be ignored.\\n" %% argname)
             if argname in damage_kwargs:
                 damage_kwargs[argname] = kwargs[argname]
             if argname in weibull_kwargs:

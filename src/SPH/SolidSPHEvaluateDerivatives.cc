@@ -1,5 +1,32 @@
 namespace Spheral {
 
+namespace {
+//------------------------------------------------------------------------------
+// Compute one minus the SymTensor in it's principle frame
+//------------------------------------------------------------------------------
+inline Dim<1>::SymTensor oneMinusEigenvalues(const Dim<1>::SymTensor& x) {
+  return Dim<1>::SymTensor(1.0 - x[0]);
+}
+
+inline Dim<2>::SymTensor oneMinusEigenvalues(const Dim<2>::SymTensor& x) {
+  const auto eigen = x.eigenVectors();
+  Dim<2>::SymTensor result(1.0 - eigen.eigenValues[0], 0.0,
+                           0.0, 1.0 - eigen.eigenValues[1]);
+  result.rotationalTransform(eigen.eigenVectors);
+  return result;
+}
+
+inline Dim<3>::SymTensor oneMinusEigenvalues(const Dim<3>::SymTensor& x) {
+  const auto eigen = x.eigenVectors();
+  Dim<3>::SymTensor result(1.0 - eigen.eigenValues[0], 0.0, 0.0,
+                           0.0, 1.0 - eigen.eigenValues[1], 0.0,
+                           0.0, 0.0, 1.0 - eigen.eigenValues[2]);
+  result.rotationalTransform(eigen.eigenVectors);
+  return result;
+}
+
+}
+
 //------------------------------------------------------------------------------
 // Determine the principle derivatives.
 //------------------------------------------------------------------------------
@@ -11,6 +38,8 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
                     const DataBase<Dimension>& dataBase,
                     const State<Dimension>& state,
                     StateDerivatives<Dimension>& derivatives) const {
+  TIME_SolidSPHevalDerivs.start();
+  TIME_SolidSPHevalDerivs_initial.start();
 
 #ifdef ENABLE_OPENMP
   using PAIR_EXEC_POL = RAJA::omp_for_exec;
@@ -58,9 +87,7 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   const auto omega = state.fields(HydroFieldNames::omegaGradh, 0.0);
   const auto S = state.fields(SolidFieldNames::deviatoricStress, SymTensor::zero);
   const auto mu = state.fields(SolidFieldNames::shearModulus, 0.0);
-  const auto damage = state.fields(SolidFieldNames::effectiveTensorDamage, SymTensor::zero);
-  const auto gradDamage = state.fields(SolidFieldNames::damageGradient, Vector::zero);
-  const auto fragIDs = state.fields(SolidFieldNames::fragmentIDs, int(1));
+  const auto damage = state.fields(SolidFieldNames::tensorDamage, SymTensor::zero);
   const auto pTypes = state.fields(SolidFieldNames::particleTypes, int(0));
   CHECK(mass.size() == numNodeLists);
   CHECK(position.size() == numNodeLists);
@@ -74,8 +101,6 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   CHECK(S.size() == numNodeLists);
   CHECK(mu.size() == numNodeLists);
   CHECK(damage.size() == numNodeLists);
-  CHECK(gradDamage.size() == numNodeLists);
-  CHECK(fragIDs.size() == numNodeLists);
   CHECK(pTypes.size() == numNodeLists);
 
   // Derivative FieldLists.
@@ -122,8 +147,9 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   CHECK(DSDt.size() == numNodeLists);
 
   // The set of interacting node pairs.
-  const auto& pairs = connectivityMap.nodePairList();
+  auto&       pairs = const_cast<NodePairList&>(connectivityMap.nodePairList());
   const auto  npairs = pairs.size();
+  // const auto& coupling = connectivityMap.coupling();
 
   // Size up the pair-wise accelerations before we start.
   if (compatibleEnergy) pairAccelerations.resize(npairs);
@@ -132,9 +158,7 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   const auto& nodeList = mass[0]->nodeList();
   const auto  nPerh = nodeList.nodesPerSmoothingScale();
   const auto  WnPerh = W(1.0/nPerh, 1.0);
-
-  // Build the functor we use to compute the effective coupling between nodes.
-  DamagedNodeCouplingWithFrags<Dimension> coupling(damage, gradDamage, H, fragIDs);
+  TIME_SolidSPHevalDerivs_initial.stop();
 
   // Get RAJA::Reducer arrays. 
   auto DvDt_reducer = DvDt.getReduceSum(PAIR_REDUCE_POL());
@@ -240,6 +264,9 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     // Flag if at least one particle is free (0).
     const bool freeParticle = (pTypei == 0 or pTypej == 0);
 
+    // Determine how we're applying damage.
+    const auto fDij = pairs[kk].f_couple;
+
     // Node displacement.
     const Vector rij = ri - rj;
     const Vector etai = Hi*rij;
@@ -263,9 +290,6 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     const Vector gradWj = gWj*Hetaj;
     const Vector gradWQj = gWQj*Hetaj;
     const Vector gradWGj = WG.gradValue(etaMagj, Hdetj) * Hetaj;
-
-    // Determine how we're applying damage.
-    const auto fDeffij = coupling(nodeListi, i, nodeListj, j);
 
     // Zero'th and second moment of the node distribution -- used for the
     // ideal H calculation.
@@ -306,20 +330,20 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     viscousWorkj += mi*workQj;
 
     // Damage scaling of negative pressures.
-    const double Peffi = (mNegativePressureInDamage or Pi > 0.0 ? Pi : fDeffij*Pi);
-    const double Peffj = (mNegativePressureInDamage or Pj > 0.0 ? Pj : fDeffij*Pj);
+    //const double Peffi = (mNegativePressureInDamage or Pi > 0.0 ? Pi : fDeffij*Pi);
+    //const double Peffj = (mNegativePressureInDamage or Pj > 0.0 ? Pj : fDeffij*Pj);
 
     // Compute the stress tensors.
-    sigmai = -Peffi*SymTensor::one;
-    sigmaj = -Peffj*SymTensor::one;
+    //sigmai = -Peffi*SymTensor::one;
+    //sigmaj = -Peffj*SymTensor::one;
     if (sameMatij) {
-      if (mStrengthInDamage) {
-        sigmai += Si;
-        sigmaj += Sj;
+      //if (mStrengthInDamage) {
+        sigmai += fDij*Si - Pi * SymTensor::one;
+        sigmai += fDij*Sj - Pj * SymTensor::one;
       } else {
-        sigmai += fDeffij*Si;
-        sigmaj += fDeffij*Sj;
-      }
+        sigmai += - Pi * SymTensor::one;
+        sigmaj += - Pj * SymTensor::one;
+      //}
     }
 
     // Compute the tensile correction to add to the stress as described in 
@@ -344,12 +368,12 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
     if (compatibleEnergy) pairAccelerations[kk] = mj*deltaDvDt;  // Acceleration for i (j anti-symmetric)
 
     // Pair-wise portion of grad velocity.
-    const auto deltaDvDxi = fDeffij*vij.dyad(gradWGi);
-    const auto deltaDvDxj = fDeffij*vij.dyad(gradWGj);
+    const auto deltaDvDxi = fDij * vij.dyad(gradWGi);
+    const auto deltaDvDxj = fDij * vij.dyad(gradWGj);
 
     // Specific thermal energy evolution.
-    DepsDti += -mj*(fDeffij*sigmarhoi.doubledot(deltaDvDxi.Symmetric()) - workQi);
-    DepsDtj += -mi*(fDeffij*sigmarhoj.doubledot(deltaDvDxj.Symmetric()) - workQj);
+    DepsDti += -mj*(sigmarhoi.doubledot(deltaDvDxi.Symmetric()) - workQi);
+    DepsDtj += -mi*(sigmarhoj.doubledot(deltaDvDxj.Symmetric()) - workQj);
 
     // Velocity gradient.ay
     DvDxi += -mj*deltaDvDxi;

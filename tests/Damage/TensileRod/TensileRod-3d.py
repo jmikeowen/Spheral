@@ -9,11 +9,10 @@
 #-------------------------------------------------------------------------------
 from SolidSpheral3d import *
 from SpheralTestUtilities import *
-from findLastRestart import *
 from SpheralVisitDump import dumpPhysicsState
 from identifyFragments import identifyFragments, fragmentProperties
 from math import *
-import shutil
+import os, shutil
 import mpi
 
 #-------------------------------------------------------------------------------
@@ -84,7 +83,6 @@ commandLine(# How much of the 2 Pi geometry are we doing?
             radius = 0.5,
             nx = 150,
             ny = 25,
-            nPerh = 1.51,
 
             rho0 = 7.9,
 
@@ -94,41 +92,50 @@ commandLine(# How much of the 2 Pi geometry are we doing?
 
             # Parameters for the time dependent strain and cracking.
             DamageModelConstructor = GradyKippTensorDamageOwen,
-            v0 = 1.0e-2,
+            numFlawsPerNode = 1,
+            v0 = 1e-2,
             kWeibullFactor = 1.0,
             mWeibullFactor = 1.0,
             randomSeed = 548928513,
             strainType = PseudoPlasticStrain,
-            damageMethod = CopyDamage,
-            useDamageGradient = True,
+            damageCoupling = ThreePointDamage,
             cullToWeakestFlaws = False,
-            effectiveFlawAlgorithm = SampledFlaws,
             damageInCompression = False,
+            negativePressureInDamage = False,
+
+            # Johnson-Cook choices
+            D1 = 0.0,
+            D2 = 2.0,
+            D3 = -1.5,
+            D4 = 0.0,
+            D5 = 0.0,
+            epsilondot0 = 0.01,
+            Tcrit = -2.0,
+            sigmamax = -3.0,
+            efailmin = 0.01,
+            sigmaD1 = 0.0,  # Gaussian
+            aD1 = 0.0,      # Weibull
+            bD1 = 0.0,      # Weibull
+            eps0D1 = 0.0,   # Weibull
+            sigmaD2 = 0.05, # Gaussian
+            aD2 = 0.065,    # Weibull
+            bD2 = 2.0,      # Weibull
+            eps0D2 = 0.165, # Weibull
 
             # Optionally we can initialize a break near the origin.
             initialBreakRadius = 0.0,
             
             crksph = False,
-            asph = True,     # Only for H evolution, not hydro algorithm
-            Qconstructor = MonaghanGingoldViscosity,
-            Cl = 1.0,
-            Cq = 1.0,
-            linearInExpansion = False,
-            Qlimiter = False,
-            balsaraCorrection = False,
-            epsilon2 = 1e-2,
-            negligibleSoundSpeed = 1e-5,
-            csMultiplier = 1e-4,
-            hmin = 1e-5,
-            hmax = 0.1,
+            ASPH = True,
             hminratio = 0.05,
-            cfl = 0.5,
+            cfl = 0.25,
             useVelocityMagnitudeForDt = False,
             XSPH = False,
             epsilonTensile = 0.0,
             nTensile = 4,
             hybridMassDensityThreshold = 0.01,
             filter = 0.0,
+            volumeType = RKSumVolume,
 
             IntegratorConstructor = CheapSynchronousRK2Integrator,
             goalTime = 200.0,
@@ -147,8 +154,9 @@ commandLine(# How much of the 2 Pi geometry are we doing?
             HUpdate = IdealH,
             densityUpdate = IntegrateDensity,
             compatibleEnergy = True,
-            gradhCorrection = False,
-            domainIndependent = False,
+            gradhCorrection = True,
+            correctVelocityGradient = True,
+            domainIndependent = True,
             dtverbose = False,
 
             restoreCycle = -1,
@@ -158,24 +166,30 @@ commandLine(# How much of the 2 Pi geometry are we doing?
 
             clearDirectories = False,
             dataDirBase = "dumps-TensileRod-3d",
+            timerFile = "time.table",
             )
 
 phi = pi * phiFactor
 
 if crksph:
-    hydroname = "CRKSPH"
+    hydroname = os.path.join("CRKSPH", str(volumeType))
+    nPerh = 1.51
+    order = 5
 else:
     hydroname = "SPH"
-if asph:
+    nPerh = 1.51
+    order = 5
+if ASPH:
     hydroname = "A" + hydroname
 
 #kWeibull = 8.8e4 * kWeibullFactor
+#kWeibull = 6.52e3 * kWeibullFactor
 kWeibull = 6.52e5 * kWeibullFactor
-mWeibull = 2.63  * mWeibullFactor
+mWeibull = 2.63   * mWeibullFactor
 
 dataDir = os.path.join(dataDirBase,
                        hydroname,
-                       str(DamageModelConstructor),
+                       DamageModelConstructor.__name__,
                        "nx=%i" % nx,
                        "k=%4.2f_m=%4.2f" % (kWeibull, mWeibull))
 restartDir = os.path.join(dataDir, "restarts")
@@ -253,16 +267,19 @@ strengthModel = SteinbergGuinanStrength(eos,
 # Create our interpolation kernels -- one for normal hydro interactions, and
 # one for use with the artificial viscosity
 #-------------------------------------------------------------------------------
-WT = TableKernel(BSplineKernel(), 1000)
+WT = TableKernel(NBSplineKernel(order), 1000)
 output("WT")
 
 #-------------------------------------------------------------------------------
 # Create the NodeLists.
 #-------------------------------------------------------------------------------
+hmin = 0.1*nPerh*min(length/nx, radius/ny)
+hmax = 2.0*nPerh*max(length/nx, radius/ny)
 nodes = makeSolidNodeList("Stainless steel", eos, strengthModel,
                           nPerh = nPerh,
                           hmin = hmin,
                           hmax = hmax,
+                          hminratio = hminratio,
                           rhoMin = etamin*rho0,
                           rhoMax = etamax*rho0,
                           xmin = -100.0*Vector.one,
@@ -291,7 +308,7 @@ generator = GenerateNodeDistribution3d(ny,
                                        zmin = -0.5*length,
                                        zmax = 0.5*length,
                                        nNodePerh = nPerh,
-                                       SPH = not asph,
+                                       SPH = not ASPH,
                                        )
 
 # For consistency with our 2-D case, we spin the coordinates so
@@ -370,72 +387,89 @@ bcs = [xbc0, xbc1]
 #-------------------------------------------------------------------------------
 if crksph:
     hydro = CRKSPH(dataBase = db,
-                   Q = q,
+                   W = WT,
                    filter = filter,
                    cfl = cfl,
                    compatibleEnergyEvolution = compatibleEnergy,
                    XSPH = XSPH,
                    densityUpdate = densityUpdate,
-                   HUpdate = HUpdate)
+                   volumeType = volumeType,
+                   HUpdate = HUpdate,
+                   ASPH = ASPH)
 else:
     hydro = SPH(dataBase = db,
-                W = WT, 
-                Q = q,
+                W = WT,
                 filter = filter,
                 cfl = cfl,
                 compatibleEnergyEvolution = compatibleEnergy,
                 gradhCorrection = gradhCorrection,
+                correctVelocityGradient = correctVelocityGradient,
                 densityUpdate = densityUpdate,
                 HUpdate = HUpdate,
                 XSPH = XSPH,
                 epsTensile = epsilonTensile,
-                nTensile = nTensile)
+                nTensile = nTensile,
+                ASPH = ASPH,
+                negativePressureInDamage = negativePressureInDamage)
 output("hydro")
 output("hydro.cfl")
 output("hydro.useVelocityMagnitudeForDt")
 output("hydro.HEvolution")
 output("hydro.densityUpdate")
 output("hydro.compatibleEnergyEvolution")
+output("hydro.kernel")
+output("hydro.PiKernel")
+output("hydro.negativePressureInDamage")
 
 #-------------------------------------------------------------------------------
 # Construct a damage model.
 #-------------------------------------------------------------------------------
 if DamageModelConstructor is GradyKippTensorDamage:
-    nflaw = int((nx*ny*ny)*log(nx*ny*ny))
-    damageModel = DamageModelConstructor(nodes,
-                                         kWeibull,
-                                         mWeibull,
-                                         volume,
-                                         1.0,
-                                         WT,
-                                         randomSeed,
-                                         strainType,
-                                         damageMethod,
-                                         useDamageGradient,
-                                         flawAlgorithm = effectiveFlawAlgorithm,
+    damageModel = DamageModelConstructor(nodeList = nodes,
+                                         kWeibull = kWeibull,
+                                         mWeibull = mWeibull,
+                                         volume = volume,
+                                         volumeStretchFactor = 1.0,
+                                         kernel = WT,
+                                         seed = randomSeed,
+                                         strainAlgorithm = strainType,
+                                         damageCouplingAlgorithm = damageCoupling,
                                          damageInCompression = damageInCompression)
 
 elif DamageModelConstructor is GradyKippTensorDamageOwen:
-    numFlawsPerNode = 1
     volumeMultiplier = 2.0*pi/phi
-    damageModel = DamageModelConstructor(nodes,
-                                         kWeibull,
-                                         mWeibull,
-                                         WT,
-                                         randomSeed,
-                                         volumeMultiplier,
-                                         strainType,
-                                         damageMethod,
-                                         useDamageGradient,
-                                         0.4,
-                                         effectiveFlawAlgorithm,
-                                         numFlawsPerNode,
+    damageModel = DamageModelConstructor(nodeList = nodes,
+                                         kWeibull = kWeibull,
+                                         mWeibull = mWeibull,
+                                         kernel = WT,
+                                         seed = randomSeed,
+                                         volumeMultiplier = volumeMultiplier,
+                                         damageCouplingAlgorithm = damageCoupling,
+                                         strainAlgorithm = strainType,
+                                         minFlawsPerNode = numFlawsPerNode,
                                          damageInCompression = damageInCompression)
 
+elif DamageModelConstructor is JohnsonCookDamageWeibull:
+    damageModel = DamageModelConstructor(nodes,
+                                         D1 = D1,
+                                         D2 = D2,
+                                         D3 = D3,
+                                         D4 = D4,
+                                         D5 = D5,
+                                         aD1 = aD1,
+                                         bD1 = bD1,
+                                         eps0D1 = eps0D1,
+                                         aD2 = aD2,
+                                         bD2 = bD2,
+                                         eps0D2 = eps0D2,
+                                         epsilondot0 = epsilondot0,
+                                         Tcrit = Tcrit,
+                                         sigmamax = sigmamax,
+                                         efailmin = efailmin,
+                                         seed = randomSeed,
+                                         domainIndependent = domainIndependent)
+
 output("damageModel")
-output("damageModel.useDamageGradient")
-output("damageModel.effectiveDamageAlgorithm")
-output("damageModel.effectiveFlawAlgorithm")
 
 if cullToWeakestFlaws:
     damageModel.cullToWeakestFlaws()
@@ -485,7 +519,8 @@ control = SpheralController(integrator, WT,
                             vizDir = vizDir,
                             vizStep = vizCycle,
                             vizTime = vizTime,
-                            vizDerivs = True)
+                            timerName = timerFile,
+                            SPH = not ASPH)
 output("control")
 
 #-------------------------------------------------------------------------------

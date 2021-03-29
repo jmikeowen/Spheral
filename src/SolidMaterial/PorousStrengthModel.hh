@@ -31,7 +31,8 @@ template<typename Dimension>
 class PorousStrengthModel: public StrengthModel<Dimension> {
 public:
   //--------------------------- Public Interface ---------------------------//
-  typedef typename Dimension::Scalar Scalar;
+  using Scalar = typename Dimension::Scalar;
+  using SymTensor = typename Dimension::SymTensor;
 
   // Constructors, destructor.
   PorousStrengthModel(const StrengthModel<Dimension>& solidStrength);
@@ -41,14 +42,16 @@ public:
   virtual void shearModulus(Field<Dimension, Scalar>& shearModulus,
                             const Field<Dimension, Scalar>& density,
                             const Field<Dimension, Scalar>& specificThermalEnergy,
-                            const Field<Dimension, Scalar>& pressure) const override;
+                            const Field<Dimension, Scalar>& pressure,
+                            const Field<Dimension, SymTensor>& damage) const override;
 
   virtual void yieldStrength(Field<Dimension, Scalar>& yieldStrength,
                              const Field<Dimension, Scalar>& density,
                              const Field<Dimension, Scalar>& specificThermalEnergy,
                              const Field<Dimension, Scalar>& pressure,
                              const Field<Dimension, Scalar>& plasticStrain,
-                             const Field<Dimension, Scalar>& plasticStrainRate) const override;
+                             const Field<Dimension, Scalar>& plasticStrainRate,
+                             const Field<Dimension, SymTensor>& damage) const override;
 
   // The optional methods the underlying strength model might provide.
   virtual bool providesSoundSpeed() const override { return mSolidStrength.providesSoundSpeed(); }
@@ -57,7 +60,8 @@ public:
                           const Field<Dimension, Scalar>& density,
                           const Field<Dimension, Scalar>& specificThermalEnergy,
                           const Field<Dimension, Scalar>& pressure,
-                          const Field<Dimension, Scalar>& fluidSoundSpeed) const override;
+                          const Field<Dimension, Scalar>& fluidSoundSpeed,
+                          const Field<Dimension, SymTensor>& damage) const override;
 
   virtual void bulkModulus(Field<Dimension, Scalar>& bulkModulus,
                            const Field<Dimension, Scalar>& massDensity,
@@ -70,17 +74,6 @@ public:
   virtual void coldSpecificEnergy(Field<Dimension, Scalar>& coldSpecificEnergy,
                                   const Field<Dimension, Scalar>& density,
                                   const Field<Dimension, Scalar>& specficThermalEnergy) const override;
-
-  // Forbid the non-Field calls.
-  virtual double shearModulus(const double /*density*/,
-                              const double /*specificThermalEnergy*/,
-                              const double /*pressure*/) const override { VERIFY2(false, "PorousStrengthModel forbids non-Field shearModulus"); return 0.0; }
-
-  virtual double yieldStrength(const double /*density*/,
-                               const double /*specificThermalEnergy*/,
-                               const double /*pressure*/,
-                               const double /*plasticStrain*/,
-                               const double /*plasticStrainRate*/) const override { VERIFY2(false, "PorousStrengthModel forbids non-Field yieldStrength"); return 0.0; }
 
   // Access the material parameters.
   const StrengthModel<Dimension>& solidStrength() const;

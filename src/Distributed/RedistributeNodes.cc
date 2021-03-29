@@ -692,7 +692,7 @@ workPerNode(const DataBase<Dimension>& dataBase,
   if (mComputeWork) {
 
     // The work per node is just the number of neighbors.
-    dataBase.updateConnectivityMap(false, false);
+    dataBase.updateConnectivityMap(false, false, false);
     const ConnectivityMap<Dimension>& connectivityMap = dataBase.connectivityMap();
     const vector<const NodeList<Dimension>*>& nodeLists = connectivityMap.nodeLists();
     for (auto iNodeList = 0u; iNodeList != nodeLists.size(); ++iNodeList) {

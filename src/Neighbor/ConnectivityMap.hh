@@ -9,11 +9,14 @@
 #define _Spheral_NeighborSpace_ConnectivityMap_hh_
 
 #include "Utilities/KeyTraits.hh"
+#include "Utilities/NodeCoupling.hh"
 #include "Field/FieldList.hh"
-#include "NodePairList.hh"
+#include "Neighbor/NodePairList.hh"
 
 #include <vector>
+#include <unordered_map>
 #include <map>
+#include <memory>
 
 namespace Spheral {
 
@@ -26,7 +29,9 @@ template<typename Dimension>
 class ConnectivityMap {
 public:
   //--------------------------- Public Interface ---------------------------//
-  typedef std::vector<int>::const_iterator const_iterator;
+  using const_iterator = std::vector<int>::const_iterator;
+  using NodeCouplingPtr = std::shared_ptr<NodeCoupling>;
+  using Vector = typename Dimension::Vector;
 
   // Constructors, destructor.
   ConnectivityMap();
@@ -36,14 +41,16 @@ public:
   ConnectivityMap(const NodeListIterator& begin,
                   const NodeListIterator& end,
                   const bool buildGhostConnectivity,
-                  const bool buildOverlapConnectivity);
+                  const bool buildOverlapConnectivity,
+                  const bool buildIntersectionConnectivity);
 
   // Rebuild for a given set of NodeLists.
   template<typename NodeListIterator>
   void rebuild(const NodeListIterator& begin, 
                const NodeListIterator& end, 
                const bool computeGhostConnectivity,
-               const bool buildOverlapConnectivity);
+               const bool buildOverlapConnectivity,
+               const bool buildIntersectionConnectivity);
 
   // Patch the connectivity information:
   // flags   -- (0,1): 0 => node deleted, 1 => node preserved
@@ -62,9 +69,17 @@ public:
   // Do we compute overlap connectivity?
   bool buildOverlapConnectivity() const;
 
+  // Do we compute intersection connectivity?
+  bool buildIntersectionConnectivity() const;
+
   // Get the set of NodeLists.
   const std::vector<const NodeList<Dimension>*>& nodeLists() const;
   const NodePairList& nodePairList() const;
+
+  // A functor to specify the coupling between nodes
+  NodeCoupling& coupling();
+  const NodeCoupling& coupling() const;
+  void coupling(NodeCouplingPtr couplingPtr);
 
   //............................................................................
   // Get the set of neighbors for the given (internal!) node in the given NodeList.
@@ -76,6 +91,15 @@ public:
   const std::vector< std::vector<int> >&
   connectivityForNode(const int nodeListID,
                       const int nodeID) const;
+
+  //............................................................................
+  // Get the pre-computed intersection connectivity for points if it was requested.
+  // Note, this is different than what we expect for overlap connectivity: in this
+  // method the intersection points (k) are all points that points (i,j) have in
+  // common when (i,j) are ALSO neighbors.  Overlap connectivity may exist for
+  // (i,j) even if (i,j) are not neighbors, and this set will miss such points.
+  const std::vector<std::vector<int>>&
+  intersectionConnectivity(const NodePairIdxType& pair) const;
 
   //............................................................................
   // Note the following two methods return the points we have neighbors in common with,
@@ -96,7 +120,8 @@ public:
   // returns by value since this information is not stored by ConnectivityMap.
   std::vector< std::vector<int> >
   connectivityIntersectionForNodes(const int nodeListi, const int i,
-                                   const int nodeListj, const int j) const;
+                                   const int nodeListj, const int j,
+                                   const FieldList<Dimension, Vector>& position = FieldList<Dimension, Vector>()) const;
 
   // Compute the union of neighbors for a pair of nodes.  Note this method 
   // returns by value since this information is not stored by ConnectivityMap.
@@ -155,11 +180,11 @@ private:
   std::vector<const NodeList<Dimension>*> mNodeLists;
 
   // Are we building ghost and/or overlap connectivity?
-  bool mBuildGhostConnectivity, mBuildOverlapConnectivity;
+  bool mBuildGhostConnectivity, mBuildOverlapConnectivity, mBuildIntersectionConnectivity;
 
   // The full connectivity map.  This might be quite large!
   // [offset[NodeList] + nodeID] [NodeListID] [neighborIndex]
-  typedef std::vector<std::vector<std::vector<int>>> ConnectivityStorageType;
+  using ConnectivityStorageType = std::vector<std::vector<std::vector<int>>>;
   std::vector<int> mOffsets;
   ConnectivityStorageType mConnectivity;
 
@@ -173,8 +198,15 @@ private:
   std::vector<std::vector<int>> mNodeTraversalIndices;
 
   // The set of keys we may compute for each node.
-  typedef typename KeyTraits::Key Key;
+  using Key = typename KeyTraits::Key;
   FieldList<Dimension, Key> mKeys;
+
+  // The coupling functor for coupling between points.
+  NodeCouplingPtr mCouplingPtr;
+
+  // The connectivity intersections, if we're keeping them.
+  using IntersectionConnectivityContainer = std::unordered_map<NodePairIdxType, std::vector<std::vector<int>>>;
+  IntersectionConnectivityContainer mIntersectionConnectivity;
 
   // Internal method to fill in the connectivity, once the set of NodeLists 
   // is determined.

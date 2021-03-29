@@ -54,7 +54,7 @@ centroidalRelaxNodesImpl(DataBase<Dimension>& db,
   auto H = db.fluidHfield();
   auto mass = db.fluidMass();
   auto rhof = db.fluidMassDensity();
-  auto D = db.solidEffectiveDamage();
+  auto D = db.solidDamage();
 
   // Prepare the storage for the point-wise fields.
   auto gradRhof = db.newFluidFieldList(Vector::zero, "mass density gradient");
@@ -108,7 +108,7 @@ centroidalRelaxNodesImpl(DataBase<Dimension>& db,
 
     // Compute the new connectivity.
     std::clock_t tcm = std::clock();
-    db.updateConnectivityMap(false, false);
+    db.updateConnectivityMap(false, false, false);
     const auto& cm = db.connectivityMap();
     tcm = std::clock() - tcm;
     { // BLAGO

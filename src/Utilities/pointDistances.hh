@@ -22,14 +22,30 @@ Vector
 closestPointOnSegment(const Vector& p,
                       const Vector& a0,
                       const Vector& a1) {
-  const Vector a01 = a1 - a0;
-  const double a01mag = a01.magnitude();
-  const Vector ahat = a01*safeInv(a01mag);
-  const Vector a0p = p - a0;
-  const double ptest = a0p.dot(ahat);
-  if (ptest <= 0.0) return a0;
-  if (ptest >= a01mag) return a1;
-  return a0 + ptest*ahat;
+  const auto a01 = a1 - a0;
+  const auto a01mag = a01.magnitude();
+  const auto ahat = a01*safeInv(a01mag);
+  const auto a0p = p - a0;
+  const auto ptest = a0p.dot(ahat);
+  return a0 + std::max(0.0, std::min(1.0, ptest))*ahat;
+}
+
+// This version returns true if the closest point forms a right angle between
+// the line segment and (point, closest) pairs.
+template<typename Vector>
+inline
+bool
+closestPointOnSegment(const Vector& p,
+                      const Vector& a0,
+                      const Vector& a1,
+                      Vector& result) {
+  const auto a01 = a1 - a0;
+  const auto a01mag = a01.magnitude();
+  const auto ahat = a01*safeInv(a01mag);
+  const auto a0p = p - a0;
+  const auto ptest = a0p.dot(ahat);
+  result = a0 + ptest*ahat;
+  return (ptest >= 0.0 and ptest <= a01mag);
 }
 
 //------------------------------------------------------------------------------

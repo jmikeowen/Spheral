@@ -38,5 +38,3 @@ set(Strength_headers
 
 spheral_add_cxx_library(Strength)
 
-list(APPEND SPHERAL_CXX_LIBS Spheral_Strength)
-set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

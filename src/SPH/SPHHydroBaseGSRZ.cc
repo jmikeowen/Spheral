@@ -219,7 +219,6 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
   const TableKernel<Dimension>& WQ = this->PiKernel();
 
   // A few useful constants we'll use in the following loop.
-  typedef Timing::Time Time;
   const double tiny = 1.0e-30;
   const double rhoTiny = 1.0e-10;
   const double W0 = W(0.0, 1.0);
@@ -314,18 +313,11 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
     const Scalar hminratio = nodeList.hminratio();
     const Scalar nPerh = nodeList.nodesPerSmoothingScale();
 
-    // Get the work field for this NodeList.
-    Field<Dimension, Scalar>& workFieldi = nodeList.work();
-
     // Iterate over the internal nodes in this NodeList.
     for (ConnectivityMap<Dimension>::const_iterator iItr = connectivityMap.begin(nodeListi);
          iItr != connectivityMap.end(nodeListi);
          ++iItr) {
       const int i = *iItr;
-
-      // Prepare to accumulate the time.
-      const Time start = Timing::currentTime();
-      size_t ncalc = 0;
 
       // RZ correction factors for node i.
       const Vector& posi = position(nodeListi, i);
@@ -375,7 +367,6 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
       Vector& XSPHDeltaVi = XSPHDeltaV(nodeListi, i);
       Scalar& weightedNeighborSumi = weightedNeighborSum(nodeListi, i);
       SymTensor& massSecondMomenti = massSecondMoment(nodeListi, i);
-      Scalar& worki = workFieldi(i);
 
       // Get the connectivity info for this node.
       const vector< vector<int> >& fullConnectivity = connectivityMap.connectivityForNode(&nodeList, i);
@@ -403,7 +394,6 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
             if (connectivityMap.calculatePairInteraction(nodeListi, i, 
                                                          nodeListj, j,
                                                          firstGhostNodej)) {
-              ++ncalc;
 
               // RZ correction factors for node j.
               const Vector& posj = position(nodeListj, j);
@@ -566,9 +556,6 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
             (i >= firstGhostNodei and pairAccelerationsi.size() == 0) or
             (pairAccelerationsi.size() == numNeighborsi));
 
-      // Get the time for pairwise interactions.
-      const Scalar deltaTimePair = Timing::difference(start, Timing::currentTime())/(ncalc + 1.0e-30);
-
       // Add the self-contribution to density sum.
       rhoSumi = (rhoSumi + mi*W0*Hdeti)*f1i*circInvi;
       normi += mi*safeInv(rhoRZi, rhoTiny)*W0*Hdeti;
@@ -648,31 +635,6 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
                                                         connectivityMap,
                                                         nodeListi,
                                                         i);
-
-      // Increment the work for i.
-      worki += Timing::difference(start, Timing::currentTime());
-
-      // Now add the pairwise time for each neighbor we computed here.
-      for (auto nodeListj = 0u; nodeListj != numNodeLists; ++nodeListj) {
-        const vector<int>& connectivity = fullConnectivity[nodeListj];
-        if (connectivity.size() > 0) {
-          const int firstGhostNodej = nodeLists[nodeListj]->firstGhostNode();
-          Field<Dimension, Scalar>& workFieldj = nodeLists[nodeListj]->work();
-#if defined __INTEL_COMPILER
-#pragma vector always
-#endif
-          for (vector<int>::const_iterator jItr = connectivity.begin();
-               jItr != connectivity.end();
-               ++jItr) {
-            const int j = *jItr;
-            if (connectivityMap.calculatePairInteraction(nodeListi, i, 
-                                                         nodeListj, j,
-                                                         firstGhostNodej)) {
-              workFieldj(j) += deltaTimePair;
-            }
-          }
-        }
-      }
     }
   }
 }

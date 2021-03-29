@@ -11,12 +11,12 @@
 // Created by JMO, Mon May  9 11:01:51 PDT 2016
 //----------------------------------------------------------------------------//
 #include "FileIO/FileIO.hh"
-#include "Utilities/DamagedNodeCouplingWithFrags.hh"
 #include "NodeList/SmoothingScaleBase.hh"
 #include "Hydro/HydroFieldNames.hh"
 #include "Hydro/RZNonSymmetricSpecificThermalEnergyPolicy.hh"
 #include "Strength/SolidFieldNames.hh"
 #include "NodeList/SolidNodeList.hh"
+#include "Strength/DeviatoricStressPolicy.hh"
 #include "Strength/RZPlasticStrainPolicy.hh"
 #include "DataBase/State.hh"
 #include "DataBase/StateDerivatives.hh"
@@ -158,10 +158,13 @@ registerState(DataBase<Dim<2> >& dataBase,
   SolidSPHHydroBase<Dim<2> >::registerState(dataBase, state);
 
   // Reregister the plastic strain policy to the RZ specialized version
-  // that accounts for the theta-theta component of the stress.
-  FieldList<Dimension, Scalar> ps = state.fields(SolidFieldNames::plasticStrain, 0.0);
+  // that accounts for the theta-theta component of the stress.  Also the deviatoric stress.
+  auto ps = state.fields(SolidFieldNames::plasticStrain, 0.0);
+  auto S = state.fields(SolidFieldNames::deviatoricStress, SymTensor::zero);
   PolicyPointer plasticStrainPolicy(new RZPlasticStrainPolicy());
+  PolicyPointer deviatoricStressPolicy(new DeviatoricStressPolicy<Dim<2>>(false));
   state.enroll(ps, plasticStrainPolicy);
+  state.enroll(S, deviatoricStressPolicy);
 
   // Are we using the compatible energy evolution scheme?
   // If so we need to override the ordinary energy registration with a specialized version.
@@ -279,8 +282,7 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
   const auto omega = state.fields(HydroFieldNames::omegaGradh, 0.0);
   const auto S = state.fields(SolidFieldNames::deviatoricStress, SymTensor::zero);
   const auto mu = state.fields(SolidFieldNames::shearModulus, 0.0);
-  const auto damage = state.fields(SolidFieldNames::effectiveTensorDamage, SymTensor::zero);
-  const auto gradDamage = state.fields(SolidFieldNames::damageGradient, Vector::zero);
+  const auto damage = state.fields(SolidFieldNames::tensorDamage, SymTensor::zero);
   const auto fragIDs = state.fields(SolidFieldNames::fragmentIDs, int(1));
   const auto pTypes = state.fields(SolidFieldNames::particleTypes, int(0));
   CHECK(mass.size() == numNodeLists);
@@ -295,7 +297,6 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
   CHECK(S.size() == numNodeLists);
   CHECK(mu.size() == numNodeLists);
   CHECK(damage.size() == numNodeLists);
-  CHECK(gradDamage.size() == numNodeLists);
   CHECK(fragIDs.size() == numNodeLists);
   CHECK(pTypes.size() == numNodeLists);
 
@@ -347,6 +348,7 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
   // The set of interacting node pairs.
   const auto& pairs = connectivityMap.nodePairList();
   const auto  npairs = pairs.size();
+  // const auto& coupling = connectivityMap.coupling();
 
   // Size up the pair-wise accelerations before we start.
   if (compatibleEnergy) pairAccelerations.resize(2*npairs + dataBase.numInternalNodes());
@@ -355,9 +357,6 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
   const auto& nodeList = mass[0]->nodeList();
   const auto  nPerh = nodeList.nodesPerSmoothingScale();
   const auto  WnPerh = W(1.0/nPerh, 1.0);
-
-  // Build the functor we use to compute the effective coupling between nodes.
-  DamagedNodeCouplingWithFrags<Dimension> coupling(damage, gradDamage, H, fragIDs);
 
   // Walk all the interacting pairs.
 #pragma omp parallel
@@ -388,7 +387,6 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
 
 #pragma omp for
     for (auto kk = 0u; kk < npairs; ++kk) {
-      const auto start = Timing::currentTime();
       i = pairs[kk].i_node;
       j = pairs[kk].j_node;
       nodeListi = pairs[kk].i_list;
@@ -505,7 +503,7 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
       const auto gradWGj = WG.gradValue(etaMagj, Hdetj) * Hetaj;
 
       // Determine how we're applying damage.
-      const auto fDeffij = coupling(nodeListi, i, nodeListj, j);
+      const auto fDij = pairs[kk].f_couple;
 
       // Zero'th and second moment of the node distribution -- used for the
       // ideal H calculation.
@@ -545,21 +543,13 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
       viscousWorki += mRZj*workQi;
       viscousWorkj += mRZi*workQj;
 
-      // Damage scaling of negative pressures.
-      const auto Peffi = (mNegativePressureInDamage or Pi > 0.0 ? Pi : fDeffij*Pi);
-      const auto Peffj = (mNegativePressureInDamage or Pj > 0.0 ? Pj : fDeffij*Pj);
-
       // Compute the stress tensors.
-      sigmai = -Peffi*SymTensor::one;
-      sigmaj = -Peffj*SymTensor::one;
       if (sameMatij) {
-        if (mStrengthInDamage) {
-          sigmai += Si;
-          sigmaj += Sj;
-        } else {
-          sigmai += fDeffij*Si;
-          sigmaj += fDeffij*Sj;
-        }
+        sigmai = fDij*Si - Pi * SymTensor::one;
+        sigmaj = fDij*Sj - Pj * SymTensor::one;
+      } else {
+        sigmai = -Pi * SymTensor::one;
+        sigmaj = -Pj * SymTensor::one;
       }
 
       // Compute the tensile correction to add to the stress as described in 
@@ -587,8 +577,8 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
       }
 
       // Pair-wise portion of grad velocity.
-      const auto deltaDvDxi = fDeffij*vij.dyad(gradWGi);
-      const auto deltaDvDxj = fDeffij*vij.dyad(gradWGj);
+      const auto deltaDvDxi = fDij * vij.dyad(gradWGi);
+      const auto deltaDvDxj = fDij * vij.dyad(gradWGj);
 
       // Specific thermal energy evolution.
       DepsDti -= mRZj*(sigmarhoi.doubledot(deltaDvDxi.Symmetric()) - workQi);
@@ -618,13 +608,6 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
         localMi -= mRZj*xij.dyad(gradWGi);
         localMj -= mRZi*xij.dyad(gradWGj);
       }
-
-      // Add timing info for work
-      const auto deltaTimePair = 0.5*Timing::difference(start, Timing::currentTime());
-#pragma omp atomic
-      nodeLists[nodeListi]->work()(i) += deltaTimePair;
-#pragma omp atomic
-      nodeLists[nodeListj]->work()(j) += deltaTimePair;
 
     } // loop over pairs
 

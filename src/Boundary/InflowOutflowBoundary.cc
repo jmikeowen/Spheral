@@ -277,25 +277,38 @@ InflowOutflowBoundary<Dimension>::initializeProblemStartup(const bool /*final*/)
     CHECK(positr != mBufferedValues.end());
     auto& posbuf = positr->second;
     auto posvals = extractBufferedValues<Vector>(posbuf);
-    const GeomPlane<Dimension> exitPlane(mPlane.point(), -nhat);
     for (auto k = 0u; k < ni; ++k) {
       const auto i = nodeIDs[k];
       posvals[k] = mapPositionThroughPlanes(pos[i], mPlane, mPlane);
-      // cerr << "  Ghost position: " << i << " @ " << posvals[k] << endl;
     }
     posbuf.clear();
     for (const auto& p: posvals) packElement(p, posbuf);
+
+    // IF RZ adjust ghost masses
+    if (mDataBase.isRZ){
+      auto& mass = nodeList.mass();
+      const auto masskey = StateBase<Dimension>::key(mass);
+      auto massitr = mBufferedValues.find(masskey);
+      auto& massbuf = massitr->second;
+      auto massvals = extractBufferedValues<Scalar>(massbuf);
+
+      for (auto k = 0u; k < ni; ++k) {
+        const auto circi = 2.0*M_PI*abs(posvals[k].y());
+        CHECK(circi > 0.0);
+        massvals[k]/=circi;
+      }
+      massbuf.clear();
+      for (const auto& m: massvals) packElement(m, massbuf);
+    }
 
     // Determine the in/outflow velocity.
     const auto& vel = nodeList.velocity();
     Scalar vinflow = 0.0;
     for (const auto i: nodeIDs) {
-      // CHECK(std::abs(vel[i].dot(nhat)/vel[i].magnitude() - 1.0) < 1.0e-5);
       vinflow += vel[i].dot(nhat);
     }
     vinflow = (allReduce(vinflow, MPI_SUM, Communicator::communicator())/
                std::max(1.0e-30, allReduce(double(nodeIDs.size()), MPI_SUM, Communicator::communicator())));  // Negative implies outflow
-    // cerr << "Computed inflow velocity: " << vinflow << endl;
 
     // Figure out a timestep limit such that we don't move more than the ghost
     // node thickness.

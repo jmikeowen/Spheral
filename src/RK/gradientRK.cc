@@ -79,7 +79,7 @@ gradientRK(const FieldList<Dimension, DataType>& fieldList,
       auto&       gradFi = result_thread(nodeListi, i);
 
       // The coupling between these nodes.
-      const auto fij = nodeCoupling(nodeListi, i, nodeListj, j);
+      const auto fij = nodeCoupling(pairs[kk]);
       if (fij > 0.0) {
 
         // Find the effective weights of i->j and j->i.
@@ -193,7 +193,7 @@ gradientRK(const FieldList<Dimension, std::vector<DataType>>& fieldList,
             gradFi.size() == vectorSize);
 
       // The coupling between these nodes.
-      const auto fij = nodeCoupling(nodeListi, i, nodeListj, j);
+      const auto fij = nodeCoupling(pairs[kk]);
       if (fij > 0.0) {
 
         // Find the effective weights of i->j and j->i.
@@ -218,6 +218,10 @@ gradientRK(const FieldList<Dimension, std::vector<DataType>>& fieldList,
         gradWi = WR.evaluateGradient(-xij, Hi, correctionsj);
 
         for (auto m = 0u; m < vectorSize; ++m) {
+          CHECK(gradFi.size() == vectorSize &&
+                gradFj.size() == vectorSize &&
+                Fj.size() == vectorSize &&
+                Fi.size() == vectorSize);
           gradFi[m] += wj*Fj[m]*gradWj;
           gradFj[m] += wi*Fi[m]*gradWi;
         }

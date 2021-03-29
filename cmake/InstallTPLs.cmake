@@ -8,6 +8,9 @@ set_directory_properties(PROPERTIES CLEAN_NO_CUSTOM 1)
 # Initialize TPL options
 include(${SPHERAL_ROOT_DIR}/cmake/spheral/SpheralHandleTPL.cmake)
 
+# If we are using a pre-built set of TPL's set _BUILD and _DIR variables.
+include(${SPHERAL_ROOT_DIR}/cmake/tpl/util/tpl.cmake)
+
 # If set to Off NONE of the TPLs will be built and installed
 # it is expected that the user provide locations for each one
 # else the default install location will be searched for TPLs
@@ -26,6 +29,7 @@ set(aneos_BUILD ON CACHE BOOL "Option to build ANEOS third party lib")
 set(conduit_BUILD ON CACHE BOOL "Option to build Conduit")
 set(axom_BUILD ON CACHE BOOL "Option to build Axom")
 set(raja_BUILD ON CACHE BOOL "Option to build RAJA")
+set(polyclipper_BUILD ON CACHE BOOL "Option to build PolyClipper")
 
 set(pybind11_BUILD ON CACHE BOOL "Option to build pybind11")
 set(python_BUILD ON CACHE BOOL "Option to build python")
@@ -59,6 +63,7 @@ if(NOT ENABLE_CXXONLY)
 endif()
 
 Spheral_Handle_TPL(polytope spheral_depends)
+Spheral_Handle_TPL(polyclipper spheral_depends)
 
 if (EXISTS ${EXTERNAL_SPHERAL_TPL_CMAKE})
   include(${EXTERNAL_SPHERAL_TPL_CMAKE})

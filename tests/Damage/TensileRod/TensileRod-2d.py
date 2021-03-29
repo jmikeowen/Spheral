@@ -98,10 +98,8 @@ commandLine(seed = "lattice",
             mWeibullFactor = 1.0,
             randomSeed = 548928513,
             strainType = PseudoPlasticStrain,
-            damageMethod = CopyDamage,
-            useDamageGradient = True,
+            damageCoupling = ThreePointDamage,
             cullToWeakestFlaws = False,
-            effectiveFlawAlgorithm = FullSpectrumFlaws,
             damageInCompression = False,
             negativePressureInDamage = False,
 
@@ -140,7 +138,7 @@ commandLine(seed = "lattice",
             volumeType = RKSumVolume,
 
             IntegratorConstructor = CheapSynchronousRK2Integrator,
-            goalTime = 200.0,
+            goalTime = 100.0,
             steps = None,
             dt = 1e-10,
             dtMin = 1e-6,
@@ -193,12 +191,12 @@ mWeibull = 2.63   * mWeibullFactor
 dataDir = os.path.join(dataDirBase,
                        hydroname,
                        DamageModelConstructor.__name__,
+                       "damageCoupling=%s" % damageCoupling,
                        "nx=%i" % nx,
                        "k=%4.2f_m=%4.2f" % (kWeibull, mWeibull))
 restartDir = os.path.join(dataDir, "restarts")
 restartBaseName = os.path.join(restartDir, "TensileRod-%i" % nx)
 vizDir = os.path.join(dataDir, "visit")
-vizDirCRK = os.path.join(dataDir, "visit-CRKVoronoi")
 vizBaseName = "TensileRod-%i" % nx
 
 origin = Vector2d(-xlength, -ylength)
@@ -282,8 +280,6 @@ if mpi.rank == 0:
         os.makedirs(restartDir)
     if not os.path.exists(vizDir):
         os.makedirs(vizDir)
-    if not os.path.exists(vizDir) and crksph and volumeType == RKVoronoiVolume:
-        os.makedirs(vizDirCRK)
 mpi.barrier()
 
 #-------------------------------------------------------------------------------
@@ -431,13 +427,11 @@ bcs = [xbc0, xbc1]
 #-------------------------------------------------------------------------------
 if crksph:
     hydro = CRKSPH(dataBase = db,
-                   W = WT,
                    filter = filter,
                    cfl = cfl,
                    compatibleEnergyEvolution = compatibleEnergy,
                    XSPH = XSPH,
                    densityUpdate = densityUpdate,
-                   volumeType = volumeType,
                    HUpdate = HUpdate,
                    ASPH = ASPH)
 else:
@@ -461,40 +455,33 @@ output("hydro.useVelocityMagnitudeForDt")
 output("hydro.HEvolution")
 output("hydro.densityUpdate")
 output("hydro.compatibleEnergyEvolution")
-output("hydro.kernel")
-output("hydro.PiKernel")
 output("hydro.negativePressureInDamage")
 
 #-------------------------------------------------------------------------------
 # Construct a damage model.
 #-------------------------------------------------------------------------------
 if DamageModelConstructor is GradyKippTensorDamage:
-    damageModel = DamageModelConstructor(nodes,
-                                         kWeibull,
-                                         mWeibull,
-                                         volume,
-                                         1.0,
-                                         WT,
-                                         randomSeed,
-                                         strainType,
-                                         damageMethod,
-                                         useDamageGradient,
-                                         flawAlgorithm = effectiveFlawAlgorithm,
+    damageModel = DamageModelConstructor(nodeList = nodes,
+                                         kWeibull = kWeibull,
+                                         mWeibull = mWeibull,
+                                         volume = volume,
+                                         volumeStretchFactor = 1.0,
+                                         kernel = WT,
+                                         seed = randomSeed,
+                                         strainAlgorithm = strainType,
+                                         damageCouplingAlgorithm = damageCoupling,
                                          damageInCompression = damageInCompression)
 
 elif DamageModelConstructor is GradyKippTensorDamageOwen:
-    damageModel = DamageModelConstructor(nodes,
-                                         kWeibull,
-                                         mWeibull,
-                                         WT,
-                                         randomSeed,
-                                         volumeMultiplier,
-                                         strainType,
-                                         damageMethod,
-                                         useDamageGradient,
-                                         0.4,
-                                         effectiveFlawAlgorithm,
-                                         numFlawsPerNode,
+    damageModel = DamageModelConstructor(nodeList = nodes,
+                                         kWeibull = kWeibull,
+                                         mWeibull = mWeibull,
+                                         kernel = WT,
+                                         seed = randomSeed,
+                                         volumeMultiplier = volumeMultiplier,
+                                         damageCouplingAlgorithm = damageCoupling,
+                                         strainAlgorithm = strainType,
+                                         minFlawsPerNode = numFlawsPerNode,
                                          damageInCompression = damageInCompression)
 
 elif DamageModelConstructor is JohnsonCookDamageWeibull:
@@ -538,10 +525,6 @@ if isinstance(damageModel, JohnsonCookDamage):
     vizFields += [damageModel.D1(), damageModel.D2()]
 
 output("damageModel")
-if DamageModelConstructor in (GradyKippTensorDamageBenzAsphaug, GradyKippTensorDamageOwen):
-    output("damageModel.useDamageGradient")
-    output("damageModel.effectiveDamageAlgorithm")
-    output("damageModel.effectiveFlawAlgorithm")
 
 if cullToWeakestFlaws:
     damageModel.cullToWeakestFlaws()
@@ -583,6 +566,7 @@ for package in integrator.physicsPackages():
 # Build the controller.
 #-------------------------------------------------------------------------------
 control = SpheralController(integrator, WT,
+                            volumeType = volumeType,
                             statsStep = statsStep,
                             restartStep = restartStep,
                             restartBaseName = restartBaseName,

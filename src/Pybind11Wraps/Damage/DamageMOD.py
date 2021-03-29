@@ -21,7 +21,8 @@ PYB11includes += ['"NodeList/SolidNodeList.hh"',
                   '"Damage/DamageModel.hh"',
                   '"Damage/TensorDamageModel.hh"',
                   '"Damage/JohnsonCookDamage.hh"',
-                  '"Damage/weibullFlawDistribution.hh"',
+                  '"Damage/weibullFlawDistributionBenzAsphaug.hh"',
+                  '"Damage/weibullFlawDistributionOwen.hh"',
                   '"Damage/computeFragmentField.hh"',
                   '"FileIO/FileIO.hh"']
 
@@ -38,6 +39,12 @@ TensorStrainAlgorithm = PYB11enum(("BenzAsphaugStrain",
                                    "MeloshRyanAsphaugStrain", 
                                    "PlasticStrain",
                                    "PseudoPlasticStrain"), export_values=True)
+DamageCouplingAlgorithm = PYB11enum(("DirectDamage",
+                                     "PairMaxDamage",
+                                     "DamageGradient",
+                                     "ThreePointDamage"), export_values=True)
+
+# Note the following enums are deprecated
 EffectiveDamageAlgorithm = PYB11enum(("CopyDamage",
                                       "MaxDamage",
                                       "MinMaxDamage",

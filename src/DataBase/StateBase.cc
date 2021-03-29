@@ -294,7 +294,18 @@ enrollConnectivityMap(typename StateBase<Dimension>::ConnectivityMapPtr connecti
 }
 
 //------------------------------------------------------------------------------
-// Return the ConnectivityMap.
+// Return the ConnectivityMap (non-const version)
+//------------------------------------------------------------------------------
+template<typename Dimension>
+typename StateBase<Dimension>::ConnectivityMapType&
+StateBase<Dimension>::
+connectivityMap() {
+  REQUIRE(mConnectivityMapPtr.use_count() != 0);
+  return *mConnectivityMapPtr;
+}
+
+//------------------------------------------------------------------------------
+// Return the ConnectivityMap (const version)
 //------------------------------------------------------------------------------
 template<typename Dimension>
 const typename StateBase<Dimension>::ConnectivityMapType&

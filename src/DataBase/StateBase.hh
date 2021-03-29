@@ -128,6 +128,7 @@ public:
   // A state object can carry around a reference to a ConnectivityMap.
   void enrollConnectivityMap(ConnectivityMapPtr connectivityMapPtr);
   const ConnectivityMapType& connectivityMap() const;
+  ConnectivityMapType& connectivityMap();
 
   //............................................................................
   // We also provide support for registering a mesh (though only one per StateBase).

@@ -1,4 +1,4 @@
-include(${SPHERAL_ROOT_DIR}/cmake/tpl/Install_Python_distutils_library.cmake)
+include(${SPHERAL_ROOT_DIR}/cmake/tpl/util/Install_Python_distutils_library.cmake)
 
 set(GNUPLOT_DIST gnuplot-py-1.8.tar.gz)
 set(GNUPLOT_URL http://downloads.sourceforge.net/gnuplot-py/${GNUPLOT_DIST})

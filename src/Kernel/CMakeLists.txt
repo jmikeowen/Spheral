@@ -41,5 +41,3 @@ set(Kernel_headers
 
 spheral_add_cxx_library(Kernel)
 
-list(APPEND SPHERAL_CXX_LIBS Spheral_Kernel)
-set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

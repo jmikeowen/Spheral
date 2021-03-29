@@ -6,6 +6,7 @@ set(SolidMaterial_inst
     MurnahanEquationOfState
     TillotsonEquationOfState
     StrengthModel
+    ConstantStrength
     SteinbergGuinanStrength
     JohnsonCookStrength
     CollinsStrength
@@ -52,6 +53,7 @@ spheral_install_python_files(
   SolidMaterialUnits.py
   SolidMaterialEquationsOfState.py
   ShadowTillotsonEquationOfState.py
+  ShadowGruneisenEquationOfState.py
   ShadowConstantStrength.py
   )
 
@@ -72,5 +74,3 @@ set_source_files_properties(ANEOSInst1d.cc ANEOSInst2d.cc ANEOSInst3d.cc PROPERT
 
 spheral_add_cxx_library(SolidMaterial)
 
-list(APPEND SPHERAL_CXX_LIBS Spheral_SolidMaterial)
-set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

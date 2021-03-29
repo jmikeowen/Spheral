@@ -27,7 +27,7 @@ public:
   typedef typename UpdatePolicyBase<Dimension>::KeyType KeyType;
 
   // Constructors, destructor.
-  DeviatoricStressPolicy();
+  DeviatoricStressPolicy(const bool zeroTrace = true);
   virtual ~DeviatoricStressPolicy();
   
   // Overload the methods describing how to update Fields.
@@ -43,6 +43,7 @@ public:
 
 private:
   //--------------------------- Private Interface ---------------------------//
+  bool mZeroTrace;
   DeviatoricStressPolicy(const DeviatoricStressPolicy& rhs);
   DeviatoricStressPolicy& operator=(const DeviatoricStressPolicy& rhs);
 };

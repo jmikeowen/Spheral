@@ -1,7 +1,6 @@
 set (_python_packages
   CXXTypes
   Geometry
-  PolyClipper
   Silo
   DataOutput
   NodeList

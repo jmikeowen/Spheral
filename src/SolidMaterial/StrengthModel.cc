@@ -34,7 +34,8 @@ soundSpeed(Field<Dimension, Scalar>& soundSpeed,
            const Field<Dimension, Scalar>& /*density*/,
            const Field<Dimension, Scalar>& /*specificThermalEnergy*/,
            const Field<Dimension, Scalar>& /*pressure*/,
-           const Field<Dimension, Scalar>& fluidSoundSpeed) const {
+           const Field<Dimension, Scalar>& fluidSoundSpeed,
+           const Field<Dimension, SymTensor>& /*damage*/) const {
   soundSpeed = fluidSoundSpeed;
 }
 

@@ -46,5 +46,3 @@ install(FILES       ${MHD_headers}
         DESTINATION include/MHD
         )
 
-list(APPEND SPHERAL_CXX_LIBS Spheral_MHD)
-set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

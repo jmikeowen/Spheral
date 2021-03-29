@@ -58,8 +58,6 @@ SolidNodeList(string name,
   mPlasticStrain(SolidFieldNames::plasticStrain, *this),
   mPlasticStrainRate(SolidFieldNames::plasticStrainRate, *this),
   mDamage(SolidFieldNames::tensorDamage, *this),
-  mEffectiveDamage(SolidFieldNames::effectiveTensorDamage, *this),
-  mDamageGradient(SolidFieldNames::damageGradient, *this),
   mFragmentIDs(SolidFieldNames::fragmentIDs, *this),
   mParticleTypes(SolidFieldNames::particleTypes, *this),
   mStrength(strength) {
@@ -85,11 +83,12 @@ soundSpeed(Field<Dimension, typename Dimension::Scalar>& field) const {
   FluidNodeList<Dimension>::soundSpeed(field);
 
   // Augment the sound speed with the strength model.
-  const Field<Dimension, Scalar>& rho = this->massDensity();
-  const Field<Dimension, Scalar>& u = this->specificThermalEnergy();
+  const auto& rho = this->massDensity();
+  const auto& u = this->specificThermalEnergy();
+  const auto& D = this->damage();
   Field<Dimension, Scalar> P(HydroFieldNames::pressure, *this);
   this->pressure(P);
-  mStrength.soundSpeed(field, rho, u, P, field);
+  mStrength.soundSpeed(field, rho, u, P, field, D);
 }
 
 //------------------------------------------------------------------------------
@@ -99,8 +98,8 @@ template<typename Dimension>
 void
 SolidNodeList<Dimension>::
 bulkModulus(Field<Dimension, typename Dimension::Scalar>& field) const {
-  const Field<Dimension, Scalar>& rho = this->massDensity();
-  const Field<Dimension, Scalar>& u = this->specificThermalEnergy();
+  const auto& rho = this->massDensity();
+  const auto& u = this->specificThermalEnergy();
   this->equationOfState().setBulkModulus(field, rho, u);
 }
 
@@ -111,11 +110,12 @@ template<typename Dimension>
 void
 SolidNodeList<Dimension>::
 shearModulus(Field<Dimension, typename Dimension::Scalar>& field) const {
-  const Field<Dimension, Scalar>& rho = this->massDensity();
-  const Field<Dimension, Scalar>& u = this->specificThermalEnergy();
+  const auto& rho = this->massDensity();
+  const auto& u = this->specificThermalEnergy();
+  const auto& D = this->damage();
   Field<Dimension, Scalar> P(HydroFieldNames::pressure, *this);
   this->pressure(P);
-  mStrength.shearModulus(field, rho, u, P);
+  mStrength.shearModulus(field, rho, u, P, D);
 }
 
 //------------------------------------------------------------------------------
@@ -125,11 +125,12 @@ template<typename Dimension>
 void
 SolidNodeList<Dimension>::
 yieldStrength(Field<Dimension, typename Dimension::Scalar>& field) const {
-  const Field<Dimension, Scalar>& rho = this->massDensity();
-  const Field<Dimension, Scalar>& u = this->specificThermalEnergy();
+  const auto& rho = this->massDensity();
+  const auto& u = this->specificThermalEnergy();
+  const auto& D = this->damage();
   Field<Dimension, Scalar> P(HydroFieldNames::pressure, *this);
   this->pressure(P);
-  mStrength.yieldStrength(field, rho, u, P, mPlasticStrain, mPlasticStrainRate);
+  mStrength.yieldStrength(field, rho, u, P, mPlasticStrain, mPlasticStrainRate, D);
 }
 
 //------------------------------------------------------------------------------
@@ -147,8 +148,6 @@ dumpState(FileIO& file, const string& pathName) const {
   file.write(mPlasticStrain, pathName + "/" + mPlasticStrain.name());
   file.write(mPlasticStrainRate, pathName + "/" + mPlasticStrainRate.name());
   file.write(mDamage, pathName + "/" + mDamage.name());
-  file.write(mEffectiveDamage, pathName + "/" + mEffectiveDamage.name());
-  file.write(mDamageGradient, pathName + "/" + mDamageGradient.name());
   file.write(mFragmentIDs, pathName + "/" + mFragmentIDs.name());
   file.write(mParticleTypes, pathName + "/" + mParticleTypes.name());
 }
@@ -168,8 +167,6 @@ restoreState(const FileIO& file, const string& pathName) {
   file.read(mPlasticStrain, pathName + "/" + mPlasticStrain.name());
   file.read(mPlasticStrainRate, pathName + "/" + mPlasticStrainRate.name());
   file.read(mDamage, pathName + "/" + mDamage.name());
-  file.read(mEffectiveDamage, pathName + "/" + mEffectiveDamage.name());
-  file.read(mDamageGradient, pathName + "/" + mDamageGradient.name());
   file.read(mFragmentIDs, pathName + "/" + mFragmentIDs.name());
   file.read(mParticleTypes, pathName + "/" + mParticleTypes.name());
 }

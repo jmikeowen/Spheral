@@ -223,12 +223,12 @@ def JohnsonCookDamageWeibull(nodeList,
     # Our methods to fill in numbers.
     def D1vals(n):
         if aD1 != 0.0:
-            return aD1*np.random.weibull(bD1, nlocal) + eps0D1
+            return aD1*np.random.weibull(bD1, n) + eps0D1
         else:
             return np.full(n, D1)
     def D2vals(n):
         if aD2 != 0.0:
-            return aD2*np.random.weibull(bD2, nlocal) + eps0D2
+            return aD2*np.random.weibull(bD2, n) + eps0D2
         else:
             return np.full(n, D2)
 

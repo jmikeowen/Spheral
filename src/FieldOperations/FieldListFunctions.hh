@@ -34,6 +34,16 @@ gradient(const FieldList<Dimension, DataType>& fieldList,
          const FieldList<Dimension, typename Dimension::SymTensor>& Hfield,
          const TableKernel<Dimension>& kernel);
 
+template<typename Dimension, typename DataType>
+FieldList<Dimension, std::vector<typename MathTraits<Dimension, DataType>::GradientType>>
+gradient(const FieldList<Dimension, std::vector<DataType>>& fieldList,
+         const FieldList<Dimension, typename Dimension::Vector>& position,
+         const FieldList<Dimension, typename Dimension::Scalar>& weight,
+         const FieldList<Dimension, typename Dimension::Scalar>& mass,
+         const FieldList<Dimension, typename Dimension::Scalar>& rho,
+         const FieldList<Dimension, typename Dimension::SymTensor>& Hfield,
+         const TableKernel<Dimension>& kernel);
+
 // Calculate the divergence of the given FieldList.
 template<typename Dimension, typename DataType>
 FieldList<Dimension, typename MathTraits<Dimension, DataType>::DivergenceType>

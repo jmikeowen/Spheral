@@ -77,7 +77,7 @@ computeSolidCRKSPHSumMassDensity(const ConnectivityMap<Dimension>& connectivityM
       nodeListj = pairs[k].j_list;
 
       // Check the coupling of these points.
-      const auto fij = nodeCoupling(nodeListi, i, nodeListj, j);
+      const auto fij = nodeCoupling(pairs[k]);
       if (fij > 0.0) {
 
         // Get the state for node i.

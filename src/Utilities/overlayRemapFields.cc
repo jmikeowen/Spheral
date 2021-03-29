@@ -108,11 +108,11 @@ overlayRemapFields(const vector<Boundary<Dimension>*>& boundaries,
     for (Boundary<Dimension>* boundPtr: boundaries) boundPtr->setAllGhostNodes(db);
     for (Boundary<Dimension>* boundPtr: boundaries) boundPtr->finalizeGhostBoundary();
     neighborD.updateNodes();
-    db.updateConnectivityMap(false, false);
+    db.updateConnectivityMap(false, false, false);
     const auto& cm = db.connectivityMap();
     const auto position = db.fluidPosition();
     const auto H = db.fluidHfield();
-    const auto damage = db.solidEffectiveDamage();
+    const auto damage = db.solidDamage();
     const auto weight = db.newFluidFieldList(1.0, "weight");
     auto etaVoidPoints = db.newFluidFieldList(vector<Vector>(), "eta void points");
     auto surfacePoint = db.newFluidFieldList(0, "surface point");
@@ -137,11 +137,11 @@ overlayRemapFields(const vector<Boundary<Dimension>*>& boundaries,
     for (Boundary<Dimension>* boundPtr: boundaries) boundPtr->setAllGhostNodes(db);
     for (Boundary<Dimension>* boundPtr: boundaries) boundPtr->finalizeGhostBoundary();
     neighborA.updateNodes();
-    db.updateConnectivityMap(false, false);
+    db.updateConnectivityMap(false, false, false);
     const auto& cm = db.connectivityMap();
     const auto position = db.fluidPosition();
     const auto H = db.fluidHfield();
-    const auto damage = db.solidEffectiveDamage();
+    const auto damage = db.solidDamage();
     const auto weight = db.newFluidFieldList(1.0, "weight");
     auto etaVoidPoints = db.newFluidFieldList(vector<Vector>(), "eta void points");
     auto surfacePoint = db.newFluidFieldList(0, "surface point");

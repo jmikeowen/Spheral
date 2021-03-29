@@ -32,7 +32,7 @@ bisectRoot(const Function& functor,
   if (fuzzyEqual(xmaxValue, 0.0, yaccuracy)) return x2;
 
   // Make sure the root is bracketed by the input range.
-  VERIFY2(distinctlyLessThan(xminValue * xmaxValue, 0.0, yaccuracy),
+  VERIFY2(distinctlyLessThan(xminValue * xmaxValue, 0.0),
           "bisectRoot: root must be bracketed by input range:  " << xminValue << " " << xmaxValue);
 
   // Initialize the searching parameters.

@@ -18,8 +18,9 @@ just split up the ideas of what provides shear modulus and yield strength?
    See Collins, Melosh, Ivanov, 2004 Appendix, MAPS"""
 
     PYB11typedefs = """
-    typedef typename %(Dimension)s::Scalar Scalar;
-    typedef Field<%(Dimension)s, Scalar> ScalarField;
+    using Scalar = typename %(Dimension)s::Scalar;
+    using SymTensor = typename %(Dimension)s::SymTensor;
+    using ScalarField = Field<%(Dimension)s, Scalar>;
 """
 
     #...........................................................................
@@ -64,7 +65,8 @@ yM  : von Mises plastic limit"""
                    density = "const Field<%(Dimension)s, Scalar>&",
                    specificThermalEnergy = "const Field<%(Dimension)s, Scalar>&",
                    pressure = "const Field<%(Dimension)s, Scalar>&",
-                   fluidSoundSpeed = "const Field<%(Dimension)s, Scalar>&"):
+                   fluidSoundSpeed = "const Field<%(Dimension)s, Scalar>&",
+                   damage = "const Field<%(Dimension)s, SymTensor>&"):
         return "void"
 
     #...........................................................................

@@ -7,11 +7,13 @@ set(Damage_inst
     TensorDamagePolicy
     YoungsModulusPolicy
     LongitudinalSoundSpeedPolicy
-    weibullFlawDistribution
+    weibullFlawDistributionBenzAsphaug
+    weibullFlawDistributionOwen
     computeFragmentField
     JohnsonCookDamage
     JohnsonCookFailureStrainPolicy
     JohnsonCookDamagePolicy
+    DamagedPressurePolicy
    )
 
 
@@ -40,7 +42,8 @@ set(Damage_headers
     TensorDamageModelInline.hh
     TensorDamagePolicy.hh
     TensorStrainPolicy.hh
-    weibullFlawDistribution.hh
+    weibullFlawDistributionBenzAsphaug.hh
+    weibullFlawDistributionOwen.hh
     YoungsModulusPolicy.hh
     )
 
@@ -53,5 +56,3 @@ spheral_install_python_files(
 
 spheral_add_cxx_library(Damage)
 
-list(APPEND SPHERAL_CXX_LIBS Spheral_Damage)
-set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

@@ -329,7 +329,6 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
 
 #pragma omp for
     for (auto kk = 0u; kk < npairs; ++kk) {
-      const auto start = Timing::currentTime();
       i = pairs[kk].i_node;
       j = pairs[kk].j_node;
       nodeListi = pairs[kk].i_list;
@@ -509,13 +508,6 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
         localMi -= mRZj*xij.dyad(gradWi);
         localMj -= mRZi*xij.dyad(gradWj);
       }
-
-      // Add timing info for work
-      const auto deltaTimePair = 0.5*Timing::difference(start, Timing::currentTime());
-#pragma omp atomic
-      nodeLists[nodeListi]->work()(i) += deltaTimePair;
-#pragma omp atomic
-      nodeLists[nodeListj]->work()(j) += deltaTimePair;
 
     } // loop over pairs
 

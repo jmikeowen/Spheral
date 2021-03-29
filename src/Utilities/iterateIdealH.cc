@@ -131,7 +131,7 @@ iterateIdealH(DataBase<Dimension>& dataBase,
     auto secondMoment = dataBase.newFluidFieldList(SymTensor::zero, "secondMoment");
 
     // Get the new connectivity.
-    dataBase.updateConnectivityMap(false, false);
+    dataBase.updateConnectivityMap(false, false, false);
     const auto& connectivityMap = dataBase.connectivityMap();
     const auto& pairs = connectivityMap.nodePairList();
     const auto  npairs = pairs.size();

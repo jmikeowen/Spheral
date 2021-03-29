@@ -24,22 +24,6 @@ DdamageDt() const {
   return mDdamageDt;
 }
 
-template<typename Dimension>
-inline
-const Field<Dimension, typename Dimension::SymTensor>&
-TensorDamageModel<Dimension>::
-newEffectiveDamage() const {
-  return mNewEffectiveDamage;
-}
-
-template<typename Dimension>
-inline
-const Field<Dimension, typename Dimension::Vector>&
-TensorDamageModel<Dimension>::
-newDamageGradient() const {
-  return mNewDamageGradient;
-}
-
 //------------------------------------------------------------------------------
 // The strain update algorithm.
 //------------------------------------------------------------------------------
@@ -49,37 +33,6 @@ TensorStrainAlgorithm
 TensorDamageModel<Dimension>::
 strainAlgorithm() const {
   return mStrainAlgorithm;
-}
-
-//------------------------------------------------------------------------------
-// The effective damage update algorithm.
-//------------------------------------------------------------------------------
-template<typename Dimension>
-inline
-EffectiveDamageAlgorithm
-TensorDamageModel<Dimension>::
-effectiveDamageAlgorithm() const {
-  return mEffDamageAlgorithm;
-}
-
-//------------------------------------------------------------------------------
-// Flag to determine if we compute the gradient of the damage at the start 
-// of a timestep.
-//------------------------------------------------------------------------------
-template<typename Dimension>
-inline
-bool
-TensorDamageModel<Dimension>::
-useDamageGradient() const {
-  return mUseDamageGradient;
-}
-
-template<typename Dimension>
-inline
-void
-TensorDamageModel<Dimension>::
-useDamageGradient(bool x) {
-  mUseDamageGradient = x;
 }
 
 //------------------------------------------------------------------------------

@@ -1,7 +1,6 @@
 set(OPENSUBDIV_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/${lib_name})
 set(OPENSUBDIV_DIST "v3_3_0.zip")
 set(OPENSUBDIV_URL "https://github.com/PixarAnimationStudios/OpenSubdiv/archive/${OPENSUBDIV_DIST}")
-set(OPENSUBDIV_MD5 "MD5=3127163302a8d0ab6fc32c55ff2c7e02")
 set(OPENSUBDIV_CACHE "${CACHE_DIR}/${OPENSUBDIV_DIST}")
 set(OPENSUBDIV_SRC_DIR ${OPENSUBDIV_PREFIX}/src/opensubdiv/src)
 
@@ -16,7 +15,7 @@ if(${lib_name}_BUILD)
   ExternalProject_add(${lib_name}
     PREFIX ${OPENSUBDIV_PREFIX}
     URL ${OPENSUBDIV_URL}
-    URL_HASH ${OPENSUBDIV_MD5}
+    URL_HASH "MD5=${OPENSUBDIV_MD5}"
     DOWNLOAD_DIR ${CACHE_DIR}
     CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release
                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}

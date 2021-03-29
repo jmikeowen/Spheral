@@ -25,9 +25,9 @@ class AverageStrain:
         return
 
     def sample(self, cycle, atime, dt):
-        nodes = self.damageModel.nodeList()
+        nodes = self.damageModel.nodeList
         mass = nodes.mass()
-        strain = self.damageModel.effectiveStrain()
+        strain = self.damageModel.effectiveStrain
         stress = nodes.deviatoricStress()
 
         n = nodes.numInternalNodes

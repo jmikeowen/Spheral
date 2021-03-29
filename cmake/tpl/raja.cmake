@@ -1,7 +1,6 @@
 set(RAJA_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/${lib_name})
 set(RAJA_DIST "RAJA-v0.12.1.tar.gz")
 set(RAJA_URL "https://github.com/LLNL/RAJA/releases/download/v0.12.1/${RAJA_DIST}")
-set(RAJA_MD5 "MD5=9ee47fd5f3d5fe5e16fccca73e7878cc")
 set(RAJA_CACHE "${CACHE_DIR}/${RAJA_DIST}")
 
 set(${lib_name}_libs libRAJA.a)
@@ -15,7 +14,7 @@ if(${lib_name}_BUILD)
   ExternalProject_add(${lib_name}
     PREFIX ${RAJA_PREFIX}
     URL ${RAJA_URL}
-    URL_HASH ${RAJA_MD5}
+    URL_HASH "MD5=${RAJA_MD5}"
     DOWNLOAD_DIR ${CACHE_DIR}
     CMAKE_ARGS ../raja/src/
                -DCMAKE_BUILD_TYPE=Release

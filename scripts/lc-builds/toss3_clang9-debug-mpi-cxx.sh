@@ -18,7 +18,7 @@ cmake \
   -DCMAKE_BUILD_TYPE=Debug \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-9.0.0/bin/clang++ \
   -DCMAKE_C_COMPILER=/usr/tce/packages/clang/clang-9.0.0/bin/clang \
-  -C ${SRC_DIR}/host-configs/lc-builds/toss3/clangX_tpl.cmake \
+  -C ${HOST_CONFIGS_DIR}/lc-builds/toss3/clangX_tpl.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_MPI=On \
   -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \

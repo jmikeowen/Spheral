@@ -22,8 +22,9 @@ namespace Spheral {
 //------------------------------------------------------------------------------
 template<typename Dimension>
 DeviatoricStressPolicy<Dimension>::
-DeviatoricStressPolicy():
-  IncrementFieldList<Dimension, typename Dimension::SymTensor>() {
+DeviatoricStressPolicy(const bool zeroTrace):
+  IncrementFieldList<Dimension, typename Dimension::SymTensor>(),
+  mZeroTrace(zeroTrace) {
 }
 
 //------------------------------------------------------------------------------
@@ -48,17 +49,18 @@ update(const KeyType& /*key*/,
        const double /*dt*/) {
 
   // Get the state we're advancing.
-  FieldList<Dimension, SymTensor> S = state.fields(SolidFieldNames::deviatoricStress, SymTensor::zero);
-  const FieldList<Dimension, SymTensor> DSDt = derivs.fields(IncrementFieldList<Dimension, SymTensor>::prefix() + 
-                                                             SolidFieldNames::deviatoricStress, SymTensor::zero);
+  auto       S = state.fields(SolidFieldNames::deviatoricStress, SymTensor::zero);
+  const auto DSDt = derivs.fields(IncrementFieldList<Dimension, SymTensor>::prefix() + 
+                                  SolidFieldNames::deviatoricStress, SymTensor::zero);
 
   // Iterate over the internal nodes.
-  const unsigned numFields = S.numFields();
-  for (unsigned k = 0; k != numFields; ++k) {
-    const unsigned n = S[k]->numInternalElements();
-    for (unsigned i = 0; i != n; ++i) {
-      const SymTensor Sold = S(k,i);                         // Starting deviatoric stress.
-      const SymTensor S0 = Sold + multiplier*(DSDt(k,i));    // Elastic prediction for the new deviatoric stress.
+  const auto numFields = S.numFields();
+  for (auto k = 0u; k < numFields; ++k) {
+    const auto n = S[k]->numInternalElements();
+    for (auto i = 0u; i < n; ++i) {
+      auto S0 = S(k,i) + multiplier*(DSDt(k,i));                          // Elastic prediction for the new deviatoric stress
+      if (mZeroTrace) S0 -= SymTensor::one * S0.Trace()/Dimension::nDim;  // Ensure the deviatoric stress is traceless (all but RZ)
+      CHECK(fuzzyEqual(S0.Trace(), 0.0));
 
       // Purely elastic flow.  The plastic yielding is accounted for when we update the plastic strain.
       S(k,i) = S0;

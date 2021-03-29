@@ -107,7 +107,7 @@ step(typename Dimension::Scalar maxTime,
   // Initalize the integrator.
   TIME_CheapRK2PreInit.start();
   this->preStepInitialize(state, derivs);
-  // this->initializeDerivatives(t, 0.0, state, derivs);
+  this->initializeDerivatives(t, 0.0, state, derivs);
   TIME_CheapRK2PreInit.stop();
 
   // Determine the minimum timestep across all packages.

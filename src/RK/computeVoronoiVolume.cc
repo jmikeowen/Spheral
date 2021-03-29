@@ -10,7 +10,7 @@
 #include "Utilities/pointOnPolygon.hh"
 #include "Utilities/FastMath.hh"
 #include "Utilities/Timer.hh"
-#include "Geometry/polyclipper.hh"
+#include "Geometry/PolyClipperUtilities.hh"
 
 extern Timer TIME_computeVoronoiVolume;
 
@@ -60,13 +60,13 @@ ClippingType<Dim<2>> {
   typedef Dim<2>::Vector Vector;
   typedef Dim<2>::SymTensor SymTensor;
   typedef Dim<2>::FacetedVolume FacetedVolume;
-  typedef PolyClipper::Plane2d Plane;
-  typedef PolyClipper::Polygon PolyVolume;
+  typedef PolyClipperPlane2d Plane;
+  typedef PolyClipperPolygon PolyVolume;
   
   // Unit circle as template shape.
   static PolyVolume unitPolyVolume() {
     const auto nverts = 18;
-    PolyClipper::Polygon cell0;
+    PolyVolume cell0;
     {
       const auto dtheta = 2.0*M_PI/nverts;
       vector<Vector> verts0(nverts);
@@ -78,7 +78,7 @@ ClippingType<Dim<2>> {
         facets0[j][0] = j;
         facets0[j][1] = (j + 1) % nverts;
       }
-      PolyClipper::convertToPolygon(cell0, FacetedVolume(verts0, facets0));
+      convertToPolyClipper(cell0, FacetedVolume(verts0, facets0));
     }
     return cell0;
   }
@@ -98,17 +98,12 @@ ClippingType<Dim<2>> {
     PolyClipper::collapseDegenerates(cell, tol);
   }
 
-  // Convert PolyClipper::Polygon -> Spheral::Polygon
-  static std::vector<std::set<int>> convertFromPolyVolume(FacetedVolume& spheralcell, const PolyVolume& polycell) {
-    return PolyClipper::convertFromPolygon(spheralcell, polycell);
-  }
-
   // Generate the reduced void point stencil -- up to 4 for 2D
   static std::vector<Vector> createEtaVoidPoints(const Vector& etaVoidAvg,
                                                  const int nvoid,
                                                  const double rin,
                                                  const SymTensor& /*Hi*/,
-                                                 const SymTensor& Hinvi,
+                                                 const SymTensor& /*Hinvi*/,
                                                  const PolyVolume& /*celli*/) {
     std::vector<Vector> result;
     const auto nverts = 18;
@@ -116,10 +111,7 @@ ClippingType<Dim<2>> {
     const auto nv = max(1U, min(4U, unsigned(4.0*double(nvoid)/double(nverts))));
     for (unsigned k = 0; k != nv; ++k) {
       const auto theta = thetaVoidAvg + (0.5*k - 0.25*(nv - 1))*M_PI;
-      const auto etaVoid = Vector(0.5*rin*cos(theta), 0.5*rin*sin(theta));
-      result.push_back(etaVoid);
-      const auto rji = Hinvi*etaVoid;
-      const auto nhat = -rji.unitVector();
+      result.push_back(Vector(0.5*rin*cos(theta), 0.5*rin*sin(theta)));
     }
     ENSURE(result.size() == nv);
     return result;
@@ -141,8 +133,8 @@ ClippingType<Dim<3>> {
   typedef Dim<3>::Vector Vector;
   typedef Dim<3>::SymTensor SymTensor;
   typedef Dim<3>::FacetedVolume FacetedVolume;
-  typedef PolyClipper::Plane3d Plane;
-  typedef PolyClipper::Polyhedron PolyVolume;
+  typedef PolyClipperPlane3d Plane;
+  typedef PolyClipperPolyhedron PolyVolume;
   
   // Build an approximation of the starting kernel shape (in eta space) as an icosahedron with vertices
   static PolyVolume unitPolyVolume() {
@@ -187,8 +179,8 @@ ClippingType<Dim<3>> {
       {8, 6, 7},
       {9, 8, 1}
     };
-    PolyClipper::Polyhedron cell0;
-    PolyClipper::convertToPolyhedron(cell0, FacetedVolume(vertsIco, facesIco));
+    PolyVolume cell0;
+    convertToPolyClipper(cell0, FacetedVolume(vertsIco, facesIco));
     ENSURE(cell0.size() == 12);
     return cell0;
   }
@@ -208,11 +200,6 @@ ClippingType<Dim<3>> {
     PolyClipper::collapseDegenerates(cell, tol);
   }
 
-  // Convert PolyClipper::Polyhedron -> Spheral::Polyhedron
-  static std::vector<std::set<int>> convertFromPolyVolume(FacetedVolume& spheralcell, const PolyVolume& polycell) {
-    return PolyClipper::convertFromPolyhedron(spheralcell, polycell);
-  }
-
   // In 3D we simply use any unclipped original vertices as void generators
   static std::vector<Vector> createEtaVoidPoints(const Vector& /*etaVoidAvg*/,
                                                  const int /*nvoid*/,
@@ -224,8 +211,7 @@ ClippingType<Dim<3>> {
     for (const auto& vert: celli) {
       const auto peta = Hi*vert.position;
       if (peta.magnitude2() > rin*rin) {
-        const Vector etaj = 0.5*rin*peta.unitVector();
-        result.push_back(etaj);
+        result.push_back(0.5*rin*peta.unitVector());
       }
     }
     return result;
@@ -367,9 +353,10 @@ computeVoronoiVolume(const FieldList<Dimension, typename Dimension::Vector>& pos
   REQUIRE(deltaMedian.size() == position.size());
   REQUIRE(holes.size() == facetedBoundaries.size());
 
-  typedef typename Dimension::Vector Vector;
-  typedef typename ClippingType<Dimension>::Plane Plane;
-  typedef typename ClippingType<Dimension>::PolyVolume PolyVolume;
+  using Vector = typename Dimension::Vector;
+  using PCVector = typename ClippingType<Dimension>::Vector;
+  using Plane = typename ClippingType<Dimension>::Plane;
+  using PolyVolume = typename ClippingType<Dimension>::PolyVolume;
 
   const auto numGens = position.numNodes();
   const auto numNodeLists = position.size();
@@ -447,7 +434,7 @@ computeVoronoiVolume(const FieldList<Dimension, typename Dimension::Vector>& pos
               const auto p = facet.closestPoint(ri);
               auto rji = p - ri;
               if ((Hi*rji).magnitude2() < rin*rin) {
-                Vector nhat;
+                PCVector nhat;
                 if (rji.magnitude() < 1.0e-5*facet.area()) {
                   rji.Zero();
                   nhat = -facet.normal();
@@ -469,7 +456,7 @@ computeVoronoiVolume(const FieldList<Dimension, typename Dimension::Vector>& pos
                 const auto p = facet.closestPoint(ri);
                 auto rji = p - ri;
                 if ((Hi*rji).magnitude2() < rin*rin) {
-                  Vector nhat;
+                  PCVector nhat;
                   if (rji.magnitude2() < 1.0e-5*facet.area()) {
                     rji.Zero();
                     nhat = facet.normal();
@@ -747,10 +734,10 @@ computeVoronoiVolume(const FieldList<Dimension, typename Dimension::Vector>& pos
 
           // If requested, we can return the cell geometries.
           if (returnCells) {
-            ClippingType<Dimension>::collapseDegenerates(celli, 1.0e-10);
+            // ClippingType<Dimension>::collapseDegenerates(celli, 1.0e-10);
 #pragma omp critical (computeVoronoiVolume_pass3)
             {
-              auto vertexClips = ClippingType<Dimension>::convertFromPolyVolume(cells(nodeListi, i), celli);
+              auto vertexClips = convertFromPolyClipper(cells(nodeListi, i), celli);
               cells(nodeListi, i) += ri;
 
               // If we're returning CellFaceFlags, build them.  Note -- we currently do not store which neighbor node

@@ -100,18 +100,23 @@ SteinbergGuinanStrength<Dimension>::
 shearModulus(Field<Dimension, Scalar>& shearModulus,
              const Field<Dimension, Scalar>& density,
              const Field<Dimension, Scalar>& specificThermalEnergy,
-             const Field<Dimension, Scalar>& pressure) const {
+             const Field<Dimension, Scalar>& pressure,
+             const Field<Dimension, SymTensor>& damage) const {
+  const auto n = density.numInternalElements();
   if ((mG0 > 0.0) &&
       (mA == 0.0) &&
       (mB == 0.0) &&
       (mbeta == 0.0) &&
       (mnhard == 0.0)) {
-    shearModulus = mG0;
+#pragma omp parallel for
+    for (auto i = 0u; i < n; ++i) {
+      const auto Di = std::max(0.0, std::min(1.0, damage(i).eigenValues().maxElement()));
+      shearModulus(i) = (1.0 - Di)*mG0;
+    }
 
   } else {
     Field<Dimension, Scalar> T("temperature", density.nodeList());
     this->computeTemperature(T, density, specificThermalEnergy);
-    const auto n = density.numInternalElements();
 #pragma omp parallel for
     for (auto i = 0u; i < n; ++i) {
       const auto eta = mEOSPtr->boundedEta(density(i));
@@ -121,7 +126,9 @@ shearModulus(Field<Dimension, Scalar>& shearModulus,
                                     meltAttenuation(density(i), specificThermalEnergy(i))*(1.0 + 
                                                                                            mA*pressure(i)/FastMath::CubeRootHalley2(eta) -
                                                                                            mB*T(i))));
-      CHECK(distinctlyGreaterThan(shearModulus(i), 0.0));
+      const auto Di = std::max(0.0, std::min(1.0, damage(i).eigenValues().maxElement()));
+      shearModulus(i) = (1.0 - Di)*shearModulus(i) + Di*mG0;
+      CHECK(shearModulus(i) > 0.0);
     }
   }
 }
@@ -137,24 +144,32 @@ yieldStrength(Field<Dimension, Scalar>& yieldStrength,
               const Field<Dimension, Scalar>& specificThermalEnergy,
               const Field<Dimension, Scalar>& pressure,
               const Field<Dimension, Scalar>& plasticStrain,
-              const Field<Dimension, Scalar>& /*plasticStrainRate*/) const {
+              const Field<Dimension, Scalar>& /*plasticStrainRate*/,
+              const Field<Dimension, SymTensor>& damage) const {
+  const auto n = density.numInternalElements();
   if ((mG0 > 0.0) &&
       (mA == 0.0) &&
       (mB == 0.0) &&
       (mbeta == 0.0) &&
       (mnhard == 0.0)) {
-    yieldStrength = mY0;
 
+#pragma omp parallel for
+    for (auto i = 0u; i < n; ++i) {
+      const auto Di = std::max(0.0, std::min(1.0, damage(i).eigenValues().maxElement()));
+      yieldStrength(i) = (1.0 - Di)*mY0;
+    }
+    
   } else {
-    this->shearModulus(yieldStrength, density, specificThermalEnergy, pressure);
-    const auto n = density.numInternalElements();
+
+    this->shearModulus(yieldStrength, density, specificThermalEnergy, pressure, damage);
 #pragma omp parallel for
     for (auto i = 0u; i < n; ++i) {
       const auto eta = mEOSPtr->boundedEta(density(i));
       CONTRACT_VAR(eta);
       CHECK(distinctlyGreaterThan(eta, 0.0));
       const auto Yhard = min(mYmax, mY0*pow(1.0 + mbeta*(plasticStrain(i) + mgamma0), mnhard));
-      yieldStrength(i) = Yhard*yieldStrength(i)/mG0;
+      const auto Di = std::max(0.0, std::min(1.0, damage(i).eigenValues().maxElement()));
+      yieldStrength(i) = (1.0 - Di)*Yhard*yieldStrength(i)/mG0;
     }
   }
 }
@@ -169,16 +184,17 @@ soundSpeed(Field<Dimension, Scalar>& soundSpeed,
            const Field<Dimension, Scalar>& density,
            const Field<Dimension, Scalar>& specificThermalEnergy,
            const Field<Dimension, Scalar>& pressure,
-           const Field<Dimension, Scalar>& fluidSoundSpeed) const {
+           const Field<Dimension, Scalar>& fluidSoundSpeed,
+           const Field<Dimension, SymTensor>& damage) const {
   Field<Dimension, Scalar> mu("shear modulus", density.nodeList());
-  this->shearModulus(mu, density, specificThermalEnergy, pressure);
+  this->shearModulus(mu, density, specificThermalEnergy, pressure, damage);
   const auto n = density.numInternalElements();
 #pragma omp parallel for
   for (auto i = 0u; i < n; ++i) {
     CHECK(density(i) > 0.0);
     const auto cs2 = fluidSoundSpeed(i)*fluidSoundSpeed(i) + std::abs(4.0/3.0 * mu(i)) / density(i);
     CHECK(cs2 > 0.0);
-    soundSpeed(i) = std::sqrt(cs2);
+    soundSpeed(i) = std::sqrt(cs2); // * std::max(0.0, 1.0 - damage(i).eigenValues().maxElement());
   }
 }
 

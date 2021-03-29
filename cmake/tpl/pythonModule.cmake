@@ -12,13 +12,13 @@ macro(Install_PipModules lib_list)
   add_custom_command(
     OUTPUT ${${lib_list}_stamp_file}
     COMMAND echo "-- pip downloading ${lib_list}"
-    COMMAND ${PIP_EXE} ${OUT_PROTOCOL_PIP} download --no-binary :all -d ${CACHE_DIR} ${${lib_list}}
+    COMMAND ${PYTHON_EXE} ${PIP_EXE} ${OUT_PROTOCOL_PIP} download --no-binary :all -d ${CACHE_DIR} ${${lib_list}}
     COMMAND touch ${${lib_list}_stamp_file}
   )
   add_custom_target(
     ${lib_list}
     COMMAND echo "-- pip installing ${lib_list}"
-    COMMAND ${PIP_EXE} ${OUT_PROTOCOL_PIP} install ${${lib_list}} --no-index --find-links ${CACHE_DIR}
+    COMMAND ${PYTHON_EXE} ${PIP_EXE} ${OUT_PROTOCOL_PIP} install ${${lib_list}} --no-index --find-links ${CACHE_DIR}
     DEPENDS pip-install ${${lib_list}_DEPENDS} ${${lib_list}_stamp_file}
   )
 endmacro()

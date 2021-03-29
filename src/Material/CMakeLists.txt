@@ -36,5 +36,3 @@ instantiate(Material_inst Material_sources)
 
 spheral_add_cxx_library(Material)
 
-list(APPEND SPHERAL_CXX_LIBS Spheral_Material)
-set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

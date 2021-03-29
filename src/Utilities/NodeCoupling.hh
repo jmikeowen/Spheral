@@ -8,6 +8,7 @@
 #ifndef __Spheral_NodeCoupling__
 #define __Spheral_NodeCoupling__
 
+#include "Neighbor/NodePairList.hh"
 #include "Utilities/DBC.hh"
 
 namespace Spheral {
@@ -18,26 +19,10 @@ public:
   // Constructor, destructor.
   NodeCoupling() {}
   virtual ~NodeCoupling() {}
-  
 
   // The coupling operator.
-  virtual double operator()(const unsigned /*nodeListi*/, const unsigned /*i*/,
-                            const unsigned /*nodeListj*/, const unsigned /*j*/) const {
-    return 1.0;
-  }
-};
-
-// A variant where only nodes within a NodeList are coupled.
-class PerNodeListNodeCoupling : public NodeCoupling {
-public:
-  // Constructor.
-  PerNodeListNodeCoupling(): NodeCoupling() {}
-  virtual ~PerNodeListNodeCoupling() {}
-
-  // The coupling operator.
-  virtual double operator()(const unsigned nodeListi, const unsigned /*i*/,
-                            const unsigned nodeListj, const unsigned /*j*/) const {
-    return (nodeListi == nodeListj ? 1.0 : 0.0);
+  virtual double operator()(const NodePairIdxType& pair) const {
+    return pair.f_couple;
   }
 };
 

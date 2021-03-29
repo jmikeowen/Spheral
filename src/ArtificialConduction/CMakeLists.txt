@@ -14,5 +14,3 @@ set(ArtificialConduction_headers
 
 spheral_add_cxx_library(ArtificialConduction)
 
-list(APPEND SPHERAL_CXX_LIBS Spheral_ArtificialConduction)
-set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

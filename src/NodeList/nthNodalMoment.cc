@@ -61,7 +61,7 @@ nthNodalMoment(const NodeListIterator nodeListBegin,
 
   // Build a connectivity map for walking nodes.  This relies on the NodeLists 
   // Neighbor objects being up to date.
-  const ConnectivityMap<Dimension> cm(nodeListBegin, nodeListEnd, false, false);
+  const ConnectivityMap<Dimension> cm(nodeListBegin, nodeListEnd, false, false, false);
 
   // Build up the FieldLists of positions, H's, and the first moment that we're going
   // to build.
@@ -128,7 +128,7 @@ zerothAndFirstNodalMoments(const NodeListIterator nodeListBegin,
 
   // Build a connectivity map for walking nodes.  This relies on the NodeLists 
   // Neighbor objects being up to date.
-  const ConnectivityMap<Dimension> cm(nodeListBegin, nodeListEnd, false, false);
+  const ConnectivityMap<Dimension> cm(nodeListBegin, nodeListEnd, false, false, false);
 
   // Value of the kernel at the center.
   const double W0 = 0.0; // useGradientAsKernel ?  abs(W.gradValue(0.0, 1.0)) : W.kernelValue(0.0, 1.0);

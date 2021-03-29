@@ -77,44 +77,6 @@ damage() const {
 }
 
 //------------------------------------------------------------------------------
-// Access the effective damage field.
-//------------------------------------------------------------------------------
-template<typename Dimension>
-inline
-Field<Dimension, typename Dimension::SymTensor>&
-SolidNodeList<Dimension>::
-effectiveDamage() {
-  return mEffectiveDamage;
-}
-
-template<typename Dimension>
-inline
-const Field<Dimension, typename Dimension::SymTensor>&
-SolidNodeList<Dimension>::
-effectiveDamage() const {
-  return mEffectiveDamage;
-}
-
-//------------------------------------------------------------------------------
-// Access the damage gradient field.
-//------------------------------------------------------------------------------
-template<typename Dimension>
-inline
-Field<Dimension, typename Dimension::Vector>&
-SolidNodeList<Dimension>::
-damageGradient() {
-  return mDamageGradient;
-}
-
-template<typename Dimension>
-inline
-const Field<Dimension, typename Dimension::Vector>&
-SolidNodeList<Dimension>::
-damageGradient() const {
-  return mDamageGradient;
-}
-
-//------------------------------------------------------------------------------
 // Access the fragment ID field.
 //------------------------------------------------------------------------------
 template<typename Dimension>

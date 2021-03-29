@@ -8,7 +8,12 @@ set(RK_inst
   ContinuityVolumePolicy
   computeRKVolumes
   RKCorrections
-  RKUtilities
+  RKUtilities012
+  RKUtilities3
+  RKUtilities4
+  RKUtilities5
+  RKUtilities6
+  RKUtilities7
   ReproducingKernelMethods
   ReproducingKernel
   interpolateRK
@@ -55,5 +60,3 @@ set(RK_headers
 
 spheral_add_cxx_library(RK)
 
-list(APPEND SPHERAL_CXX_LIBS Spheral_RK)
-set(SPHERAL_CXX_LIBS "${SPHERAL_CXX_LIBS}" PARENT_SCOPE)

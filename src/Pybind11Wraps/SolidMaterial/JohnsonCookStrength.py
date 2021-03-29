@@ -11,8 +11,9 @@ class JohnsonCookStrength(StrengthModel):
     "JohnsonCookStrength -- Implements the Johnson-Cook strength model."
 
     PYB11typedefs = """
-    typedef typename %(Dimension)s::Scalar Scalar;
-    typedef Field<%(Dimension)s, Scalar> ScalarField;
+    using Scalar = typename %(Dimension)s::Scalar;
+    using SymTensor = typename %(Dimension)s::SymTensor;
+    using ScalarField = Field<%(Dimension)s, Scalar>;
 """
 
     #...........................................................................
@@ -48,7 +49,8 @@ class JohnsonCookStrength(StrengthModel):
                    density = "const Field<%(Dimension)s, Scalar>&",
                    specificThermalEnergy = "const Field<%(Dimension)s, Scalar>&",
                    pressure = "const Field<%(Dimension)s, Scalar>&",
-                   fluidSoundSpeed = "const Field<%(Dimension)s, Scalar>&"):
+                   fluidSoundSpeed = "const Field<%(Dimension)s, Scalar>&",
+                   damage = "const Field<%(Dimension)s, SymTensor>&"):
         return "void"
 
     #...........................................................................

@@ -32,6 +32,7 @@ using std::endl;
 using std::min;
 using std::max;
 using std::abs;
+using std::make_pair;
 
 namespace Spheral {
 
@@ -134,7 +135,8 @@ dt(const DataBase<Dimension>& dataBase,
   const auto  DvDx = derivs.fields(HydroFieldNames::velocityGradient, Tensor::zero);
   const auto  DvDt = derivs.fields(HydroFieldNames::hydroAcceleration, Vector::zero);
   const auto& connectivityMap = dataBase.connectivityMap(this->requireGhostConnectivity(),
-                                                         this->requireOverlapConnectivity());
+                                                         this->requireOverlapConnectivity(),
+                                                         this->requireIntersectionConnectivity());
   const auto  numNodeLists = connectivityMap.nodeLists().size();
 
   // Stuff from the artificial viscosity

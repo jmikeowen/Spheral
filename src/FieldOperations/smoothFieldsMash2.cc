@@ -102,7 +102,6 @@ smoothFieldsMash2(const FieldList<Dimension, DataType>& fieldList,
           const Vector rij = ri - rj;
           const Vector etai = Hi*rij;
           const Vector etaj = Hj*rij;
-          CHECK(etai >= 0.0 && etaj >= 0.0);
 
           // Get the symmetrized kernel weighting for this node pair.
           Scalar Wij;
@@ -154,7 +153,6 @@ smoothFieldsMash2(const FieldList<Dimension, DataType>& fieldList,
           const Vector rij = ri - rj;
           const Vector etai = Hi*rij;
           const Vector etaj = Hj*rij;
-          CHECK(etai >= 0.0 && etaj >= 0.0);
 
           // Get the symmetrized kernel weighting for this node pair.
           Scalar Wij0;
@@ -256,7 +254,6 @@ smoothFieldsMash2(const FieldList<Dimension, DataType>& fieldList,
           const Vector rij = ri - rj;
           const Vector etai = Hi*rij;
           const Vector etaj = Hj*rij;
-          CHECK(etai >= 0.0 && etaj >= 0.0);
 
           // Get the symmetrized kernel weighting for this node pair.
           Scalar Wij;

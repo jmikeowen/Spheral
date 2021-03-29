@@ -146,16 +146,19 @@ public:
 
   // Update the internal connectivity map.
   void updateConnectivityMap(const bool computeGhostConnectivity,
-                             const bool computeOverlapConnectivity) const;
+                             const bool computeOverlapConnectivity,
+                             const bool computeIntersectionConnectivity) const;
   void patchConnectivityMap(const FieldList<Dimension, int>& flags,
                             const FieldList<Dimension, int>& old2new) const;
 
   // Get the connectivity map.
   const ConnectivityMapType& connectivityMap() const;
   const ConnectivityMapType& connectivityMap(const bool computeGhostConnectivity,
-                                             const bool computeOverlapConnectivity) const;
+                                             const bool computeOverlapConnectivity,
+                                             const bool computeIntersectionConnectivity) const;
   ConnectivityMapPtr connectivityMapPtr(const bool computeGhostConnectivity,
-                                        const bool computeOverlapConnectivity) const;
+                                        const bool computeOverlapConnectivity,
+                                        const bool computeIntersectionConnectivity) const;
 
   // Methods to add, remove, and verify NodeLists.
   void appendNodeList(SolidNodeList<Dimension>& nodeList);
@@ -223,8 +226,6 @@ public:
   FieldList<Dimension, Scalar> solidPlasticStrain() const;
   FieldList<Dimension, Scalar> solidPlasticStrainRate() const;
   FieldList<Dimension, SymTensor> solidDamage() const;
-  FieldList<Dimension, SymTensor> solidEffectiveDamage() const;
-  FieldList<Dimension, Vector> solidDamageGradient() const;
   FieldList<Dimension, int> solidFragmentIDs() const;
   FieldList<Dimension, int> solidParticleTypes() const;
 
