@@ -1798,7 +1798,7 @@ inline auto FieldList<Dimension, DataType>::getReduceMax(const REDUCE_POLICY& ) 
   
 template<typename Dimension, typename DataType>
 template<typename T>
-inline void FieldList<Dimension, DataType>::getReduction(const std::vector<std::vector<T>>& reductionData){
+RAJA_HOST_DEVICE inline void FieldList<Dimension, DataType>::getReduction(std::vector<std::vector<T>>& reductionData){
   for (size_t ni = 0; ni < mFieldPtrs.size(); ++ni) {
     for (size_t i = 0; i < mFieldPtrs[ni]->size(); ++i) {
       this->operator()(ni, i) = reductionData[ni][i].get();

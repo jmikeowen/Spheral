@@ -315,7 +315,7 @@ public:
   std::vector<std::vector<RAJA::ReduceMax<REDUCE_POLICY, DataType>>> getReduceMax(const REDUCE_POLICY&);
 
   template<typename T>
-  void getReduction(const std::vector<std::vector<T>>& reductionData);
+  RAJA_HOST_DEVICE void getReduction(std::vector<std::vector<T>>& reductionData);
 };
 
 }
