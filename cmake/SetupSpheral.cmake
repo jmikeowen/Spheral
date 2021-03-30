@@ -74,6 +74,11 @@ if(ENABLE_OPENMP)
   list(APPEND spheral_blt_depends openmp)
 endif()
 
+if(ENABLE_CUDA)
+  list(APPEND spheral_blt_depends cuda)
+endif()
+
+
 option(BOOST_HEADER_ONLY "only use the header only components of Boost" OFF)
 
 #-------------------------------------------------------------------------------#

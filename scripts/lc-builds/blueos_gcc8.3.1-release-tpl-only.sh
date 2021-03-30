@@ -20,6 +20,11 @@ cmake \
   -DENABLE_OPENMP=On \
   -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
   -DBUILD_TPL_ONLY=On \
+  -DENABLE_CUDA=On \
+  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-11.0.182/bin/nvcc \
+  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-11.1.0 \
+  -DCUDA_ARCH=sm_70 \
+  -DCMAKE_CUDA_STANDARD="14" \
   $CMAKE_ARGS \
 
 cd $BUILD_SUFFIX/build

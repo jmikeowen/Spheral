@@ -24,9 +24,16 @@ if(${lib_name}_BUILD)
 
                -DENABLE_TESTS=OFF
                -DENABLE_EXAMPLES=OFF
+               -DENABLE_EXERCISES=OFF
                -DENABLE_DOCS=OFF
                -DENABLE_QUEST=Off
                -DENABLE_TESTS=Off
+
+               -DENABLE_CUDA=${ENABLE_CUDA}
+               -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
+               -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+               -DCUDA_ARCH=${CUDA_ARCH}
+               -DCMAKE_CUDA_STANDARD=${CMAKE_CUDA_STANDARD}
 
                -DCMAKE_INSTALL_PREFIX=${${lib_name}_DIR}
 

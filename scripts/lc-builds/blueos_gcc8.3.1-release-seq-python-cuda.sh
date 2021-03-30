@@ -21,10 +21,11 @@ cmake \
   -C ${HOST_CONFIGS_DIR}/lc-builds/toss3/gcc8.3.1_cuda_tpl.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_MPI=Off \
-  -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
+  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-11.0.182/bin/nvcc \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-11.1.0 \
+  -DCUDA_ARCH=sm_70 \
+  -DCMAKE_CUDA_STANDARD="14" \
   -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
-  -DBUILD_TPL=Off \
   "$@" \
   #-DSPHERAL_TPL_DIR=/usr/workspace/wsrzd/davis291/SPHERAL/blueos_Spheral_gcc8_noMPI/install/tpl \
