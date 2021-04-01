@@ -18,13 +18,9 @@ cmake \
   ../.. \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/gcc/gcc-8.3.1/bin/g++ \
-  -C ${HOST_CONFIGS_DIR}/lc-builds/toss3/gcc8.3.1_cuda_tpl.cmake \
+  -C ${HOST_CONFIGS_DIR}/lc-builds/blueos/gcc8.3.1_tpl.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_MPI=Off \
-  -DENABLE_CUDA=On \
-  -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-11.0.182/bin/nvcc \
-  -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-11.1.0 \
-  -DCUDA_ARCH=sm_70 \
   -DCMAKE_CUDA_STANDARD="14" \
   -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
   "$@" \
