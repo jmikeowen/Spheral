@@ -54,4 +54,3 @@ spheral_install_python_files(
   )
 
 spheral_add_cxx_library(SPH)
-
