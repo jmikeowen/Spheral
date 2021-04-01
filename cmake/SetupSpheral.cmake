@@ -3,7 +3,7 @@ include(ExternalProject)
 #-------------------------------------------------------------------------------
 # Configure CMake
 #-------------------------------------------------------------------------------
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-undefined-var-template")
 set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 
