@@ -1,9 +1,10 @@
+get_property(SPHERAL_CXX_LIBS GLOBAL PROPERTY SPHERAL_CXX_LIBS)
+
 #------------------------------------------------------------------------------
 # Specify list of tests
 #------------------------------------------------------------------------------
 
 set(gtest_spheral_tests
-    basic.cc
    )
 
 
@@ -26,3 +27,8 @@ foreach(test ${gtest_spheral_tests})
                   COMMAND ${test_name}_test
                   )
 endforeach()
+
+
+blt_add_executable( NAME eval_dir_test
+                    SOURCES EvalDerivCUDA_Test.cc
+                    DEPENDS_ON ${SPHERAL_CXX_LIBS} ${spheral_blt_depends} )
