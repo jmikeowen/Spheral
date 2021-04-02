@@ -22,31 +22,26 @@
 // Check correctness.
 
 #include <iostream>
-#include "DataBase/DataBase.hh"
-#include "Utilities/SpheralTimers.cc"
-#include "Hydro/HydroFieldNames.hh"
-#include "Utilities/DataTypeTraits.hh"
 
-#include "NodeList/NodeList.hh"
+#include "ArtificialViscosity/MonaghanGingoldViscosity.hh"
+
+#include "DataBase/DataBase.hh"
+#include "DataBase/State.hh"
+#include "DataBase/StateDerivatives.hh"
+
 #include "Geometry/Dimension.hh"
 
-namespace Spheral {
+#include "Hydro/HydroFieldNames.hh"
 
-//------------------------------------------------------------------------------
-// Determine the principle derivatives.
-//------------------------------------------------------------------------------
-template<typename Dimension>
-void
-evaluateDerivatives(const typename Dimension::Scalar /*time*/,
-                    const typename Dimension::Scalar /*dt*/,
-                    const DataBase<Dimension>& dataBase,
-                    const State<Dimension>& state,
-                    StateDerivatives<Dimension>& derivatives) {
+#include "Integrator/CheapSynchronousRK2.hh"
 
-  typedef typename Dimension::Vector Vector;
+#include "NodeList/NodeList.hh"
 
-  TIME_SPHevalDerivs.start();
-  TIME_SPHevalDerivs_initial.start();
+#include "SPH/SPHHydroBase.hh"
+
+#include "Utilities/DataTypeTraits.hh"
+#include "Utilities/SpheralTimers.cc"
+
 
 #if defined(RAJA_ENABLE_CUDA)
   using PAIR_EXEC_POL = RAJA::cuda_exec<256>;
@@ -63,6 +58,23 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
 #endif
   using NODE_OUTER_EXEC_POL = RAJA::seq_exec;
 
+
+namespace Spheral {
+namespace expt {
+
+//------------------------------------------------------------------------------
+// Determine the principle derivatives.
+//------------------------------------------------------------------------------
+template<typename Dimension>
+void
+evaluateDerivatives(const DataBase<Dimension>& dataBase,
+                    const State<Dimension>& state,
+                    StateDerivatives<Dimension>& derivatives) {
+
+  typedef typename Dimension::Vector Vector;
+
+  TIME_SPHevalDerivs.start();
+  TIME_SPHevalDerivs_initial.start();
 
   // A few useful constants we'll use in the following loop.
   const double tiny = 1.0e-30;
@@ -83,20 +95,11 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   auto velocity = state.fields(HydroFieldNames::velocity,
                                Vector::zero);
 
-  //auto  DxDt = derivatives.fields(IncrementFieldList<Dimension, Vector>::prefix() + HydroFieldNames::position, Vector::zero);
-  //auto  DvDt = derivatives.fields(HydroFieldNames::hydroAcceleration, Vector::zero);
-  //auto  DvDx = derivatives.fields(HydroFieldNames::velocityGradient, Tensor::zero);
-
-  //auto DvDt_reducer = DvDt.getReduceSum(PAIR_REDUCE_POL());
-  //auto DvDx_reducer = DvDx.getReduceSum(PAIR_REDUCE_POL());
-
-  // The scale for the tensile correction.
-  //const auto& nodeList = mass[0]->nodeList();
-
   TIME_SPHevalDerivs_initial.stop();
 
   // Walk all the interacting pairs.
   TIME_SPHevalDerivs_pairs.start();
+  std::cout << position.numNodes() << "\n";
   RAJA::TypedRangeSegment<unsigned int> array_npairs(0, npairs);
   RAJA::forall<PAIR_EXEC_POL>(array_npairs, [&](unsigned int kk) {
       //
@@ -111,22 +114,52 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   });
   TIME_SPHevalDerivs_pairs.stop();
 
-  //DvDt.getReduction(DvDt_reducer);
-  //DvDx.getReduction(DvDx_reducer);
-
   // Finish up the derivatives for each point.
   TIME_SPHevalDerivs.stop();
 }
 
-}
+} //  namespace expt
+} //  namespace Spheral
+
 
 int main() {
-
-  std::cout << "Hello World\n";
-
   using Dim = Spheral::Dim<1>;
 
+  // Create Basic NodeList
   Spheral::NodeList<Dim> node_list("example_node_list", 10, 0);
+
+  // Pass NodeList to Database.
+  Spheral::DataBase<Dim> db;
+  db.appendNodeList(node_list);
+
+  // Build up a Physics Package
+  //Spheral::MonaghanGingoldViscosity<Dim> Q(1,1, false, false);
+  //Spheral::GenericHydro<Dim> basic_physics(Q, 1, false);
+
+  // Make an Integrator Object.
+  //std::vector<Spheral::Physics<Dim>*> packages{&basic_physics};
+  std::vector<Spheral::Physics<Dim>*> packages{};
+  Spheral::CheapSynchronousRK2<Dim> integrator(db, packages);
+
+  // Generate a State Objects from Database.
+  auto physics_packages = integrator.physicsPackages();
+  Spheral::State<Dim> state(db, physics_packages);
+  Spheral::StateDerivatives<Dim> state_derivs(db, physics_packages);
+
+  //Spheral::expt::evaluateDerivatives<Dim>(db, state, state_derivs);
+
+  auto n_pos = node_list.positions();
+  RAJA::TypedRangeSegment<unsigned int> n_nodes(0, node_list.numNodes());
+
+  RAJA::forall<PAIR_EXEC_POL>(n_nodes, [=](unsigned int kk) {
+      const auto& x = n_pos[kk];
+      printf("%f\n", x[0]);
+  });
+
+  //auto allpos = db.globalPosition();
+  //for (size_t i = 0; i < allpos.numNodes(); i++) {
+  //  std::cout << allpos(0, i) << "\n";
+  //}
 
   return EXIT_SUCCESS;
 }
