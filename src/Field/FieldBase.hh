@@ -6,6 +6,8 @@
 #ifndef __Spheral_FieldBase_hh__
 #define __Spheral_FieldBase_hh__
 
+#include "Utilities/SPHString.hh"
+
 #include <string>
 #include <vector>
 #include <memory>
@@ -21,18 +23,19 @@ class FieldBase {
 
 public:
   //--------------------------- Public Interface ---------------------------//
-  typedef typename std::string FieldName;
+  //typedef typename std::string FieldName;
+  using FieldName = SPHString;
   typedef typename Dimension::Scalar Scalar;
 
   // Constructors.
-  FieldBase(FieldName name);
-  FieldBase(FieldName name,
+  RAJA_HOST_DEVICE FieldBase(FieldName name);
+  RAJA_HOST_DEVICE FieldBase(FieldName name,
             const NodeList<Dimension>& nodeList);
-  FieldBase(const FieldBase& fieldBase);
+  RAJA_HOST_DEVICE FieldBase(const FieldBase& fieldBase);
   virtual std::shared_ptr<FieldBase> clone() const = 0;
 
   // Destructor.
-  virtual ~FieldBase();
+  RAJA_HOST_DEVICE virtual ~FieldBase();
 
   // Assignment operator.
   virtual FieldBase& operator=(const FieldBase& rhs);
@@ -43,6 +46,7 @@ public:
 
   // Access the name.
   FieldName name() const;
+  //char* name() const;
   void name(FieldName name);
 
   // Provide methods to access and set the NodeList.
