@@ -14,8 +14,10 @@ evaluateDerivatives(const typename Dimension::Scalar /*time*/,
   TIME_SPHevalDerivs.start();
   TIME_SPHevalDerivs_initial.start();
 #if defined(RAJA_ENABLE_CUDA)
-  using PAIR_EXEC_POL = RAJA::cuda_exec<256>;
-  using PAIR_REDUCE_POL = RAJA::cuda_reduce;
+  using PAIR_EXEC_POL = RAJA::omp_for_exec;
+  using PAIR_REDUCE_POL = RAJA::omp_reduce;
+  //using PAIR_EXEC_POL = RAJA::cuda_exec<256>;
+  //using PAIR_REDUCE_POL = RAJA::cuda_reduce;
   using NODE_INNER_EXEC_POL = RAJA::seq_exec;
 #elif defined(RAJA_ENABLE_OPENMP)
   using PAIR_EXEC_POL = RAJA::omp_for_exec;
