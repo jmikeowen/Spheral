@@ -44,7 +44,7 @@
 #include "Utilities/SpheralTimers.cc"
 
 #include "LvArray/Array.hpp"
-#include "LvArray/MallocBuffer.hpp"
+#include "LvArray/ChaiBuffer.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
   using PAIR_EXEC_POL = RAJA::cuda_exec<256>;
@@ -125,7 +125,10 @@ evaluateDerivatives(const DataBase<Dimension>& dataBase,
 } //  namespace Spheral
 
 template<typename T>
-using Array1D = LvArray::Array< T, 1, camp::idx_seq<0>, std::ptrdiff_t, LvArray::MallocBuffer >;
+using Array1D = LvArray::Array< T, 1, camp::idx_seq<0>, std::ptrdiff_t, LvArray::ChaiBuffer >;
+
+template<typename T>
+using Array1DView = LvArray::ArrayView< T, 1, 0, std::ptrdiff_t, LvArray::ChaiBuffer >;
 
 int main() {
 
@@ -134,16 +137,39 @@ int main() {
   //Spheral::NodeList<Dim> node_list("example_node_list", 10000, 0);
   //auto n_pos = node_list.positions();
 
-  Array1D< Spheral::GeomVector<3> > array(5);
+  Array1D< Spheral::GeomVector<3> > array(500000);
+  const Array1DView< Spheral::GeomVector<3> >& view = array;
 
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, array.size()), [=](unsigned int kk) {
-      printf("%f, %f, %f\n", array[kk][0], array[kk][1], array[kk][2] );
+      view[kk][0]++;
+      view[kk][1]++;
+      view[kk][2]++;
+      //if (kk < 50)
+      //  printf("%f, %f, %f\n", array[kk][0], array[kk][1], array[kk][2] );
   });
 
+  array.move( LvArray::MemorySpace::GPU );
+
   RAJA::forall<RAJA::cuda_exec<256>>(RAJA::RangeSegment(0, array.size()), [=] RAJA_HOST_DEVICE (int kk) {
-      Spheral::GeomVector<3> g_vec(kk,kk,kk);
-      printf("%f, %f, %f\n", g_vec[0], g_vec[1], g_vec[2] );
+      //printf("%f, %f, %f\n", view[kk][0], view[kk][1], view[kk][2] );
+      view[kk][0]++;
+      view[kk][1]++;
+      view[kk][2]++;
   });
+
+  array.move( LvArray::MemorySpace::CPU );
+
+  bool correctness = true;
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, array.size()), [&] (int kk) {
+      //if (kk < 50)
+      //  printf("%f, %f, %f\n", view[kk][0], view[kk][1], view[kk][2] );
+      if (view[kk] != Spheral::GeomVector<3>(2,2,2)) correctness = false;
+  });
+
+  if (correctness)
+    std::cout << "PASSED\n";
+  else
+    std::cout << "FAILED\n";
 
   return EXIT_SUCCESS;
 }
