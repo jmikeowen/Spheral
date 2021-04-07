@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "Utilities/SPHString.hh"
+
 namespace Spheral {
 
 struct SolidFieldNames {
