@@ -22,6 +22,7 @@
 // Check correctness.
 
 #include <iostream>
+#include <typeinfo>
 
 #include "ArtificialViscosity/MonaghanGingoldViscosity.hh"
 
@@ -42,6 +43,8 @@
 #include "Utilities/DataTypeTraits.hh"
 #include "Utilities/SpheralTimers.cc"
 
+#include "LvArray/Array.hpp"
+#include "LvArray/MallocBuffer.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
   using PAIR_EXEC_POL = RAJA::cuda_exec<256>;
@@ -121,45 +124,26 @@ evaluateDerivatives(const DataBase<Dimension>& dataBase,
 } //  namespace expt
 } //  namespace Spheral
 
+template<typename T>
+using Array1D = LvArray::Array< T, 1, camp::idx_seq<0>, std::ptrdiff_t, LvArray::MallocBuffer >;
 
 int main() {
-  using Dim = Spheral::Dim<1>;
 
   // Create Basic NodeList
-  Spheral::NodeList<Dim> node_list("example_node_list", 10, 0);
+  //using Dim = Spheral::Dim<1>;
+  //Spheral::NodeList<Dim> node_list("example_node_list", 10000, 0);
+  //auto n_pos = node_list.positions();
 
-  // Pass NodeList to Database.
-  Spheral::DataBase<Dim> db;
-  db.appendNodeList(node_list);
+  Array1D< Spheral::GeomVector<3> > array(5);
 
-  // Build up a Physics Package
-  //Spheral::MonaghanGingoldViscosity<Dim> Q(1,1, false, false);
-  //Spheral::GenericHydro<Dim> basic_physics(Q, 1, false);
-
-  // Make an Integrator Object.
-  //std::vector<Spheral::Physics<Dim>*> packages{&basic_physics};
-  std::vector<Spheral::Physics<Dim>*> packages{};
-  Spheral::CheapSynchronousRK2<Dim> integrator(db, packages);
-
-  // Generate a State Objects from Database.
-  auto physics_packages = integrator.physicsPackages();
-  Spheral::State<Dim> state(db, physics_packages);
-  Spheral::StateDerivatives<Dim> state_derivs(db, physics_packages);
-
-  //Spheral::expt::evaluateDerivatives<Dim>(db, state, state_derivs);
-
-  auto n_pos = node_list.positions();
-  RAJA::TypedRangeSegment<unsigned int> n_nodes(0, node_list.numNodes());
-
-  RAJA::forall<PAIR_EXEC_POL>(n_nodes, [=](unsigned int kk) {
-      const auto& x = n_pos[kk];
-      printf("%f\n", x[0]);
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, array.size()), [=](unsigned int kk) {
+      printf("%f, %f, %f\n", array[kk][0], array[kk][1], array[kk][2] );
   });
 
-  //auto allpos = db.globalPosition();
-  //for (size_t i = 0; i < allpos.numNodes(); i++) {
-  //  std::cout << allpos(0, i) << "\n";
-  //}
+  RAJA::forall<RAJA::cuda_exec<256>>(RAJA::RangeSegment(0, array.size()), [=] RAJA_HOST_DEVICE (int kk) {
+      Spheral::GeomVector<3> g_vec(kk,kk,kk);
+      printf("%f, %f, %f\n", g_vec[0], g_vec[1], g_vec[2] );
+  });
 
   return EXIT_SUCCESS;
 }
