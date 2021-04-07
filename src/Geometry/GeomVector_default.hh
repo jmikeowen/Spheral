@@ -14,6 +14,8 @@
 #ifndef __Spheral_GeomVector_default_hh__
 #define __Spheral_GeomVector_default_hh__
 
+#include "RAJA/RAJA.hpp"
+
 #include "Geometry/GeomVector_fwd.hh"
 #include "Geometry/GeomTensor_fwd.hh"
 #include "Geometry/GeomSymmetricTensor_fwd.hh"
@@ -41,14 +43,14 @@ public:
   static const GeomVector one;
 
   // Constructors.
-  explicit GeomVector(const double x = 0.0,
+  RAJA_HOST_DEVICE explicit GeomVector(const double x = 0.0,
                       const double y = 0.0,
                       const double z = 0.0);
   GeomVector(const GeomVector& vec);
   template<typename Derived> explicit GeomVector(const Eigen::MatrixBase<Derived>& vec);
 
   // Destructor.
-  ~GeomVector();
+  RAJA_HOST_DEVICE ~GeomVector() = default;
 
   // Assignment.
   GeomVector& operator=(const GeomVector<nDim>& vec);
@@ -60,8 +62,8 @@ public:
   double& operator()(size_type index);
 
   // More C++ style indexing.
-  double operator[](size_type index) const;
-  double& operator[](size_type index);
+  RAJA_HOST_DEVICE double operator[](size_type index) const;
+  RAJA_HOST_DEVICE double& operator[](size_type index);
 
   // Access the individual elements by (x, y, z) notation.
   double x() const;
@@ -72,11 +74,11 @@ public:
   void z(const double val);
 
   // Iterator access to the raw data.
-  iterator begin();
-  iterator end();
+  RAJA_HOST_DEVICE iterator begin();
+  RAJA_HOST_DEVICE iterator end();
 
-  const_iterator begin() const;
-  const_iterator end() const;
+  RAJA_HOST_DEVICE const_iterator begin() const;
+  RAJA_HOST_DEVICE const_iterator end() const;
 
   // Zero the vector.
   void Zero();

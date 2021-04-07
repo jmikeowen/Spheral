@@ -13,7 +13,7 @@ template<int nDim> class GeomVectorBase {};
 template<>
 class GeomVectorBase<1> {
  public:
-  GeomVectorBase(const double x):
+  RAJA_HOST_DEVICE GeomVectorBase(const double x):
     mx(x) {}
  protected:
   double mx;
@@ -22,7 +22,7 @@ class GeomVectorBase<1> {
 template<>
 class GeomVectorBase<2> {
  public:
-  GeomVectorBase(const double x,
+  RAJA_HOST_DEVICE GeomVectorBase(const double x,
                  const double y):
     mx(x),
     my(y) {}
@@ -35,7 +35,7 @@ class GeomVectorBase<2> {
 template<>
 class GeomVectorBase<3> {
  public:
-  GeomVectorBase(const double x,
+  RAJA_HOST_DEVICE GeomVectorBase(const double x,
                  const double y,
                  const double z):
     mx(x),

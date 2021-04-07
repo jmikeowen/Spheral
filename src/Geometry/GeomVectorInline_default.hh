@@ -14,7 +14,7 @@ namespace Spheral {
 // Construct with the given values for the elements.
 //------------------------------------------------------------------------------
 template<>
-inline
+RAJA_HOST_DEVICE inline
 GeomVector<1>::GeomVector(const double x,
                           const double /*y*/,
                           const double /*z*/):
@@ -22,7 +22,7 @@ GeomVector<1>::GeomVector(const double x,
 }
 
 template<>
-inline
+RAJA_HOST_DEVICE inline
 GeomVector<2>::GeomVector(const double x,
                           const double y,
                           const double /*z*/):
@@ -30,7 +30,7 @@ GeomVector<2>::GeomVector(const double x,
 }
 
 template<>
-inline
+RAJA_HOST_DEVICE inline
 GeomVector<3>::GeomVector(const double x,
                           const double y,
                           const double z):
@@ -167,9 +167,9 @@ GeomVector<3>::operator=(const double val) {
 //------------------------------------------------------------------------------
 // Destructor.
 //------------------------------------------------------------------------------
-template<int nDim>
-inline
-GeomVector<nDim>::~GeomVector() {}
+//template<int nDim>
+//inline
+//GeomVector<nDim>::~GeomVector() {}
 
 //------------------------------------------------------------------------------
 // Return the (index) element using the parenthesis operator.
@@ -194,7 +194,7 @@ GeomVector<nDim>::operator()(typename GeomVector<nDim>::size_type index) {
 // Return the (index) element using the bracket operator.
 //------------------------------------------------------------------------------
 template<int nDim>
-inline
+RAJA_HOST_DEVICE inline
 double
 GeomVector<nDim>::operator[](typename GeomVector<nDim>::size_type index) const {
   REQUIRE(index < nDim);
@@ -202,7 +202,7 @@ GeomVector<nDim>::operator[](typename GeomVector<nDim>::size_type index) const {
 }
 
 template<int nDim>
-inline
+RAJA_HOST_DEVICE inline
 double&
 GeomVector<nDim>::operator[](typename GeomVector<nDim>::size_type index) {
   REQUIRE(index < nDim);
@@ -317,14 +317,14 @@ GeomVector<2>::z(const double /*val*/) {
 //------------------------------------------------------------------------------
 // Non-const versions.
 template<int nDim>
-inline
+RAJA_HOST_DEVICE inline
 typename GeomVector<nDim>::iterator
 GeomVector<nDim>::begin() {
   return &(this->mx);
 }
 
 template<int nDim>
-inline
+RAJA_HOST_DEVICE inline
 typename GeomVector<nDim>::iterator
 GeomVector<nDim>::end() {
   return &(this->mx) + nDim;
@@ -332,14 +332,14 @@ GeomVector<nDim>::end() {
 
 // Const versions.
 template<int nDim>
-inline
+RAJA_HOST_DEVICE inline
 typename GeomVector<nDim>::const_iterator
 GeomVector<nDim>::begin() const {
   return &(this->mx);
 }
 
 template<int nDim>
-inline
+RAJA_HOST_DEVICE inline
 typename GeomVector<nDim>::const_iterator
 GeomVector<nDim>::end() const {
   return &(this->mx) + nDim;
