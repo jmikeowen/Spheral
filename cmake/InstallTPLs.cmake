@@ -29,6 +29,7 @@ set(aneos_BUILD ON CACHE BOOL "Option to build ANEOS third party lib")
 set(conduit_BUILD ON CACHE BOOL "Option to build Conduit")
 set(axom_BUILD ON CACHE BOOL "Option to build Axom")
 set(raja_BUILD ON CACHE BOOL "Option to build RAJA")
+set(chai_BUILD ON CACHE BOOL "Option to build CHAI")
 set(lvarray_BUILD ON CACHE BOOL "Option to build LVarray")
 set(polyclipper_BUILD ON CACHE BOOL "Option to build PolyClipper")
 
@@ -46,6 +47,7 @@ Spheral_Handle_TPL(silo spheral_depends)
 Spheral_Handle_TPL(conduit spheral_depends)
 Spheral_Handle_TPL(axom spheral_depends)
 Spheral_Handle_TPL(raja spheral_depends)
+Spheral_Handle_TPL(chai spheral_depends)
 Spheral_Handle_TPL(lvarray spheral_depends)
 
 # Some libraries are optional
