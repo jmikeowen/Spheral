@@ -75,6 +75,7 @@ if(ENABLE_OPENMP)
 endif()
 
 if(ENABLE_CUDA)
+  set(CMAKE_CUDA_FLAGS  "${CMAKE_CUDA_FLAGS} --extended-lambda")
   list(APPEND spheral_blt_depends cuda)
 endif()
 
