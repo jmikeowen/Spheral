@@ -56,22 +56,22 @@ public:
   typedef typename std::vector<DataType,DataAllocator<DataType>>::const_iterator const_iterator;
 
   // Constructors.
-  RAJA_HOST_DEVICE explicit Field(FieldName name);
-  RAJA_HOST_DEVICE Field(FieldName name, const Field& field);
-  RAJA_HOST_DEVICE Field(FieldName name,
+  explicit Field(FieldName name);
+  Field(FieldName name, const Field& field);
+  Field(FieldName name,
         const NodeList<Dimension>& nodeList);
-  RAJA_HOST_DEVICE Field(FieldName name,
+  Field(FieldName name,
         const NodeList<Dimension>& nodeList,
         DataType value);
-  RAJA_HOST_DEVICE Field(FieldName name,
+  Field(FieldName name,
         const NodeList<Dimension>& nodeList, 
         const std::vector<DataType,DataAllocator<DataType>>& array);
-  RAJA_HOST_DEVICE Field(const NodeList<Dimension>& nodeList, const Field& field);
-  RAJA_HOST_DEVICE Field(const Field& field);
+  Field(const NodeList<Dimension>& nodeList, const Field& field);
+  Field(const Field& field);
   virtual std::shared_ptr<FieldBase<Dimension> > clone() const override;
 
   // Destructor.
-  RAJA_HOST_DEVICE virtual ~Field();
+  virtual ~Field();
 
   // Assignment operator.
   virtual FieldBase<Dimension>& operator=(const FieldBase<Dimension>& rhs) override;

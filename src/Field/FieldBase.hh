@@ -23,19 +23,19 @@ class FieldBase {
 
 public:
   //--------------------------- Public Interface ---------------------------//
-  //typedef typename std::string FieldName;
-  using FieldName = SPHString;
+  typedef typename std::string FieldName;
+  //using FieldName = SPHString;
   typedef typename Dimension::Scalar Scalar;
 
   // Constructors.
-  RAJA_HOST_DEVICE FieldBase(FieldName name);
-  RAJA_HOST_DEVICE FieldBase(FieldName name,
+  FieldBase(FieldName name);
+  FieldBase(FieldName name,
             const NodeList<Dimension>& nodeList);
-  RAJA_HOST_DEVICE FieldBase(const FieldBase& fieldBase);
+  FieldBase(const FieldBase& fieldBase);
   virtual std::shared_ptr<FieldBase> clone() const = 0;
 
   // Destructor.
-  RAJA_HOST_DEVICE virtual ~FieldBase();
+  virtual ~FieldBase();
 
   // Assignment operator.
   virtual FieldBase& operator=(const FieldBase& rhs);

@@ -60,6 +60,7 @@ public:
   typedef std::shared_ptr<ConnectivityMapType> ConnectivityMapPtr;
   typedef std::shared_ptr<MeshType> MeshPtr;
 
+  //typedef SPHString KeyType;
   typedef std::string KeyType;
   typedef typename FieldBase<Dimension>::FieldName FieldName;
 
@@ -101,6 +102,7 @@ public:
 
   // Return FieldLists constructed from all registered Fields with the given name.
   template<typename Value>
+  //FieldList<Dimension, Value> fields(const SPHString& name, 
   FieldList<Dimension, Value> fields(const std::string& name, 
                                      const Value& dummy) const;
 
@@ -143,6 +145,7 @@ public:
 
   // Assign just the fields with the given name to those in another State object.
   template<typename Value>
+  //void assignFields(const StateBase<Dimension>& rhs, const SPHString name);
   void assignFields(const StateBase<Dimension>& rhs, const std::string name);
 
   // Force the StateBase to create new internally owned copies of all state.

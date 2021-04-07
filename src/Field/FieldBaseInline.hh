@@ -7,7 +7,7 @@ namespace Spheral {
 // Construct with the given name.
 //------------------------------------------------------------------------------
 template<typename Dimension>
-RAJA_HOST_DEVICE inline
+inline
 FieldBase<Dimension>::
 FieldBase(typename FieldBase<Dimension>::FieldName name):
   mName(name),
@@ -19,7 +19,7 @@ FieldBase(typename FieldBase<Dimension>::FieldName name):
 // Construct for a given NodeList.
 //------------------------------------------------------------------------------
 template<typename Dimension>
-RAJA_HOST_DEVICE inline
+inline
 FieldBase<Dimension>::
 FieldBase(typename FieldBase<Dimension>::FieldName name,
           const NodeList<Dimension>& nodeList):
@@ -33,7 +33,7 @@ FieldBase(typename FieldBase<Dimension>::FieldName name,
 // Copy Constructor.
 //------------------------------------------------------------------------------
 template<typename Dimension>
-RAJA_HOST_DEVICE inline
+inline
 FieldBase<Dimension>::FieldBase(const FieldBase& fieldBase):
   mName(fieldBase.name()),
   mNodeListPtr(fieldBase.nodeListPtr()),
@@ -45,7 +45,7 @@ FieldBase<Dimension>::FieldBase(const FieldBase& fieldBase):
 // Destructor.
 //------------------------------------------------------------------------------
 template<typename Dimension>
-RAJA_HOST_DEVICE inline
+inline
 FieldBase<Dimension>::~FieldBase() {
   if (mNodeListPtr) mNodeListPtr->unregisterField(*this);
 }

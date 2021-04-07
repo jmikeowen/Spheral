@@ -53,6 +53,7 @@ template<typename Value>
 inline
 FieldList<Dimension, Value>
 StateBase<Dimension>::
+//fields(const SPHString& name, const Value& dummy) const {
 fields(const std::string& name, const Value& dummy) const {
   FieldList<Dimension, Value> result;
   KeyType fieldName, nodeListName;
@@ -151,8 +152,11 @@ template<typename Dimension>
 inline
 typename StateBase<Dimension>::KeyType
 StateBase<Dimension>::
+//buildFieldKey(const SPHString& fieldName,
+              //const SPHString& nodeListName) {
 buildFieldKey(const std::string& fieldName,
               const std::string& nodeListName) {
+  //return fieldName + SPHString("|") + nodeListName;
   return fieldName + "|" + nodeListName;
 }
 

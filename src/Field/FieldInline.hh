@@ -27,7 +27,7 @@ namespace Spheral {
 // Construct with name.
 //------------------------------------------------------------------------------
 template<typename Dimension, typename DataType>
-RAJA_HOST_DEVICE inline
+inline
 Field<Dimension, DataType>::
 Field(typename FieldBase<Dimension>::FieldName name):
   FieldBase<Dimension>(name),
@@ -38,7 +38,7 @@ Field(typename FieldBase<Dimension>::FieldName name):
 // Construct with name and field values.
 //------------------------------------------------------------------------------
 template<typename Dimension, typename DataType>
-RAJA_HOST_DEVICE inline
+inline
 Field<Dimension, DataType>::
 Field(typename FieldBase<Dimension>::FieldName name,
       const Field<Dimension, DataType>& field):
@@ -61,7 +61,7 @@ Field(typename FieldBase<Dimension>::FieldName name,
 }
 
 template<>
-RAJA_HOST_DEVICE inline
+inline
 Field<Dim<1>, Dim<1>::Scalar>::
 Field(FieldBase<Dim<1> >::FieldName name,
       const NodeList<Dim<1> >& nodeList):
@@ -72,7 +72,7 @@ Field(FieldBase<Dim<1> >::FieldName name,
 }
 
 template<>
-RAJA_HOST_DEVICE inline
+inline
 Field<Dim<2>, Dim<2>::Scalar>::
 Field(FieldBase<Dim<2> >::FieldName name,
       const NodeList<Dim<2> >& nodeList):
@@ -83,7 +83,7 @@ Field(FieldBase<Dim<2> >::FieldName name,
 }
 
 template<>
-RAJA_HOST_DEVICE inline
+inline
 Field<Dim<3>, Dim<3>::Scalar>::
 Field(FieldBase<Dim<3> >::FieldName name,
       const NodeList<Dim<3> >& nodeList):
@@ -97,7 +97,7 @@ Field(FieldBase<Dim<3> >::FieldName name,
 // Construct with given name, NodeList, and value.
 //------------------------------------------------------------------------------
 template<typename Dimension, typename DataType>
-RAJA_HOST_DEVICE inline
+inline
 Field<Dimension, DataType>::
 Field(typename FieldBase<Dimension>::FieldName name,
       const NodeList<Dimension>& nodeList,
@@ -113,7 +113,7 @@ Field(typename FieldBase<Dimension>::FieldName name,
 //------------------------------------------------------------------------------
 
 template<typename Dimension, typename DataType>
-RAJA_HOST_DEVICE inline
+inline
 Field<Dimension, DataType>::
 Field(typename FieldBase<Dimension>::FieldName name, 
       const NodeList<Dimension>& nodeList,
@@ -131,7 +131,7 @@ Field(typename FieldBase<Dimension>::FieldName name,
 // node list.
 //------------------------------------------------------------------------------
 template<typename Dimension, typename DataType>
-RAJA_HOST_DEVICE inline
+inline
 Field<Dimension, DataType>::Field(const NodeList<Dimension>& nodeList,
                                   const Field<Dimension, DataType>& field):
   FieldBase<Dimension>(field.name(), nodeList),
@@ -144,7 +144,7 @@ Field<Dimension, DataType>::Field(const NodeList<Dimension>& nodeList,
 // Copy Constructor.
 //------------------------------------------------------------------------------
 template<typename Dimension, typename DataType>
-RAJA_HOST_DEVICE inline
+inline
 Field<Dimension, DataType>::Field(const Field& field):
   FieldBase<Dimension>(field),
   mDataArray(field.mDataArray),
@@ -166,7 +166,7 @@ Field<Dimension, DataType>::clone() const {
 // Destructor.
 //------------------------------------------------------------------------------
 template<typename Dimension, typename DataType>
-RAJA_HOST_DEVICE inline
+inline
 Field<Dimension, DataType>::~Field() {
 }
 
