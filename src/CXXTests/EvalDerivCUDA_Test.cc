@@ -132,15 +132,19 @@ using Array1DView = LvArray::ArrayView< T, 1, 0, std::ptrdiff_t, LvArray::ChaiBu
 
 int main() {
 
+  constexpr int N = 50000;
+
   // Create Basic NodeList
-  //using Dim = Spheral::Dim<1>;
-  //Spheral::NodeList<Dim> node_list("example_node_list", 10000, 0);
-  //auto n_pos = node_list.positions();
+  using Dim = Spheral::Dim<3>;
+  Spheral::NodeList<Dim> node_list("example_node_list", N, 0);
+  auto n_pos = node_list.positions();
 
-  Array1D< Spheral::GeomVector<3> > array(500000);
-  const Array1DView< Spheral::GeomVector<3> >& view = array;
+  //Array1D< Spheral::GeomVector<3> > array(N);
 
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, array.size()), [=](unsigned int kk) {
+  //const Array1DView< Spheral::GeomVector<3> >& view = array;
+  const Array1DView< Spheral::GeomVector<3> >& view = n_pos.mDataArray;
+
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, view.size()), [=](unsigned int kk) {
       view[kk][0]++;
       view[kk][1]++;
       view[kk][2]++;
@@ -148,19 +152,21 @@ int main() {
       //  printf("%f, %f, %f\n", array[kk][0], array[kk][1], array[kk][2] );
   });
 
-  array.move( LvArray::MemorySpace::GPU );
+  //array.move( LvArray::MemorySpace::GPU );
+  n_pos.mDataArray.move( LvArray::MemorySpace::GPU );
 
-  RAJA::forall<RAJA::cuda_exec<256>>(RAJA::RangeSegment(0, array.size()), [=] RAJA_HOST_DEVICE (int kk) {
+  RAJA::forall<RAJA::cuda_exec<256>>(RAJA::RangeSegment(0, view.size()), [=] RAJA_HOST_DEVICE (int kk) {
       //printf("%f, %f, %f\n", view[kk][0], view[kk][1], view[kk][2] );
       view[kk][0]++;
       view[kk][1]++;
       view[kk][2]++;
   });
 
-  array.move( LvArray::MemorySpace::CPU );
+  //array.move( LvArray::MemorySpace::CPU );
+  n_pos.mDataArray.move( LvArray::MemorySpace::CPU );
 
   bool correctness = true;
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, array.size()), [&] (int kk) {
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, view.size()), [&] (int kk) {
       //if (kk < 50)
       //  printf("%f, %f, %f\n", view[kk][0], view[kk][1], view[kk][2] );
       if (view[kk] != Spheral::GeomVector<3>(2,2,2)) correctness = false;

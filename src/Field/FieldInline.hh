@@ -55,7 +55,8 @@ Field<Dimension, DataType>::
 Field(typename FieldBase<Dimension>::FieldName name,
       const NodeList<Dimension>& nodeList):
   FieldBase<Dimension>(name, nodeList),
-  mDataArray((size_t) nodeList.numNodes(), DataType()),
+  //mDataArray((size_t) nodeList.numNodes(), DataType()),
+  mDataArray((size_t) nodeList.numNodes()),
   mValid(true) {
   REQUIRE(numElements() == nodeList.numNodes());
 }
@@ -66,7 +67,8 @@ Field<Dim<1>, Dim<1>::Scalar>::
 Field(FieldBase<Dim<1> >::FieldName name,
       const NodeList<Dim<1> >& nodeList):
   FieldBase<Dim<1> >(name, nodeList),
-  mDataArray((size_t) nodeList.numNodes(), 0.0),
+  mDataArray(nodeList.numNodes()),
+  //mDataArray((size_t) nodeList.numNodes(), 0.0),
   mValid(true) {
   REQUIRE(numElements() == nodeList.numNodes());
 }
@@ -77,7 +79,8 @@ Field<Dim<2>, Dim<2>::Scalar>::
 Field(FieldBase<Dim<2> >::FieldName name,
       const NodeList<Dim<2> >& nodeList):
   FieldBase<Dim<2> >(name, nodeList),
-  mDataArray((size_t) nodeList.numNodes(), 0.0),
+  mDataArray(nodeList.numNodes()),
+  //mDataArray((size_t) nodeList.numNodes(), 0.0),
   mValid(true) {
   REQUIRE(numElements() == nodeList.numNodes());
 }
@@ -88,7 +91,8 @@ Field<Dim<3>, Dim<3>::Scalar>::
 Field(FieldBase<Dim<3> >::FieldName name,
       const NodeList<Dim<3> >& nodeList):
   FieldBase<Dim<3> >(name, nodeList),
-  mDataArray((size_t) nodeList.numNodes(), 0.0),
+  mDataArray(nodeList.numNodes()),
+  //mDataArray((size_t) nodeList.numNodes(), 0.0),
   mValid(true) {
   REQUIRE(numElements() == nodeList.numNodes());
 }
@@ -103,8 +107,9 @@ Field(typename FieldBase<Dimension>::FieldName name,
       const NodeList<Dimension>& nodeList,
       DataType value):
   FieldBase<Dimension>(name, nodeList),
-  mDataArray((size_t) nodeList.numNodes(), value),
+  mDataArray((size_t) nodeList.numNodes()),
   mValid(true) {
+  for(size_t i = 0; i < nodeList.numNodes(); i++) mDataArray.emplace_back(DataType{value});
   REQUIRE(numElements() == nodeList.numNodes());
 }
 
@@ -117,7 +122,7 @@ inline
 Field<Dimension, DataType>::
 Field(typename FieldBase<Dimension>::FieldName name, 
       const NodeList<Dimension>& nodeList,
-      const std::vector<DataType,DataAllocator<DataType>>& array):
+      const ArrayType& array):
   FieldBase<Dimension>(name, nodeList),
   mDataArray((size_t) nodeList.numNodes()),
   mValid(true) {
@@ -213,7 +218,7 @@ Field<Dimension, DataType>::operator=(const Field<Dimension, DataType>& rhs) {
 template<typename Dimension, typename DataType>
 inline
 Field<Dimension, DataType>&
-Field<Dimension, DataType>::operator=(const std::vector<DataType,DataAllocator<DataType>>& rhs) {
+Field<Dimension, DataType>::operator=(const ArrayType& rhs) {
   REQUIRE(mValid);
   REQUIRE(this->nodeList().numNodes() == rhs.size());
   mDataArray = rhs;
@@ -235,13 +240,21 @@ Field<Dimension, DataType>::operator=(const DataType& rhs) {
 //------------------------------------------------------------------------------
 // Test equivalence with a FieldBase.
 //------------------------------------------------------------------------------
-template<typename Value>
-struct CrappyFieldCompareMethod {
-  static bool compare(const std::vector<Value,DataAllocator<Value>>& lhs, 
-                      const std::vector<Value,DataAllocator<Value>>& rhs) {
-    return lhs == rhs;
+//template<typename Value1, typename Value2>
+//struct CrappyFieldCompareMethod {
+template<typename Value1, typename Value2>
+  static bool compare(const Value1& lhs, 
+                      const Value2& rhs) {
+  //static bool compare(const std::vector<Value,DataAllocator<Value>>& lhs, 
+  //                    const std::vector<Value,DataAllocator<Value>>& rhs) {
+    if (lhs.size() != rhs.size()) return false;
+    for (size_t i = 0; i < lhs.size(); i++) {
+      if (lhs[i] != rhs[i]) return false;
+    }
+    return true;
+    //return lhs == rhs;
   }
-};
+//};
 
 template<typename Dimension, typename DataType>
 inline
@@ -252,7 +265,8 @@ Field<Dimension, DataType>::operator==(const FieldBase<Dimension>& rhs) const {
   try {
     const Field<Dimension, DataType>* rhsPtr = dynamic_cast<const Field<Dimension, DataType>*>(&rhs);
     if (rhsPtr == 0) return false;
-    return CrappyFieldCompareMethod<DataType>::compare(mDataArray, rhsPtr->mDataArray);
+    //return CrappyFieldCompareMethod::compare(mDataArray, rhsPtr->mDataArray);
+    return compare(mDataArray, rhsPtr->mDataArray);
   } catch (const std::bad_cast &) {
     return false;
   }
@@ -1176,7 +1190,8 @@ Field<Dimension, DataType>::deleteElement(int nodeID) {
   const unsigned originalSize = this->size();
   CONTRACT_VAR(originalSize);
   REQUIRE(nodeID >= 0 && nodeID < (int)originalSize);
-  mDataArray.erase(mDataArray.begin() + nodeID);
+  //mDataArray.erase(mDataArray.begin() + nodeID);
+  mDataArray.erase(nodeID);
   ENSURE(mDataArray.size() == originalSize - 1);
 }
 
@@ -1232,7 +1247,7 @@ Field<Dimension, DataType>::resizeFieldInternal(const unsigned size,
   REQUIRE(newSize == this->nodeList().numNodes());
 
   // If there is ghost data, we must preserve it.
-  std::vector<DataType,DataAllocator<DataType>> oldGhostValues(numGhostNodes);
+  ArrayType oldGhostValues(numGhostNodes);
   if (numGhostNodes > 0) {
     for (auto i = 0u; i != numGhostNodes; ++i) {
       const int j = oldFirstGhostNode + i;

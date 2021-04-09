@@ -11,6 +11,9 @@
 #ifndef __Spheral_Field_hh__
 #define __Spheral_Field_hh__
 
+#include "LvArray/Array.hpp"
+#include "LvArray/ChaiBuffer.hpp"
+
 #include "FieldBase.hh"
 
 #include <string>
@@ -39,6 +42,8 @@ using DataAllocator = std::allocator<DataType>;
 template<typename Dimension, typename DataType>
 class Field: 
     public FieldBase<Dimension> {
+  //using ArrayType = std::vector<DataType ,DataAllocator<DataType>>;
+  using ArrayType = LvArray::Array< DataType, 1, camp::idx_seq<0>, std::ptrdiff_t, LvArray::ChaiBuffer >;
    
 public:
   //--------------------------- Public Interface ---------------------------//
@@ -52,8 +57,10 @@ public:
   typedef DataType FieldDataType;
   typedef DataType value_type;      // STL compatibility.
 
-  typedef typename std::vector<DataType,DataAllocator<DataType>>::iterator iterator;
-  typedef typename std::vector<DataType,DataAllocator<DataType>>::const_iterator const_iterator;
+  //typedef typename ArrayType::iterator iterator;
+  //typedef typename ArrayType::const_iterator const_iterator;
+  typedef typename ArrayType::value_type* iterator;
+  typedef typename ArrayType::value_type* const_iterator;
 
   // Constructors.
   explicit Field(FieldName name);
@@ -65,7 +72,7 @@ public:
         DataType value);
   Field(FieldName name,
         const NodeList<Dimension>& nodeList, 
-        const std::vector<DataType,DataAllocator<DataType>>& array);
+        const ArrayType& array);
   Field(const NodeList<Dimension>& nodeList, const Field& field);
   Field(const Field& field);
   virtual std::shared_ptr<FieldBase<Dimension> > clone() const override;
@@ -76,7 +83,7 @@ public:
   // Assignment operator.
   virtual FieldBase<Dimension>& operator=(const FieldBase<Dimension>& rhs) override;
   Field& operator=(const Field& rhs);
-  Field& operator=(const std::vector<DataType,DataAllocator<DataType>>& rhs);
+  Field& operator=(const ArrayType& rhs);
   Field& operator=(const DataType& rhs);
 
   // Required method to test equivalence with a FieldBase.
@@ -208,10 +215,10 @@ public:
   std::vector<DataType> ghostValues() const;
   std::vector<DataType> allValues() const;
 
+  ArrayType mDataArray;
 private:
   //--------------------------- Private Interface ---------------------------//
   // Private Data
-  std::vector<DataType, DataAllocator<DataType>> mDataArray;
   bool mValid;
 
   // No default constructor.
