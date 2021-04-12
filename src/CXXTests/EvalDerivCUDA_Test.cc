@@ -130,6 +130,26 @@ using Array1D = LvArray::Array< T, 1, camp::idx_seq<0>, std::ptrdiff_t, LvArray:
 template<typename T>
 using Array1DView = LvArray::ArrayView< T, 1, 0, std::ptrdiff_t, LvArray::ChaiBuffer >;
 
+template<typename T>
+struct FieldAccessor {
+  using array_type = Array1D<T>;
+  using view_type = Array1DView<T>;
+
+  FieldAccessor(const array_type& arr) : array_parent(arr), view(arr) {}
+
+  size_t size() const { return view.size(); }
+
+  template<typename IDX_TYPE>
+  RAJA_HOST_DEVICE T& operator[](const IDX_TYPE idx) const { return view[idx]; }
+
+  void move( const LvArray::MemorySpace space ) { array_parent.move(space); }
+   
+private:
+  const array_type& array_parent;
+  const view_type& view;
+};
+
+
 int main() {
 
   constexpr int N = 50000;
@@ -142,34 +162,36 @@ int main() {
   //Array1D< Spheral::GeomVector<3> > array(N);
 
   //const Array1DView< Spheral::GeomVector<3> >& view = array;
-  const Array1DView< Spheral::GeomVector<3> >& view = n_pos.mDataArray;
+  FieldAccessor< Spheral::GeomVector<3> > field_view( n_pos.mDataArray );
 
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, view.size()), [=](unsigned int kk) {
-      view[kk][0]++;
-      view[kk][1]++;
-      view[kk][2]++;
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, field_view.size()), [=](unsigned int kk) {
+      field_view[kk][0]++;
+      field_view[kk][1]++;
+      field_view[kk][2]++;
       //if (kk < 50)
       //  printf("%f, %f, %f\n", array[kk][0], array[kk][1], array[kk][2] );
   });
 
   //array.move( LvArray::MemorySpace::GPU );
-  n_pos.mDataArray.move( LvArray::MemorySpace::GPU );
+  //n_pos.mDataArray.move( LvArray::MemorySpace::GPU );
+  field_view.move( LvArray::MemorySpace::GPU );
 
-  RAJA::forall<RAJA::cuda_exec<256>>(RAJA::RangeSegment(0, view.size()), [=] RAJA_HOST_DEVICE (int kk) {
+  RAJA::forall<RAJA::cuda_exec<256>>(RAJA::RangeSegment(0, field_view.size()), [=] RAJA_HOST_DEVICE (int kk) {
       //printf("%f, %f, %f\n", view[kk][0], view[kk][1], view[kk][2] );
-      view[kk][0]++;
-      view[kk][1]++;
-      view[kk][2]++;
+      field_view[kk][0]++;
+      field_view[kk][1]++;
+      field_view[kk][2]++;
   });
 
   //array.move( LvArray::MemorySpace::CPU );
-  n_pos.mDataArray.move( LvArray::MemorySpace::CPU );
+  //n_pos.mDataArray.move( LvArray::MemorySpace::CPU );
+  field_view.move( LvArray::MemorySpace::CPU );
 
   bool correctness = true;
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, view.size()), [&] (int kk) {
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, field_view.size()), [&] (int kk) {
       //if (kk < 50)
       //  printf("%f, %f, %f\n", view[kk][0], view[kk][1], view[kk][2] );
-      if (view[kk] != Spheral::GeomVector<3>(2,2,2)) correctness = false;
+      if (field_view[kk] != Spheral::GeomVector<3>(2,2,2)) correctness = false;
   });
 
   if (correctness)
