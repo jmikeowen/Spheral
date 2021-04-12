@@ -30,6 +30,7 @@ template<typename Dimension> class CoarseNodeIterator;
 template<typename Dimension> class RefineNodeIterator;
 template<typename Dimension> class NodeList;
 template<typename Dimension> class TableKernel;
+template<typename DataType>  class FieldAccessor;
 
 #ifdef USE_UVM
 template<typename DataType>
@@ -215,14 +216,17 @@ public:
   std::vector<DataType> ghostValues() const;
   std::vector<DataType> allValues() const;
 
-  ArrayType mDataArray;
+
 private:
   //--------------------------- Private Interface ---------------------------//
   // Private Data
+  ArrayType mDataArray;
   bool mValid;
 
   // No default constructor.
   Field();
+
+  friend class FieldAccessor<DataType>;
 };
 
 }
