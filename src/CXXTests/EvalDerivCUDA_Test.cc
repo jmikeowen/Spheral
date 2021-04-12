@@ -30,6 +30,8 @@
 #include "DataBase/State.hh"
 #include "DataBase/StateDerivatives.hh"
 
+#include "Field/Field.hh"
+
 #include "Geometry/Dimension.hh"
 
 #include "Hydro/HydroFieldNames.hh"
@@ -47,19 +49,20 @@
 #include "LvArray/ChaiBuffer.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
-  using PAIR_EXEC_POL = RAJA::cuda_exec<256>;
-  using PAIR_REDUCE_POL = RAJA::cuda_reduce;
-  using NODE_INNER_EXEC_POL = RAJA::seq_exec;
+  using EXEC_POL = RAJA::cuda_exec<256>;
+  using REDUCE_POL = RAJA::cuda_reduce;
+  #define OFFLOAD_SPACE LvArray::MemorySpace::GPU
 #elif defined(RAJA_ENABLE_OPENMP)
-  using PAIR_EXEC_POL = RAJA::omp_for_exec;
-  using PAIR_REDUCE_POL = RAJA::omp_reduce;
-  using NODE_INNER_EXEC_POL = RAJA::omp_for_exec;
+  using EXEC_POL = RAJA::omp_for_exec;
+  using REDUCE_POL = RAJA::omp_reduce;
+  #define OFFLOAD_SPACE LvArray::MemorySpace::CPU
 #else
-  using PAIR_EXEC_POL = RAJA::seq_exec;
-  using PAIR_REDUCE_POL = RAJA::seq_reduce;
-  using NODE_INNER_EXEC_POL = RAJA::seq_exec;
+  using EXEC_POL = RAJA::seq_exec;
+  using REDUCE_POL = RAJA::seq_reduce;
+  #define OFFLOAD_SPACE LvArray::MemorySpace::CPU
 #endif
-  using NODE_OUTER_EXEC_POL = RAJA::seq_exec;
+  #define HOST_SPACE LvArray::MemorySpace::CPU
+  using HOST_POL = RAJA::seq_exec;
 
 
 namespace Spheral {
@@ -104,7 +107,7 @@ evaluateDerivatives(const DataBase<Dimension>& dataBase,
   TIME_SPHevalDerivs_pairs.start();
   std::cout << position.numNodes() << "\n";
   RAJA::TypedRangeSegment<unsigned int> array_npairs(0, npairs);
-  RAJA::forall<PAIR_EXEC_POL>(array_npairs, [&](unsigned int kk) {
+  RAJA::forall<EXEC_POL>(array_npairs, [&](unsigned int kk) {
       //
     // Thread private scratch variables
     int i, j, nodeListi, nodeListj;
@@ -126,28 +129,42 @@ evaluateDerivatives(const DataBase<Dimension>& dataBase,
 
 template<typename T>
 using Array1D = LvArray::Array< T, 1, camp::idx_seq<0>, std::ptrdiff_t, LvArray::ChaiBuffer >;
-
 template<typename T>
 using Array1DView = LvArray::ArrayView< T, 1, 0, std::ptrdiff_t, LvArray::ChaiBuffer >;
 
-template<typename T>
-struct FieldAccessor {
-  using array_type = Array1D<T>;
-  using view_type = Array1DView<T>;
 
-  FieldAccessor(const array_type& arr) : array_parent(arr), view(arr) {}
 
-  size_t size() const { return view.size(); }
+namespace Spheral{
 
-  template<typename IDX_TYPE>
-  RAJA_HOST_DEVICE T& operator[](const IDX_TYPE idx) const { return view[idx]; }
+  template<typename T>
+  class FieldAccessor {
 
-  void move( const LvArray::MemorySpace space ) { array_parent.move(space); }
-   
-private:
-  const array_type& array_parent;
-  const view_type& view;
-};
+    using array_type = Array1D<T>;
+    using view_type = Array1DView<T>;
+
+  public:
+    template<typename Dim>
+    FieldAccessor(const Spheral::Field<Dim, T>& field) : array_parent(field.mDataArray), view(field.mDataArray) {}
+
+    size_t size() const { return view.size(); }
+
+    template<typename IDX_TYPE>
+    RAJA_HOST_DEVICE T& operator[](const IDX_TYPE idx) const { return view[idx]; }
+
+    void move( const LvArray::MemorySpace space ) {
+    #if defined(RAJA_ENABLE_CUDA)
+      array_parent.move(space);
+    #else
+      RAJA_UNUSED_VAR(space);
+    #endif
+    }
+     
+  private:
+    const array_type& array_parent;
+    const view_type& view;
+  };
+
+}
 
 
 int main() {
@@ -159,26 +176,30 @@ int main() {
   Spheral::NodeList<Dim> node_list("example_node_list", N, 0);
   auto n_pos = node_list.positions();
 
-  FieldAccessor< Spheral::GeomVector<3> > field_view( n_pos.mDataArray );
+  Spheral::FieldAccessor< Spheral::GeomVector<3> > field_view( n_pos );
 
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, field_view.size()), [=](unsigned int kk) {
+  RAJA::RangeSegment range(0, field_view.size());
+  RAJA::forall<HOST_POL>(range,
+    [=](unsigned int kk) {
       field_view[kk][0]++;
       field_view[kk][1]++;
       field_view[kk][2]++;
   });
 
-  field_view.move( LvArray::MemorySpace::GPU );
+  field_view.move(OFFLOAD_SPACE);
 
-  RAJA::forall<RAJA::cuda_exec<256>>(RAJA::RangeSegment(0, field_view.size()), [=] RAJA_HOST_DEVICE (int kk) {
+  RAJA::forall<EXEC_POL>(range, 
+    [=] RAJA_HOST_DEVICE (int kk) {
       field_view[kk][0]++;
       field_view[kk][1]++;
       field_view[kk][2]++;
   });
 
-  field_view.move( LvArray::MemorySpace::CPU );
+  field_view.move(HOST_SPACE);
 
   bool correctness = true;
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, field_view.size()), [&] (int kk) {
+  RAJA::forall<HOST_POL>(range,
+    [&] (int kk) {
       if (n_pos[kk] != Spheral::GeomVector<3>(2,2,2)) correctness = false;
   });
 
