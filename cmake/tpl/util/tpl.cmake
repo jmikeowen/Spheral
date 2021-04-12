@@ -14,7 +14,7 @@ if (LC_TPL_DIR)
   set(axom_BUILD OFF CACHE BOOL "Option to build Axom")
   set(polyclipper_BUILD OFF CACHE BOOL "Option to build PolyClipper")
   set(raja_BUILD ON CACHE BOOL "Option to build Raja")
-  set(chai_BUILD OFF CACHE BOOL "Option to build Chai")
+  set(chai_BUILD ON CACHE BOOL "Option to build Chai")
   set(lvarray_BUILD ON CACHE BOOL "Option to build LVarray")
 
   set(pybind11_BUILD OFF CACHE BOOL "Option to build pybind11")
