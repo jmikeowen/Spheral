@@ -159,39 +159,27 @@ int main() {
   Spheral::NodeList<Dim> node_list("example_node_list", N, 0);
   auto n_pos = node_list.positions();
 
-  //Array1D< Spheral::GeomVector<3> > array(N);
-
-  //const Array1DView< Spheral::GeomVector<3> >& view = array;
   FieldAccessor< Spheral::GeomVector<3> > field_view( n_pos.mDataArray );
 
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, field_view.size()), [=](unsigned int kk) {
       field_view[kk][0]++;
       field_view[kk][1]++;
       field_view[kk][2]++;
-      //if (kk < 50)
-      //  printf("%f, %f, %f\n", array[kk][0], array[kk][1], array[kk][2] );
   });
 
-  //array.move( LvArray::MemorySpace::GPU );
-  //n_pos.mDataArray.move( LvArray::MemorySpace::GPU );
   field_view.move( LvArray::MemorySpace::GPU );
 
   RAJA::forall<RAJA::cuda_exec<256>>(RAJA::RangeSegment(0, field_view.size()), [=] RAJA_HOST_DEVICE (int kk) {
-      //printf("%f, %f, %f\n", view[kk][0], view[kk][1], view[kk][2] );
       field_view[kk][0]++;
       field_view[kk][1]++;
       field_view[kk][2]++;
   });
 
-  //array.move( LvArray::MemorySpace::CPU );
-  //n_pos.mDataArray.move( LvArray::MemorySpace::CPU );
   field_view.move( LvArray::MemorySpace::CPU );
 
   bool correctness = true;
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, field_view.size()), [&] (int kk) {
-      //if (kk < 50)
-      //  printf("%f, %f, %f\n", view[kk][0], view[kk][1], view[kk][2] );
-      if (field_view[kk] != Spheral::GeomVector<3>(2,2,2)) correctness = false;
+      if (n_pos[kk] != Spheral::GeomVector<3>(2,2,2)) correctness = false;
   });
 
   if (correctness)
