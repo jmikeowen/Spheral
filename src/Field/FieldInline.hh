@@ -248,7 +248,7 @@ template<typename Value1, typename Value2>
   //static bool compare(const std::vector<Value,DataAllocator<Value>>& lhs, 
   //                    const std::vector<Value,DataAllocator<Value>>& rhs) {
     if (lhs.size() != rhs.size()) return false;
-    for (size_t i = 0; i < lhs.size(); i++) {
+    for (auto i = 0; i < lhs.size(); i++) {
       if (lhs[i] != rhs[i]) return false;
     }
     return true;

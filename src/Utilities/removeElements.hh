@@ -65,7 +65,7 @@ removeElements(ArrayType& vec,
       // many elements the copy and move behaviour of erase can make this
       // an N^2 thing.  Yuck!
       auto i = elements[0];
-      for (auto k = 1; k < elements.size(); ++k) {
+      for (auto k = 1u; k < elements.size(); ++k) {
         std::copy(vec.begin() + i + 1, vec.begin() + elements[k], vec.begin() + i);
         i = elements[k];
       }
