@@ -31,4 +31,4 @@ endforeach()
 
 blt_add_executable( NAME eval_dir_test
                     SOURCES EvalDerivCUDA_Test.cc
-                    DEPENDS_ON ${SPHERAL_CXX_LIBS} ${spheral_blt_depends} )
+                    DEPENDS_ON ${SPHERAL_CXX_LIBS} ${spheral_blt_depends} ${SPHERAL_CXX_DEPENDS})

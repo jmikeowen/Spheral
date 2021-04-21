@@ -76,7 +76,7 @@ endif()
 
 if(ENABLE_CUDA)
   set(CMAKE_CUDA_FLAGS  "${CMAKE_CUDA_FLAGS} --extended-lambda")
-  list(APPEND spheral_blt_depends cuda)
+  list(APPEND SPHERAL_CXX_DEPENDS cuda)
 endif()
 
 
