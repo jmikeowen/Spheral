@@ -26,8 +26,8 @@ set(Neighbor_headers
     NeighborInline.hh
     NestedGridNeighbor.hh
     NestedGridNeighborInline.hh
-    TreeNeighbor.hh
     NodePairList.hh
+    TreeNeighbor.hh
     )
 
 spheral_add_cxx_library(Neighbor)

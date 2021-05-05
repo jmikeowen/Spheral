@@ -15,12 +15,18 @@ set(NodeGenerators_sources
 instantiate(NodeGenerators_inst NodeGenerators_sources)
 
 set(NodeGenerators_headers
+    centroidalRelaxNodesImpl.hh
+    chooseRandomNonoverlappingCenter.hh
+    compactFacetedVolumes.hh
     fillFacetedVolume.hh
     generateCylDistributionFromRZ.hh
+    readSiloPolyMesh.hh
+    relaxNodeDistribution.hh
     )
 
 spheral_install_python_files(
   NodeGeneratorBase.py
+  RejecterBase.py
   GenerateNodeDistribution2d.py
   GenerateNodeDistribution3d.py
   CompositeNodeDistribution.py

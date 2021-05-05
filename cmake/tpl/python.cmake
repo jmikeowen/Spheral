@@ -5,7 +5,6 @@ set(PYTHON_SRC_DIR ${PYTHON_PREFIX}/src/python)
 set(PYTHON_INSTALL_DIR ${${lib_name}_DIR})
 set(PYTHON_EXE ${PYTHON_INSTALL_DIR}/bin/python)
 set(PYTHON_URL "http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz")
-set(PYTHON_MD5 "MD5=38c84292658ed4456157195f1c9bcbe1")
 set(PYTHON_SITE_PACKAGE_DIR ${PYTHON_INSTALL_DIR}/lib/python2.7/site-packages)
 
 set(${lib_name}_libs libpython2.7.so)
@@ -38,7 +37,7 @@ if(${lib_name}_BUILD)
   ExternalProject_add(${lib_name}
     PREFIX ${PYTHON_PREFIX}
     URL ${PYTHON_URL} 
-    URL_HASH ${PYTHON_MD5}
+    URL_HASH "MD5=${PYTHON_MD5}"
     DOWNLOAD_DIR ${CACHE_DIR}
     CONFIGURE_COMMAND env CC=${PYTHON_C_COMPILER}
                           CXX=${PYTHON_CXX_COMPILER}

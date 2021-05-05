@@ -12,13 +12,13 @@ macro(Install_PipModules lib_list)
   add_custom_command(
     OUTPUT ${${lib_list}_stamp_file}
     COMMAND echo "-- pip downloading ${lib_list}"
-    COMMAND ${PIP_EXE} ${OUT_PROTOCOL_PIP} download --no-binary :all -d ${CACHE_DIR} ${${lib_list}}
+    COMMAND ${PYTHON_EXE} ${PIP_EXE} ${OUT_PROTOCOL_PIP} download --no-binary :all -d ${CACHE_DIR} ${${lib_list}}
     COMMAND touch ${${lib_list}_stamp_file}
   )
   add_custom_target(
     ${lib_list}
     COMMAND echo "-- pip installing ${lib_list}"
-    COMMAND ${PIP_EXE} ${OUT_PROTOCOL_PIP} install ${${lib_list}} --no-index --find-links ${CACHE_DIR}
+    COMMAND ${PYTHON_EXE} ${PIP_EXE} ${OUT_PROTOCOL_PIP} install ${${lib_list}} --no-index --find-links ${CACHE_DIR}
     DEPENDS pip-install ${${lib_list}_DEPENDS} ${${lib_list}_stamp_file}
   )
 endmacro()
@@ -32,6 +32,7 @@ set(pip-setup-modules
 # General pip modules, anything from PyPi can 
 # be added to this list to install
 set(pip-modules
+    numpy==1.16.6
     numpy-stl==2.11.2
     PYB11Generator
     matplotlib==2.2.5
@@ -44,6 +45,7 @@ set(pip-modules
     sobol==0.9
     scipy==1.2.3
     pipreqs==0.4.10
+    importlib_metadata==2.1.1
     virtualenv==20.2.2)
 
 # Only needed when we're allowing MPI parallelism

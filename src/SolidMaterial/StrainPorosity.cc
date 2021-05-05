@@ -147,7 +147,7 @@ evaluateDerivatives(const Scalar /*time*/,
                     StateDerivatives<Dimension>& derivs) const {
 
   // Get the state fields.
-  const auto  gradvKey = State<Dimension>::buildFieldKey(HydroFieldNames::internalVelocityGradient, mNodeList.name());
+  const auto  gradvKey = State<Dimension>::buildFieldKey(HydroFieldNames::velocityGradient, mNodeList.name());
   const auto  strainKey = State<Dimension>::buildFieldKey(SolidFieldNames::porosityStrain, mNodeList.name());
   const auto  alphaKey = State<Dimension>::buildFieldKey(SolidFieldNames::porosityAlpha, mNodeList.name());
   const auto  DalphaDtKey = State<Dimension>::buildFieldKey(IncrementBoundedState<Dimension, Scalar, Scalar>::prefix() + SolidFieldNames::porosityAlpha, mNodeList.name());

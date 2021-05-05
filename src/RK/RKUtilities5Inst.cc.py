@@ -6,7 +6,7 @@ text = """
 #include "Geometry/Dimension.hh"
 """
 
-for order in ["ZerothOrder", "LinearOrder", "QuadraticOrder", "CubicOrder", "QuarticOrder", "QuinticOrder", "SexticOrder", "SepticOrder"]:
+for order in ["QuinticOrder"]:
     text += """
 namespace Spheral {
 template class RKUtilities<Dim<%(ndim)s>, """

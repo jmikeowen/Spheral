@@ -1,6 +1,5 @@
 set(QHULL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/${lib_name})
 set(QHULL_URL "https://github.com/qhull/qhull/archive/2019.1.tar.gz")
-set(QHULL_MD5 "MD5=877065211d4cb94fa4173f424d3c723a")
 set(QHULL_CACHE "${CACHE_DIR}/2019.1.tar.gz")
 set(QHULL_SRC_DIR ${QHULL_PREFIX}/src/qhull/src)
 
@@ -17,7 +16,7 @@ if(${lib_name}_BUILD)
     PATCH_COMMAND patch -t ${QHULL_SRC_DIR}/libqhull/qhull_a.h ${PATCH_DIR}/qhull-2015.2-qhull_a.h-patch &&
                   patch -t ${QHULL_SRC_DIR}/libqhull_r/qhull_ra.h ${PATCH_DIR}/qhull-2015.2-qhull_ra.h-patch
     URL ${QHULL_URL}
-    URL_HASH ${QHULL_MD5}
+    URL_HASH "MD5=${QHULL_MD5}"
     DOWNLOAD_DIR ${CACHE_DIR}
     CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}

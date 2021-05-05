@@ -32,7 +32,7 @@ if(ENABLE_DOCS AND NOT SPHINX_EXEC STREQUAL "SPHINX_EXEC-NOTFOUND")
   endif()
 
   add_custom_target(Spheral_docs ALL
-    ${SPHINX_EXEC}
+    ${PYTHON_EXE} ${SPHINX_EXEC}
     -q -b html
     -c "${BINARY_BUILD_DIR}"
     -d "${SPHINX_CACHE_DIR}"

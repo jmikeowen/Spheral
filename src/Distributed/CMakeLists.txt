@@ -34,20 +34,31 @@ set(Distributed_inst
 instantiate(Distributed_inst Distributed_sources)
 
 set(Distributed_headers
+    BoundingVolumeDistributedBoundary.hh
     Communicator.hh
     CompareDomainNodesByPosition.hh
+    DistributeByXPosition.hh
     DistributedBoundary.hh
     DistributedBoundaryInline.hh
-    #DomainNode.hh
-    #DomainNodeInline.hh
+    MortonOrderRedistributeNodes.hh
     NestedGridDistributedBoundary.hh
+    NestedGridRedistributeNodes.hh
+    NestedGridRedistributeNodesInline.hh
     NestedGridUtilities.hh
+    ParmetisRedistributeNodes.hh
+    ParmetisRedistributeNodesInline.hh
+    PeanoHilbertOrderRedistributeNodes.hh
     RedistributeNodes.hh
     RedistributeNodesInline.hh
-    TreeDistributedBoundary.hh
-    waitAllWithDeadlockDetection.hh
     SortAndDivideRedistributeNodes.hh
     SortAndDivideRedistributeNodes1d.hh
+    SortAndDivideRedistributeNodes2d.hh
+    SortAndDivideRedistributeNodes3d.hh
+    SortAndDivideRedistributeNodesInline.hh
+    SpaceFillingCurveRedistributeNodes.hh
+    TreeDistributedBoundary.hh
+    VoronoiRedistributeNodes.hh
+    waitAllWithDeadlockDetection.hh
     )
 
 spheral_add_cxx_library(Distributed)

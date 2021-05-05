@@ -99,11 +99,9 @@ step(typename Dimension::Scalar maxTime,
                                    derivs);
   const double hdt = 0.5*dt;
 
-  // Zero out the derivatives.
-  derivs.Zero();
-
   // Evaluate the beginning of step derivatives.
   this->initializeDerivatives(t, hdt, state, derivs);
+  derivs.Zero();
   this->evaluateDerivatives(t, hdt, db, state, derivs);
   this->finalizeDerivatives(t, hdt, db, state, derivs);
 
@@ -120,8 +118,8 @@ step(typename Dimension::Scalar maxTime,
   this->finalizeGhostBoundaries();
 
   // Evaluate the derivatives at the trial midpoint conditions.
-  derivs.Zero();
   this->initializeDerivatives(t + hdt, hdt, state, derivs);
+  derivs.Zero();
   this->evaluateDerivatives(t + hdt, hdt, db, state, derivs);
   this->finalizeDerivatives(t + hdt, hdt, db, state, derivs);
 

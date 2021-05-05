@@ -28,7 +28,7 @@ GradyKippTensorDamageBenzAsphaug is constructed with the following arguments:
         kernel              : (required) the interpolation kernel to use
         seed                : (optional) random number seed for flaw generation.
         strainAlgorithm     : (optional) defaults to "BenzAsphaugStrain"
-        damageCouplingAlgorithm : (optional) defaults to "DirectDamage"
+        damageCouplingAlgorithm : (optional) defaults to "PairMaxDamage"
         crackGrowthMultiplier   : (optional) defaults to "0.4"
         criticalDamageThreshold : (optional) defaults to 4.0 (inactive)
         minFlawsPerNode     : (optional) defaults to "1"
@@ -52,7 +52,7 @@ GradyKippTensorDamageOwen is constructed with the following arguments:
         seed                : (optional) random number seed for flaw generation.
         volumeMultiplier    : (optional) Multiplies the total volume.
         strainAlgorithm     : (optional) defaults to "PsuedoPlasticStrain"
-        damageCouplingAlgorithm : (optional) defaults to "DirectDamage"
+        damageCouplingAlgorithm : (optional) defaults to "PairMaxDamage"
         crackGrowthMultiplier   : (optional) defaults to "0.4"
         criticalDamageThreshold : (optional) defaults to 4.0 (inactive)
         minFlawsPerNode     : (optional) defaults to "1"
@@ -79,7 +79,7 @@ class GradyKippTensorDamageBenzAsphaug%(dim)s(TensorDamageModel%(dim)s):
         # Arguments needed to build the damage model.
         damage_kwargs = {"nodeList"                 : None,
                          "strainAlgorithm"          : BenzAsphaugStrain,
-                         "damageCouplingAlgorithm"  : DirectDamage,
+                         "damageCouplingAlgorithm"  : PairMaxDamage,
                          "kernel"                   : None,
                          "crackGrowthMultiplier"    : 0.4,
                          "criticalDamageThreshold"  : 4.0,
@@ -234,7 +234,7 @@ class GradyKippTensorDamageOwen%(dim)s(TensorDamageModel%(dim)s):
         # Arguments needed to build the damage model.
         damage_kwargs = {"nodeList"                 : None,
                          "strainAlgorithm"          : PseudoPlasticStrain,
-                         "damageCouplingAlgorithm"  : DirectDamage,
+                         "damageCouplingAlgorithm"  : PairMaxDamage,
                          "kernel"                   : None,
                          "crackGrowthMultiplier"    : 0.4,
                          "criticalDamageThreshold"  : 4.0,

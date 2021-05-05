@@ -581,6 +581,14 @@ will get the new value regardless of resetValues."""
     globalNumInternalNodes = PYB11property("int", "globalNumInternalNodes", doc="Number of internal nodes in all NodeLists in DataBase across all processors")
     globalNumGhostNodes = PYB11property("int", "globalNumGhostNodes", doc="Number of ghost nodes in all NodeLists in DataBase across all processors")
 
+    numFluidNodes = PYB11property("int", "numFluidNodes", doc="Number of nodes in all NodeLists in DataBase")
+    numFluidInternalNodes = PYB11property("int", "numFluidInternalNodes", doc="Number of internal nodes in all NodeLists in DataBase")
+    numFluidGhostNodes = PYB11property("int", "numFluidGhostNodes", doc="Number of ghost nodes in all NodeLists in DataBase")
+
+    globalNumFluidNodes = PYB11property("int", "globalNumFluidNodes", doc="Number of nodes in all NodeLists in DataBase across all processors")
+    globalNumFluidInternalNodes = PYB11property("int", "globalNumFluidInternalNodes", doc="Number of internal nodes in all NodeLists in DataBase across all processors")
+    globalNumFluidGhostNodes = PYB11property("int", "globalNumFluidGhostNodes", doc="Number of ghost nodes in all NodeLists in DataBase across all processors")
+    
     nodeListPtrs = PYB11property("const std::vector<NodeList<%(Dimension)s>*>&", "nodeListPtrs", doc="The set of NodeLists in the DataBase")
     fluidNodeListPtrs = PYB11property("const std::vector<FluidNodeList<%(Dimension)s>*>&", "fluidNodeListPtrs", doc="The set of FluidNodeLists in the DataBase")
     solidNodeListPtrs = PYB11property("const std::vector<SolidNodeList<%(Dimension)s>*>&", "solidNodeListPtrs", doc="The set of SolidNodeLists in the DataBase")

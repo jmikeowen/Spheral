@@ -8,6 +8,9 @@ set_directory_properties(PROPERTIES CLEAN_NO_CUSTOM 1)
 # Initialize TPL options
 include(${SPHERAL_ROOT_DIR}/cmake/spheral/SpheralHandleTPL.cmake)
 
+# If we are using a pre-built set of TPL's set _BUILD and _DIR variables.
+include(${SPHERAL_ROOT_DIR}/cmake/tpl/util/tpl.cmake)
+
 # If set to Off NONE of the TPLs will be built and installed
 # it is expected that the user provide locations for each one
 # else the default install location will be searched for TPLs

@@ -13,8 +13,14 @@ set(Material_sources
 set(Material_headers
     EquationOfState.hh
     EquationOfStateInline.hh
+    GammaLawGas.hh
+    HelmholtzEquationOfState.hh
+    IsothermalEquationOfState.hh
+    IsothermalEquationOfStateInline.hh
     PhysicalConstants.hh
     PhysicalConstantsInline.hh
+    PolytropicEquationOfState.hh
+    PolytropicEquationOfStateInline.hh
     )
 
 spheral_install_python_files(

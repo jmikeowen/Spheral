@@ -1,8 +1,8 @@
 set(PYBIND11_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/${lib_name})
 set(PYBIND11_CACHE "${CACHE_DIR}/v2.4.3.tar.gz")
 set(PYBIND11_URL "https://github.com/pybind/pybind11/archive/v2.4.3.tar.gz")
-set(PYBIND11_MD5 "MD5=62254c40f89925bb894be421fe4cdef2")
 
+set(${lib_name}_libs )
 if(${lib_name}_BUILD)
 
   if (EXISTS ${PYBIND11_CACHE})
@@ -12,7 +12,7 @@ if(${lib_name}_BUILD)
   ExternalProject_add(${lib_name}
     PREFIX ${PYBIND11_PREFIX}/${lib_name}
     URL ${PYBIND11_URL}
-    URL_HASH ${PYBIND11_MD5}
+    URL_HASH "MD5=${PYBIND11_MD5}"
     DOWNLOAD_DIR ${CACHE_DIR}
     CMAKE_ARGS -DPYBIND11_TEST=Off
                -DCMAKE_INSTALL_PREFIX=${${lib_name}_DIR}

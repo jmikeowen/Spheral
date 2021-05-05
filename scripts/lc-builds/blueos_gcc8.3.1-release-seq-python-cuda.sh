@@ -23,7 +23,7 @@ cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-11.1.0 \
-  -DCMAKE_INSTALL_PREFIX=../install \
-  -DSPHERAL_TPL_DIR=/usr/workspace/wsrzd/davis291/SPHERAL/blueos_Spheral_gcc8_noMPI/install/tpl \
+  -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
   -DBUILD_TPL=Off \
   "$@" \
+  #-DSPHERAL_TPL_DIR=/usr/workspace/wsrzd/davis291/SPHERAL/blueos_Spheral_gcc8_noMPI/install/tpl \

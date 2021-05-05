@@ -55,13 +55,18 @@ message("Default TPL location : ${DEFAULT_TPL_LOCATION}\n")
 #----------------------------------------------------------------------------------------
 
 function(Spheral_Handle_TPL lib_name dep_list)
+
+  string(TOUPPER ${lib_name} LIB_NAME)
+
+  # Get the pure MD5 HASH string.
+  set(HASH ${${LIB_NAME}_MD5})
                                                        
   # If we are not building the TPL ...
   if(NOT BUILD_TPL OR NOT ${lib_name}_BUILD)
 
     # If no location to search is sepcified, search default dir
     if (NOT ${lib_name}_DIR)
-      set(${lib_name}_DIR ${DEFAULT_TPL_LOCATION}/${lib_name})
+      set(${lib_name}_DIR ${DEFAULT_TPL_LOCATION}/${lib_name}/${HASH})
       message("${lib_name}_DIR not set.")
       message("Setting ${lib_name} search to default location : ${${lib_name}_DIR}")
     # else search the given dir
@@ -84,7 +89,7 @@ function(Spheral_Handle_TPL lib_name dep_list)
 
     # If no location to search is sepcified, install in default dir
     if (NOT ${lib_name}_DIR)
-      set(${lib_name}_DIR ${DEFAULT_TPL_LOCATION}/${lib_name})
+      set(${lib_name}_DIR ${DEFAULT_TPL_LOCATION}/${lib_name}/${HASH})
       message("${lib_name}_DIR not set. Installing ${lib_name} to default location : ${${lib_name}_DIR}")
     # else install in the given dir
     else()

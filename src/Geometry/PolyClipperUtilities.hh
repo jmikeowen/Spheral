@@ -49,6 +49,9 @@ struct GeomVectorAdapter {
   static VECTOR  neg(const VECTOR& a)                        { return -a; }
   static VECTOR  unitVector(const VECTOR& a)                 { return a.unitVector(); }
   static std::string str(const VECTOR& a)                    { std::ostringstream os; os << a; return os.str(); }
+  static std::array<double, 3> get_triple(const VECTOR& a)   { return {a.x(), a.y(), a.z()}; }
+  static void set_triple(VECTOR& a,
+                         const std::array<double, 3>& vals)  { a.x(vals[0]); a.y(vals[1]); a.z(vals[2]); }
 };
 
 //------------------------------------------------------------------------------

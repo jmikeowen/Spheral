@@ -734,7 +734,7 @@ computeVoronoiVolume(const FieldList<Dimension, typename Dimension::Vector>& pos
 
           // If requested, we can return the cell geometries.
           if (returnCells) {
-            ClippingType<Dimension>::collapseDegenerates(celli, 1.0e-10);
+            // ClippingType<Dimension>::collapseDegenerates(celli, 1.0e-10);
 #pragma omp critical (computeVoronoiVolume_pass3)
             {
               auto vertexClips = convertFromPolyClipper(cells(nodeListi, i), celli);

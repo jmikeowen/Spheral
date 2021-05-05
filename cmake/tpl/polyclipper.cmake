@@ -1,8 +1,7 @@
 set(POLYCLIPPER_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/${lib_name})
-set(POLYCLIPPER_DIST "PolyClipper-v1.1.zip")
+set(POLYCLIPPER_DIST "PolyClipper-v.1.2.1.zip")
 set(POLYCLIPPER_CACHE "${CACHE_DIR}/${POLYCLIPPER_DIST}")
-set(POLYCLIPPER_URL "https://github.com/LLNL/PolyClipper/archive/PolyClipper-v1.1.zip")
-set(POLYCLIPPER_MD5 "MD5=46b554a2b3ca8a45847750b0a82c3931")
+set(POLYCLIPPER_URL "https://github.com/LLNL/PolyClipper/archive/refs/tags/PolyClipper-v.1.2.1.zip")
 set(POLYCLIPPER_DEST_DIR "${${lib_name}_DIR}/lib")
 
 set(${lib_name}_libs )
@@ -23,15 +22,20 @@ if(${lib_name}_BUILD)
   ExternalProject_add(${lib_name}
     PREFIX ${POLYCLIPPER_PREFIX}
     URL ${POLYCLIPPER_URL}
-    URL_HASH ${POLYCLIPPER_MD5}
+    URL_HASH "MD5=${POLYCLIPPER_MD5}"
     DOWNLOAD_DIR ${CACHE_DIR}
+    DEPENDS ${pybind11_build_dep} ${pip-modules_build_dep}
     CMAKE_ARGS -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                -DCMAKE_INSTALL_PREFIX=${${lib_name}_DIR}
-               -DPOLYCLIPPER_BLT_DIR=${CMAKE_SOURCE_DIR}/cmake/blt
+               -DPOLYCLIPPER_BLT_DIR=${SPHERAL_BLT_DIR}
                -DENABLE_CXXONLY=${POLYCLIPPER_ENABLE_CXXONLY}
+               -DENABLE_OPENMP=${ENABLE_OPENMP}
+               -DENABLE_MPI=${ENABLE_MPI}
                -DPYTHON_EXE=${PYTHON_EXE}
-               -DLOOKUP_PYBIND11_INCLUDE_PATH=On
+               -DPYBIND11_INCLUDE_PATH=${PYBIND11_INSTALL_DIR}/include
+               -DPYB11GEN_PATH=${PYTHON_SITE_PACKAGE_DIR}
+               #-DLOOKUP_PYBIND11_INCLUDE_PATH=On
                -DPOLYCLIPPER_PYTHON_INSTALL=${${lib_name}_DIR}
                -DENABLE_DOCS=Off
                DEPENDS ${POLYCLIPPER_DEPENDS}

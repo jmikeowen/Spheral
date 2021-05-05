@@ -33,7 +33,6 @@ set(Geometry_headers
     EigenStructInline.hh
     EigenStruct_fwd.hh
     FacetedVolumeUtilities.hh
-    PolyClipperUtilities.hh
     Geom3Vector.hh
     Geom3VectorInline.hh
     GeomFacet1d.hh
@@ -83,11 +82,14 @@ set(Geometry_headers
     Jacobi.hh
     Jacobi2.hh
     MathTraits.hh
+    PolyClipperUtilities.hh
     RankNTensor.hh
     RankNTensorInline.hh
     TensorType.hh
     aggregateFacetedVolumes.hh
     buildEigenVector.hh
+    clipConvexFacetedVolumeByPlanes.hh
+    clipFacetedVolumeByPlanes.hh
     computeEigenValues.hh
     findEigenValues3.hh
     innerDoubleProduct.hh
