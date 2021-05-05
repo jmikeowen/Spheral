@@ -29,13 +29,17 @@ I like to keep my build & install files separate from the git cloned source, so 
   mkdir -p Spheral_release/BUILD && cd Spheral_release/BUILD
   cmake -DCMAKE_INSTALL_PREFIX=`cd ..; pwd` ../../Spheral
   make -j<N> install
-  ../python/bin/python2.7 -c "import Spheral"
+  ../spheral -c "import Spheral"
 
 In this example we performed our build in the directory ``Spheral_release/BUILD``, and installed all binaries and libraries in ``Spheral_release``.  Note this includes the TPL libraries, which are downloaded under ``Spheral_release/BUILD`` and installed to ``Spheral_release``.  The final line is simply a test that the installed Python client can load the Spheral Python modules.
 
 The somewhat obtuse command ``-DCMAKE_INSTALL_PREFIX=`chdir ..; pwd``` just specifies the install directory as the full path to ``Spheral_release``.  Alternatively you can specify this path explicitly, such as ``-DCMAKE_INSTALL_PREFIX=/usr/local/Spheral_release``, if that were the correct path.
 
-Note many users of CMake like to place the build directory as a subdirectory of the cloned code, so many examples you'll see online use "``cmake ..``".  All that matters really is that the final path on the CMake command line point to the top of the source tree.
+.. note::
+   Although Spheral is simply a set of Python modules, it installs in a Python virtual environment, so the script ``spheral`` installed at the top level of the install tree is designed to load the virtual environment on invocation, and then unload it on completion.
+
+.. note::
+   Many users of CMake like to place the build directory as a subdirectory of the cloned code, so many examples you'll see online use "``cmake ..``".  All that matters really is that the final path on the CMake command line point to the top of the source tree.
 
 C++ Only Build
 --------------

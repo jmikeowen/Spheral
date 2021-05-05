@@ -30,6 +30,7 @@ set(Field_headers
     FieldListInline.hh
     FieldListSet.hh
     FieldListSetInline.hh
+    FieldListThreadWrapper.hh
     GhostNodeIterator.hh
     GhostNodeIteratorInline.hh
     InternalNodeIterator.hh

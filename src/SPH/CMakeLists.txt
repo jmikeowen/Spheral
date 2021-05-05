@@ -8,7 +8,7 @@ set(SPH_inst
     correctSPHSumMassDensity
     computePSPHCorrections
     computeSumVoronoiCellMassDensity
-   )
+    )
 
 
 set(SPH_sources )
@@ -31,6 +31,8 @@ instantiate(SPH_inst SPH_sources)
 
 set(SPH_headers
     OmegaGradhPolicy.hh
+    PSPHHydroBase.hh
+    PSPHHydroBaseInline.hh
     SPHHydroBase.hh
     SPHHydroBaseGSRZ.hh
     SPHHydroBaseInline.hh
@@ -38,8 +40,8 @@ set(SPH_headers
     SolidSPHHydroBase.hh
     SolidSPHHydroBaseInline.hh
     SolidSPHHydroBaseRZ.hh
-    #SolidSPHHydroBaseRZInline.hh
     computeHydrostaticEquilibriumPressure.hh
+    computePSPHCorrections.hh
     computeSPHOmegaGradhCorrection.hh
     computeSPHSumMassDensity.hh
     computeSumVoronoiCellMassDensity.hh
@@ -47,10 +49,10 @@ set(SPH_headers
     )
 
 spheral_install_python_files(
-  SPHHydros.py
-  PSPHHydros.py
-  SPHUtilities.py
-  FacetedSurfaceASPHHydro.py
-  )
+    SPHHydros.py
+    PSPHHydros.py
+    SPHUtilities.py
+    FacetedSurfaceASPHHydro.py
+    )
 
 spheral_add_cxx_library(SPH)

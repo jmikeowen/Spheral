@@ -72,6 +72,15 @@ public:
   int globalNumGhostNodes() const;
   int globalNumNodes() const;
 
+  // Numbers of fluid nodes.
+  int numFluidInternalNodes() const;
+  int numFluidGhostNodes() const;
+  int numFluidNodes() const;
+
+  int globalNumFluidInternalNodes() const;
+  int globalNumFluidGhostNodes() const;
+  int globalNumFluidNodes() const;
+   
   // Provide normal iterator methods over the DataBase NodeLists.
   NodeListIterator nodeListBegin();
   NodeListIterator nodeListEnd();

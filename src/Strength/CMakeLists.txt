@@ -27,7 +27,6 @@ set(Strength_headers
     DeviatoricStressPolicy.hh
     MeltEnergyPolicy.hh
     PlasticStrainPolicy.hh
-    #RZDeviatoricStressPolicy.hh
     RZPlasticStrainPolicy.hh
     ShearModulusPolicy.hh
     SolidFieldNames.hh

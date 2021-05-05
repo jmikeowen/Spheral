@@ -21,9 +21,9 @@ cmake \
   -DENABLE_MPI=On \
   -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
   -DBUILD_TPL_ONLY=On \
-  $CMAKE_ARGS \
+  -Wno-dev \
+  $CMAKE_ARGS
 
-cd $BUILD_SUFFIX/build
 make -j install
 
 cd -

@@ -110,6 +110,36 @@ DataBase<Dimension>::globalNumNodes() const {
 }
 
 //------------------------------------------------------------------------------
+// Global numbers of fluid nodes in the DataBase.
+//------------------------------------------------------------------------------
+template<typename Dimension>
+int
+DataBase<Dimension>::globalNumFluidInternalNodes() const {
+  int localResult = numFluidInternalNodes();
+  int result = localResult;
+  result = allReduce(result, MPI_SUM, Communicator::communicator());
+  return result;
+}
+
+template<typename Dimension>
+int
+DataBase<Dimension>::globalNumFluidGhostNodes() const {
+  int localResult = numFluidGhostNodes();
+  int result = localResult;
+  result = allReduce(result, MPI_SUM, Communicator::communicator());
+  return result;
+}
+
+template<typename Dimension>
+int
+DataBase<Dimension>::globalNumFluidNodes() const {
+  int localResult = numFluidNodes();
+  int result = localResult;
+  result = allReduce(result, MPI_SUM, Communicator::communicator());
+  return result;
+}
+
+//------------------------------------------------------------------------------
 // Node iterators for all node IDs.
 //------------------------------------------------------------------------------
 template<typename Dimension>

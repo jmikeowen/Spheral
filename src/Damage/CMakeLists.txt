@@ -22,11 +22,11 @@ set(Damage_sources )
 instantiate(Damage_inst Damage_sources)
 
 set(Damage_headers
-    computeFragmentField.hh
-    DamagedSoundSpeedPolicy.hh
     DamageGradientPolicy.hh
     DamageModel.hh
     DamageModelInline.hh
+    DamagedPressurePolicy.hh
+    DamagedSoundSpeedPolicy.hh
     EffectiveTensorDamagePolicy.hh
     GradyKippScalarDamage.hh
     JohnsonCookDamage.hh
@@ -34,7 +34,6 @@ set(Damage_headers
     JohnsonCookDamagePolicy.hh
     JohnsonCookFailureStrainPolicy.hh
     LongitudinalSoundSpeedPolicy.hh
-    oneMinusDamage.hh
     ScalarDamageModel.hh
     ScalarDamagePolicy.hh
     StrainPolicy.hh
@@ -42,9 +41,11 @@ set(Damage_headers
     TensorDamageModelInline.hh
     TensorDamagePolicy.hh
     TensorStrainPolicy.hh
+    YoungsModulusPolicy.hh
+    computeFragmentField.hh
+    oneMinusDamage.hh
     weibullFlawDistributionBenzAsphaug.hh
     weibullFlawDistributionOwen.hh
-    YoungsModulusPolicy.hh
     )
 
 spheral_install_python_files(

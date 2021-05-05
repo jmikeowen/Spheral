@@ -37,12 +37,25 @@ endif()
 instantiate(Boundary_inst Boundary_sources)
 
 set(Boundary_headers
-  #AxialSymmetryBoundary.hh
     AxisBoundaryRZ.hh
     Boundary.hh
     BoundaryInline.hh
-    ConstantBoundaryUtilities.hh
     CRKSPHVoidBoundary.hh
+    ConstantBoundary.hh
+    ConstantBoundaryInline.hh
+    ConstantBoundaryUtilities.hh
+    ConstantRVelocityBoundary.hh
+    ConstantVelocityBoundary.hh
+    ConstantVelocityBoundaryInline.hh
+    ConstantXVelocityBoundary.hh
+    ConstantYVelocityBoundary.hh
+    ConstantZVelocityBoundary.hh
+    CylindricalBoundary.hh
+    CylindricalBoundaryInline.hh
+    FacetedVolumeBoundary.hh
+    FacetedVolumeBoundaryInline.hh
+    InflowOutflowBoundary.hh
+    InflowOutflowBoundaryInline.hh
     PeriodicBoundary.hh
     PeriodicPlanarBoundary.hh
     PlanarBoundary.hh
@@ -51,7 +64,10 @@ set(Boundary_headers
     ReflectingBoundary.hh
     ReflectingBoundaryInline.hh
     RigidBoundary.hh
-    #RigidBoundaryInline.hh
+    SphericalBoundary.hh
+    SphericalBoundaryInline.hh
+    ThreeOneDimensionBoundary.hh
+    findNodesTouchingThroughPlanes.hh
     mapPositionThroughPlanes.hh
     )
 

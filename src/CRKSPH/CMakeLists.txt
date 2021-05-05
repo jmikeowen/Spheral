@@ -32,6 +32,7 @@ set(CRKSPH_headers
     CRKSPHHydroBase.hh
     CRKSPHHydroBaseInline.hh
     CRKSPHHydroBaseRZ.hh
+    CRKSPHVariant.hh
     SolidCRKSPHHydroBase.hh
     SolidCRKSPHHydroBaseInline.hh
     SolidCRKSPHHydroBaseRZ.hh
@@ -43,6 +44,7 @@ set(CRKSPH_headers
     computeSolidCRKSPHSumMassDensity.hh
     computeVoronoiCentroids.hh
     detectSurface.hh
+    editMultimaterialSurfaceTopology.hh
     volumeSpacing.hh
     zerothOrderSurfaceCorrections.hh
     )

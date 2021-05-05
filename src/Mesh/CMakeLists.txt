@@ -44,6 +44,7 @@ set(Mesh_headers
     ZoneInline.hh
     computeElementOwner.hh
     computeGenerators.hh
+    copy2polytope.hh
     findMatchingVertex.hh
     generateMesh.hh
     )

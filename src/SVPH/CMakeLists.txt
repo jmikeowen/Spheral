@@ -24,19 +24,20 @@ instantiate(SVPH_inst SVPH_sources)
 set(SVPH_headers
     CellPressurePolicy.hh
     CompatibleFaceSpecificThermalEnergyPolicy.hh
-    computeSumVoronoiCellMassDensityFromFaces.hh
-    computeSVPHCorrections.hh
-    computeSVPHCorrectionsOnFaces.hh
-    gradientFieldListSVPH.hh
     MeshIdealHPolicy.hh
-    sampleFieldListSVPH.hh
-    SpecificThermalEnergyVolumePolicy.hh
     SVPHCorrectionsPolicy.hh
     SVPHFacetedHydroBase.hh
     SVPHFacetedHydroBaseInline.hh
+    SVPHFieldNames.hh
     SVPHHydroBase.hh
     SVPHHydroBaseInline.hh
     SVPHMassDensityPolicy.hh
+    SpecificThermalEnergyVolumePolicy.hh
+    computeSVPHCorrections.hh
+    computeSVPHCorrectionsOnFaces.hh
+    computeSumVoronoiCellMassDensityFromFaces.hh
+    gradientFieldListSVPH.hh
+    sampleFieldListSVPH.hh
     )
 
 spheral_install_python_files(SVPHHydros.py)

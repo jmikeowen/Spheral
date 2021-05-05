@@ -44,18 +44,18 @@ instantiate(Utilities_inst Utilities_sources)
 set(Utilities_headers
     Bessel.hh
     CounterClockwiseComparator.hh
-    DamagedNodeCoupling.hh
-    ThreePointDamagedNodeCoupling.hh
-    DamageGradientNodeCoupling.hh
     DBC.hh
+    DamageGradientNodeCoupling.hh
+    DamagedNodeCoupling.hh
+    DataTypeTraits.hh
     DomainNode.hh
     DomainNodeInline.hh
-    DataTypeTraits.hh
     FastMath.hh
     FieldDataTypeTraits.hh
     Functors.hh
     GeometricUtilities.hh
     KeyTraits.hh
+    MaxDamageNodeCoupling.hh
     NodeCoupling.hh
     NodeListHashMap.hh
     OpenMP_wrapper.hh
@@ -70,6 +70,7 @@ set(Utilities_headers
     SafeIndexMap.hh
     SpheralFunctions.hh
     SurfaceNodeCoupling.hh
+    ThreePointDamagedNodeCoupling.hh
     Timer.hh
     Tree.hh
     TreeInline.hh
@@ -78,6 +79,7 @@ set(Utilities_headers
     bisectSearch.hh
     boundPointWithinBox.hh
     boundingBox.hh
+    clipFacetedVolume.hh
     coarsenBinnedValues.hh
     comparisons.hh
     computeConvexHull.hh
@@ -89,16 +91,19 @@ set(Utilities_headers
     globalNodeIDsInline.hh
     hashes.hh
     initializeTau.hh
+    integrateThroughMeshAlongSegment.hh
     intpow2.hh
     iterateIdealH.hh
     lineSegmentIntersections.hh
     log2.hh
+    medianPosition.hh
     mortonOrderIndices.hh
     mpiUtilities.hh
     newtonRaphson.hh
     nodeBoundingBoxes.hh
     nodeBoundingBoxesInline.hh
-    NodeCoupling.hh
+    nodeOrdering.hh
+    numberDensity.hh
     overlayRemapFields.hh
     packElement.hh
     peanoHilbertOrderIndices.hh
@@ -108,14 +113,16 @@ set(Utilities_headers
     pointInPolyhedron.hh
     pointOnPolygon.hh
     pointOnPolyhedron.hh
+    refinePolyhedron.hh
     registerWithRedistribution.hh
     removeElements.hh
     rotationMatrix.hh
     safeInv.hh
+    scan.hh
     segmentIntersectEdges.hh
     simpsonsIntegration.hh
+    size_t_bits.hh
     sort_permutation.hh
-    SurfaceNodeCoupling.hh
     testBoxIntersection.hh
     timingUtilities.hh
     )
