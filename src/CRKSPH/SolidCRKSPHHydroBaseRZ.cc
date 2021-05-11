@@ -695,7 +695,7 @@ evaluateDerivatives(const Dim<2>::Scalar /*time*/,
       const auto deformation = localDvDxi.Symmetric();
       const auto deformationTT = vi.y()*riInv;
       const auto spin = localDvDxi.SkewSymmetric();
-      const auto deviatoricDeformation = deformation - ((deformation.Trace() + deformationTT)/3.0)*SymTensor::one;
+      const auto deviatoricDeformation = deformation - ((deformation.Trace() + deformationTT)/2.0)*SymTensor::one;
       const auto spinCorrection = (spin*Si + Si*spin).Symmetric();
       DSDti = spinCorrection + (2.0*mui)*deviatoricDeformation;
 
