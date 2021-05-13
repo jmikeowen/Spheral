@@ -284,7 +284,8 @@ patchConnectivity(const FieldList<Dimension, int>& flags,
     }
 #pragma omp critical
     {
-      culledPairs.insert(culledPairs.end(), culledPairs_thread.begin(), culledPairs_thread.end());
+      culledPairs.insert(culledPairs.size() - 1, culledPairs_thread.begin(), culledPairs_thread.end());
+      //culledPairs.insert(culledPairs.end(), culledPairs_thread.begin(), culledPairs_thread.end());
     }
   }
   mNodePairList = culledPairs;
@@ -959,7 +960,8 @@ computeConnectivity() {
             
             // Merge the NodePairList
 #pragma omp critical
-            mNodePairList.insert(mNodePairList.end(), nodePairs_private.begin(), nodePairs_private.end());
+            mNodePairList.insert(mNodePairList.size() - 1 , nodePairs_private.begin(), nodePairs_private.end());
+            //mNodePairList.insert(mNodePairList.end(), nodePairs_private.begin(), nodePairs_private.end());
           } // end OMP parallel
         }
       }

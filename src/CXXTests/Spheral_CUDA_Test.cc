@@ -177,10 +177,13 @@ int main() {
   auto n_pos = node_list.positions();
 
   Spheral::FieldAccessor< Spheral::GeomVector<3> > field_view( n_pos );
+  Spheral::NodePairList npl;
 
   RAJA::RangeSegment range(0, field_view.size());
   RAJA::forall<HOST_POL>(range,
-    [=](unsigned int kk) {
+    [=, &npl](unsigned int kk) {
+      Spheral::NodePairIdxType np(kk,0,kk,0);
+      npl.push_back(np);
       field_view[kk][0]++;
       field_view[kk][1]++;
       field_view[kk][2]++;
@@ -201,6 +204,7 @@ int main() {
   RAJA::forall<HOST_POL>(range,
     [&] (int kk) {
       if (n_pos[kk] != Spheral::GeomVector<3>(2,2,2)) correctness = false;
+      if (npl[kk] != Spheral::NodePairIdxType(kk,0,kk,0)) correctness = false;
   });
 
   if (correctness)
