@@ -20,11 +20,15 @@
 
 namespace Spheral {
 
+namespace detail{
+  template<typename T>  class DeviceAccessor;
+}
+
 //------------------------------------------------------------------------------
 struct NodePairIdxType {
-  NodePairIdxType(int i_n = 0, int i_l = 0,
+  RAJA_HOST_DEVICE NodePairIdxType(int i_n = 0, int i_l = 0,
                   int j_n = 0, int j_l = 0,
-                  double f = 1.0);
+                  double f = 1.0) : i_node(i_n), i_list(i_l), j_node(j_n), j_list(j_l), f_couple(f) {}
   int i_node, i_list, j_node, j_list;
   double f_couple;                       // An arbitrary fraction in [0,1] to hold the effective coupling of the pair
 
@@ -52,15 +56,17 @@ struct NodePairIdxType {
 //------------------------------------------------------------------------------
 class NodePairList {
 public:
-  using value_type = NodePairIdxType;
-  typedef value_type& reference;
-  typedef const value_type& const_reference;
+  using ValueType = NodePairIdxType;
+  typedef ValueType& reference;
+  typedef const ValueType& const_reference;
 
-  using ContainerType = LvArray::Array< value_type, 1, camp::idx_seq<0>, std::ptrdiff_t, LvArray::ChaiBuffer >;
+  using ContainerType = LvArray::Array< ValueType, 1, camp::idx_seq<0>, std::ptrdiff_t, LvArray::ChaiBuffer >;
+  using ContainerTypeView = LvArray::ArrayView< ValueType, 1, 0, std::ptrdiff_t, LvArray::ChaiBuffer >;
+
   typedef NodePairIdxType* iterator;
   typedef const NodePairIdxType* const_iterator;
 
-  //typedef std::vector<value_type> ContainerType;
+  //typedef std::vector<ValueType> ContainerType;
   ////typedef typename ContainerType::reference reference;
   ////typedef typename ContainerType::const_reference const_reference;
   //typedef typename ContainerType::iterator iterator;
@@ -71,33 +77,35 @@ public:
   NodePairList();
   void push_back(NodePairIdxType nodePair);
   void clear(); 
-  size_t size() const { return mNodePairList.size(); }
+  size_t size() const { return mDataArray.size(); }
 
   //// Iterators
-  //iterator begin() { return mNodePairList.begin(); }
-  //iterator end() { return mNodePairList.end(); }
-  iterator begin() { return &mNodePairList[0]; }
-  iterator end() { return &mNodePairList[size()-1]; }
-  //const_iterator begin() const { return mNodePairList.begin(); }
-  //const_iterator end() const { return mNodePairList.end(); }
+  //iterator begin() { return mDataArray.begin(); }
+  //iterator end() { return mDataArray.end(); }
+  iterator begin() { return &mDataArray[0]; }
+  iterator end() { return &mDataArray[size()-1]; }
+  //const_iterator begin() const { return mDataArray.begin(); }
+  //const_iterator end() const { return mDataArray.end(); }
 
   //// Reverse iterators
-  //reverse_iterator rbegin() { return mNodePairList.rbegin(); }
-  //reverse_iterator rend() { return mNodePairList.rend(); }
-  //const_reverse_iterator rbegin() const { return mNodePairList.rbegin(); }
-  //const_reverse_iterator rend() const { return mNodePairList.rend(); }
+  //reverse_iterator rbegin() { return mDataArray.rbegin(); }
+  //reverse_iterator rend() { return mDataArray.rend(); }
+  //const_reverse_iterator rbegin() const { return mDataArray.rbegin(); }
+  //const_reverse_iterator rend() const { return mDataArray.rend(); }
 
   //// Indexing
-  reference operator[](const size_t i) { return mNodePairList[i]; }
-  const_reference operator[](const size_t i) const { return mNodePairList[i]; }
+  reference operator[](const size_t i) { return mDataArray[i]; }
+  const_reference operator[](const size_t i) const { return mDataArray[i]; }
 
   // Inserting
   template<typename InputIterator>
-  void insert(size_t pos, InputIterator first, InputIterator last) { mNodePairList.insert(pos, first, last); }
-  //iterator insert(const_iterator pos, InputIterator first, InputIterator last) { return mNodePairList.insert(pos, first, last); }
+  void insert(size_t pos, InputIterator first, InputIterator last) { mDataArray.insert(pos, first, last); }
+  //iterator insert(const_iterator pos, InputIterator first, InputIterator last) { return mDataArray.insert(pos, first, last); }
 
 private:
-  ContainerType mNodePairList;
+  ContainerType mDataArray;
+
+  friend class detail::DeviceAccessor<NodePairList>;
 };
 
 

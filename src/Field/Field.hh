@@ -48,9 +48,9 @@ class Field:
     public FieldBase<Dimension> {
 
   //using ContainerType = std::vector<DataType ,DataAllocator<DataType>>;
-  using ContainerType = LvArray::Array< DataType, 1, camp::idx_seq<0>, std::ptrdiff_t, LvArray::ChaiBuffer >;
-  using ContainerTypeView = LvArray::ArrayView< DataType, 1, 0, std::ptrdiff_t, LvArray::ChaiBuffer >;
   using ValueType = DataType;
+  using ContainerType = LvArray::Array< ValueType, 1, camp::idx_seq<0>, std::ptrdiff_t, LvArray::ChaiBuffer >;
+  using ContainerTypeView = LvArray::ArrayView< ValueType, 1, 0, std::ptrdiff_t, LvArray::ChaiBuffer >;
 
 public:
    

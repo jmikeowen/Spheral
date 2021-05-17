@@ -132,6 +132,12 @@ using Array1D = LvArray::Array< T, 1, camp::idx_seq<0>, std::ptrdiff_t, LvArray:
 template<typename T>
 using Array1DView = LvArray::ArrayView< T, 1, 0, std::ptrdiff_t, LvArray::ChaiBuffer >;
 
+void setupNodePairList(Spheral::NodePairList& npl, const size_t sz) {
+  for (size_t i = 0; i < sz; i++) {
+    npl.push_back(Spheral::NodePairIdxType(0,0,0,0));
+  }
+}
+
 namespace Spheral{
   namespace detail{
 
@@ -179,35 +185,43 @@ int main() {
 
   auto n_pos = node_list.positions();
   Spheral::NodePairList npl;
+  setupNodePairList(npl, N);
 
   auto field_view = Spheral::detail::DEVICE_ACCESSOR(n_pos);
+  auto npl_view = Spheral::detail::DEVICE_ACCESSOR(npl);
 
   RAJA::RangeSegment range(0, field_view.size());
   RAJA::forall<HOST_POL>(range,
-    [=, &npl](unsigned int kk) {
+    [=](unsigned int kk) {
       Spheral::NodePairIdxType np(kk,0,kk,0);
-      npl.push_back(np);
+      npl_view[kk] = np;
+
       field_view[kk][0]++;
       field_view[kk][1]++;
       field_view[kk][2]++;
   });
 
   field_view.move(OFFLOAD_SPACE);
+  npl_view.move(OFFLOAD_SPACE);
 
   RAJA::forall<EXEC_POL>(range, 
     [=] RAJA_HOST_DEVICE (int kk) {
+      Spheral::NodePairIdxType np(kk,kk,kk,kk);
+      npl_view[kk] = np;
+
       field_view[kk][0]++;
       field_view[kk][1]++;
       field_view[kk][2]++;
   });
 
   field_view.move(HOST_SPACE);
+  npl_view.move(HOST_SPACE);
 
   bool correctness = true;
   RAJA::forall<HOST_POL>(range,
     [&] (int kk) {
       if (n_pos[kk] != Spheral::GeomVector<3>(2,2,2)) correctness = false;
-      if (npl[kk] != Spheral::NodePairIdxType(kk,0,kk,0)) correctness = false;
+      if (npl[kk] != Spheral::NodePairIdxType(kk,kk,kk,kk)) correctness = false;
   });
 
   if (correctness)
