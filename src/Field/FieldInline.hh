@@ -122,7 +122,7 @@ inline
 Field<Dimension, DataType>::
 Field(typename FieldBase<Dimension>::FieldName name, 
       const NodeList<Dimension>& nodeList,
-      const ArrayType& array):
+      const ContainerType& array):
   FieldBase<Dimension>(name, nodeList),
   mDataArray((size_t) nodeList.numNodes()),
   mValid(true) {
@@ -218,7 +218,7 @@ Field<Dimension, DataType>::operator=(const Field<Dimension, DataType>& rhs) {
 template<typename Dimension, typename DataType>
 inline
 Field<Dimension, DataType>&
-Field<Dimension, DataType>::operator=(const ArrayType& rhs) {
+Field<Dimension, DataType>::operator=(const ContainerType& rhs) {
   REQUIRE(mValid);
   REQUIRE(this->nodeList().numNodes() == rhs.size());
   mDataArray = rhs;
@@ -1247,7 +1247,7 @@ Field<Dimension, DataType>::resizeFieldInternal(const unsigned size,
   REQUIRE(newSize == this->nodeList().numNodes());
 
   // If there is ghost data, we must preserve it.
-  ArrayType oldGhostValues(numGhostNodes);
+  ContainerType oldGhostValues(numGhostNodes);
   if (numGhostNodes > 0) {
     for (auto i = 0u; i != numGhostNodes; ++i) {
       const int j = oldFirstGhostNode + i;

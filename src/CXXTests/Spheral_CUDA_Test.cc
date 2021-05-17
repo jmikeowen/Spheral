@@ -132,38 +132,40 @@ using Array1D = LvArray::Array< T, 1, camp::idx_seq<0>, std::ptrdiff_t, LvArray:
 template<typename T>
 using Array1DView = LvArray::ArrayView< T, 1, 0, std::ptrdiff_t, LvArray::ChaiBuffer >;
 
-
-
 namespace Spheral{
+  namespace detail{
 
-  template<typename T>
-  class FieldAccessor {
+#define DEVICE_ACCESSOR(VAL) DeviceAccessor<decltype(VAL)>(VAL)
 
-    using array_type = Array1D<T>;
-    using view_type = Array1DView<T>;
+    template<typename T>
+    class DeviceAccessor {
 
-  public:
-    template<typename Dim>
-    FieldAccessor(const Spheral::Field<Dim, T>& field) : array_parent(field.mDataArray), view(field.mDataArray) {}
+      using value_type = typename T::ValueType;
+      using array_type = typename T::ContainerType;
+      using view_type  = typename T::ContainerTypeView;
 
-    size_t size() const { return view.size(); }
+    public:
+      DeviceAccessor(const T& val) : array_parent(val.mDataArray), view(val.mDataArray) {}
 
-    template<typename IDX_TYPE>
-    RAJA_HOST_DEVICE T& operator[](const IDX_TYPE idx) const { return view[idx]; }
+      unsigned size() const { return view.size(); }
 
-    void move( const LvArray::MemorySpace space ) {
-    #if defined(RAJA_ENABLE_CUDA)
-      array_parent.move(space);
-    #else
-      RAJA_UNUSED_VAR(space);
-    #endif
-    }
-     
-  private:
-    const array_type& array_parent;
-    const view_type& view;
-  };
+      template<typename IDX_TYPE>
+      RAJA_HOST_DEVICE value_type& operator[](const IDX_TYPE idx) const { return view[idx]; }
 
+      void move( const LvArray::MemorySpace space ) {
+      #if defined(RAJA_ENABLE_CUDA)
+        array_parent.move(space);
+      #else
+        RAJA_UNUSED_VAR(space);
+      #endif
+      }
+       
+    private:
+      const array_type& array_parent;
+      const view_type& view;
+    };
+
+  }
 }
 
 
@@ -174,10 +176,11 @@ int main() {
   // Create Basic NodeList
   using Dim = Spheral::Dim<3>;
   Spheral::NodeList<Dim> node_list("example_node_list", N, 0);
-  auto n_pos = node_list.positions();
 
-  Spheral::FieldAccessor< Spheral::GeomVector<3> > field_view( n_pos );
+  auto n_pos = node_list.positions();
   Spheral::NodePairList npl;
+
+  auto field_view = Spheral::detail::DEVICE_ACCESSOR(n_pos);
 
   RAJA::RangeSegment range(0, field_view.size());
   RAJA::forall<HOST_POL>(range,

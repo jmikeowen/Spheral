@@ -30,7 +30,10 @@ template<typename Dimension> class CoarseNodeIterator;
 template<typename Dimension> class RefineNodeIterator;
 template<typename Dimension> class NodeList;
 template<typename Dimension> class TableKernel;
-template<typename DataType>  class FieldAccessor;
+
+namespace detail{
+  template<typename T>  class DeviceAccessor;
+}
 
 #ifdef USE_UVM
 template<typename DataType>
@@ -43,10 +46,14 @@ using DataAllocator = std::allocator<DataType>;
 template<typename Dimension, typename DataType>
 class Field: 
     public FieldBase<Dimension> {
-  //using ArrayType = std::vector<DataType ,DataAllocator<DataType>>;
-  using ArrayType = LvArray::Array< DataType, 1, camp::idx_seq<0>, std::ptrdiff_t, LvArray::ChaiBuffer >;
-   
+
+  //using ContainerType = std::vector<DataType ,DataAllocator<DataType>>;
+  using ContainerType = LvArray::Array< DataType, 1, camp::idx_seq<0>, std::ptrdiff_t, LvArray::ChaiBuffer >;
+  using ContainerTypeView = LvArray::ArrayView< DataType, 1, 0, std::ptrdiff_t, LvArray::ChaiBuffer >;
+  using ValueType = DataType;
+
 public:
+   
   //--------------------------- Public Interface ---------------------------//
   typedef typename Dimension::Scalar Scalar;
   typedef typename Dimension::Vector Vector;
@@ -58,10 +65,10 @@ public:
   typedef DataType FieldDataType;
   typedef DataType value_type;      // STL compatibility.
 
-  //typedef typename ArrayType::iterator iterator;
-  //typedef typename ArrayType::const_iterator const_iterator;
-  typedef typename ArrayType::value_type* iterator;
-  typedef typename ArrayType::value_type* const_iterator;
+  //typedef typename ContainerType::iterator iterator;
+  //typedef typename ContainerType::const_iterator const_iterator;
+  typedef typename ContainerType::value_type* iterator;
+  typedef typename ContainerType::value_type* const_iterator;
 
   // Constructors.
   explicit Field(FieldName name);
@@ -73,7 +80,7 @@ public:
         DataType value);
   Field(FieldName name,
         const NodeList<Dimension>& nodeList, 
-        const ArrayType& array);
+        const ContainerType& array);
   Field(const NodeList<Dimension>& nodeList, const Field& field);
   Field(const Field& field);
   virtual std::shared_ptr<FieldBase<Dimension> > clone() const override;
@@ -84,7 +91,7 @@ public:
   // Assignment operator.
   virtual FieldBase<Dimension>& operator=(const FieldBase<Dimension>& rhs) override;
   Field& operator=(const Field& rhs);
-  Field& operator=(const ArrayType& rhs);
+  Field& operator=(const ContainerType& rhs);
   Field& operator=(const DataType& rhs);
 
   // Required method to test equivalence with a FieldBase.
@@ -184,8 +191,8 @@ public:
   const_iterator ghostEnd() const;
 
   // Index operator.
-  DataType& operator[](const unsigned int index);
-  const DataType& operator[](const unsigned int index) const;
+  RAJA_HOST_DEVICE DataType& operator[](const unsigned int index);
+  RAJA_HOST_DEVICE const DataType& operator[](const unsigned int index) const;
 
   // Required functions from FieldBase
   virtual void setNodeList(const NodeList<Dimension>& nodeList) override;
@@ -220,13 +227,13 @@ public:
 private:
   //--------------------------- Private Interface ---------------------------//
   // Private Data
-  ArrayType mDataArray;
+  ContainerType mDataArray;
   bool mValid;
 
   // No default constructor.
   Field();
 
-  friend class FieldAccessor<DataType>;
+  friend class detail::DeviceAccessor<Field<Dimension, DataType>>;
 };
 
 }
