@@ -69,9 +69,9 @@ class NodePairList:
   def __getitem__(self):
       return
 
-  @PYB11implementation("[](const NodePairList& self) { return py::make_iterator(self.begin(), self.end()); }, py::keep_alive<0,1>()")
-  def __iter__(self):
-    "Python iteration through a NodePairList."
+  #@PYB11implementation("[](const NodePairList& self) { return py::make_iterator(self.begin(), self.end()); }, py::keep_alive<0,1>()")
+  #def __iter__(self):
+  #  "Python iteration through a NodePairList."
 
   @PYB11implementation("""[](const NodePairList& self, const NodePairIdxType val) { for (const auto& ele: self) {
                                                                                       if (ele == val) return true;
@@ -84,8 +84,10 @@ class NodePairList:
 
   @PYB11implementation("""[](const NodePairList& self, const py::tuple val0) { if (val0.size() != 4) throw py::value_error("require a tuple of 4 integers");
                                                                                NodePairIdxType val(val0[0].cast<int>(), val0[1].cast<int>(), val0[2].cast<int>(), val0[3].cast<int>());
-                                                                               for (const auto& ele: self) {
-                                                                                 if (ele == val) return true;
+                                                                               //for (const auto& ele: self) {
+                                                                               //  if (ele == val) return true;
+                                                                               for (size_t i = 0; i < self.size(); i++) {
+                                                                                 if (self[i] == val) return true;
                                                                                }
                                                                                return false;
                                                                              }""")
