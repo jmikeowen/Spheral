@@ -30,13 +30,17 @@ if(${lib_name}_BUILD)
                -DENABLE_CUDA=${ENABLE_CUDA}
                -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+               -DCMAKE_CUDA_FLAGS=${CMAKE_CUDA_FLAGS}
 
                -DCMAKE_INSTALL_PREFIX=${${lib_name}_DIR}
+               -DENABLE_RAJA_PLUGIN=On
+               -DRAJA_DIR=${raja_DIR}/share/raja/cmake/
 
     LOG_DOWNLOAD ${OUT_PROTOCOL_EP}
     LOG_CONFIGURE ${OUT_PROTOCOL_EP}
     LOG_BUILD ${OUT_PROTOCOL_EP}
     LOG_INSTALL ${OUT_PROTOCOL_EP}
+    DEPENDS raja
   )
 
 endif()

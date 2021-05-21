@@ -75,7 +75,7 @@ if(ENABLE_OPENMP)
 endif()
 
 if(ENABLE_CUDA)
-  set(CMAKE_CUDA_FLAGS  "${CMAKE_CUDA_FLAGS} --extended-lambda")
+  set(CMAKE_CUDA_FLAGS  "${CMAKE_CUDA_FLAGS} -arch=${CUDA_ARCH} --extended-lambda")
   list(APPEND SPHERAL_CXX_DEPENDS cuda)
 endif()
 

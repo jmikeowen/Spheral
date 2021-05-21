@@ -1,6 +1,6 @@
 set(LVARRAY_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/${lib_name})
-set(LVARRAY_DIST "LvArray-v0.1.0.tar.gz")
-set(LVARRAY_URL "https://github.com/GEOSX/LvArray/releases/download/v0.1.0/${LVARRAY_DIST}")
+set(LVARRAY_DIST "LvArray-v0.2.0.tar.gz")
+set(LVARRAY_URL "https://github.com/GEOSX/LvArray/releases/download/v0.2.0/${LVARRAY_DIST}")
 set(LVARRAY_CACHE "${CACHE_DIR}/${LVARRAY_DIST}")
 
 set(${lib_name}_libs liblvarray.a)
@@ -24,6 +24,7 @@ if(${lib_name}_BUILD)
 
                -DRAJA_DIR=${raja_DIR}
                -DCHAI_DIR=${chai_DIR}
+               -DCAMP_DIR=${raja_DIR}
 
                -DENABLE_TESTS=OFF
                -DENABLE_EXAMPLES=OFF
@@ -34,6 +35,7 @@ if(${lib_name}_BUILD)
                -DCMAKE_CUDA_COMPILER=${CMAKE_CUDA_COMPILER}
                -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
                -DCMAKE_CUDA_STANDARD=${CMAKE_CUDA_STANDARD}
+               -DCMAKE_CUDA_FLAGS=${CMAKE_CUDA_FLAGS}
 
                -DCMAKE_INSTALL_PREFIX=${${lib_name}_DIR}
 
