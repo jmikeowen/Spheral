@@ -22,6 +22,8 @@
 // Check correctness.
 
 #include <iostream>
+
+#if 0
 #include <typeinfo>
 
 #include "ArtificialViscosity/MonaghanGingoldViscosity.hh"
@@ -51,81 +53,22 @@
 #if defined(RAJA_ENABLE_CUDA)
   using EXEC_POL = RAJA::cuda_exec<256>;
   using REDUCE_POL = RAJA::cuda_reduce;
-  #define OFFLOAD_SPACE LvArray::MemorySpace::GPU
+  #define OFFLOAD_SPACE LvArray::MemorySpace::cuda
 #elif defined(RAJA_ENABLE_OPENMP)
   using EXEC_POL = RAJA::omp_for_exec;
   using REDUCE_POL = RAJA::omp_reduce;
-  #define OFFLOAD_SPACE LvArray::MemorySpace::CPU
+  #define OFFLOAD_SPACE LvArray::MemorySpace::host
 #else
   using EXEC_POL = RAJA::seq_exec;
   using REDUCE_POL = RAJA::seq_reduce;
-  #define OFFLOAD_SPACE LvArray::MemorySpace::CPU
+  #define OFFLOAD_SPACE LvArray::MemorySpace::host
 #endif
-  #define HOST_SPACE LvArray::MemorySpace::CPU
+  #define HOST_SPACE LvArray::MemorySpace::host
   using HOST_POL = RAJA::seq_exec;
 
 
 namespace Spheral {
 namespace expt {
-
-//------------------------------------------------------------------------------
-// Determine the principle derivatives.
-//------------------------------------------------------------------------------
-template<typename Dimension>
-void
-evaluateDerivatives(const DataBase<Dimension>& dataBase,
-                    const State<Dimension>& state,
-                    StateDerivatives<Dimension>& derivatives) {
-
-  typedef typename Dimension::Vector Vector;
-
-  TIME_SPHevalDerivs.start();
-  TIME_SPHevalDerivs_initial.start();
-
-  // A few useful constants we'll use in the following loop.
-  const double tiny = 1.0e-30;
-
-  // The connectivity.
-  const auto& connectivityMap = dataBase.connectivityMap();
-  const auto& nodeLists = connectivityMap.nodeLists();
-  const auto numNodeLists = nodeLists.size();
-
-  // The set of interacting node pairs.
-  const auto& pairs = connectivityMap.nodePairList();
-  const auto  npairs = pairs.size();
-
-  // Get the state and derivative FieldLists.
-  // State FieldLists.
-  auto position = state.fields(HydroFieldNames::position,
-                               Vector::zero);
-  auto velocity = state.fields(HydroFieldNames::velocity,
-                               Vector::zero);
-
-  TIME_SPHevalDerivs_initial.stop();
-
-  // Walk all the interacting pairs.
-  TIME_SPHevalDerivs_pairs.start();
-  std::cout << position.numNodes() << "\n";
-  RAJA::TypedRangeSegment<unsigned int> array_npairs(0, npairs);
-  RAJA::forall<EXEC_POL>(array_npairs, [&](unsigned int kk) {
-      //
-    // Thread private scratch variables
-    int i, j, nodeListi, nodeListj;
-
-    i = pairs[kk].i_node;
-    j = pairs[kk].j_node;
-    nodeListi = pairs[kk].i_list;
-    nodeListj = pairs[kk].j_list;
-
-  });
-  TIME_SPHevalDerivs_pairs.stop();
-
-  // Finish up the derivatives for each point.
-  TIME_SPHevalDerivs.stop();
-}
-
-} //  namespace expt
-} //  namespace Spheral
 
 template<typename T>
 using Array1D = LvArray::Array< T, 1, camp::idx_seq<0>, std::ptrdiff_t, LvArray::ChaiBuffer >;
@@ -160,7 +103,7 @@ namespace Spheral{
 
       void move( const LvArray::MemorySpace space ) {
       #if defined(RAJA_ENABLE_CUDA)
-        array_parent.move(space);
+        view.move(space);
       #else
         RAJA_UNUSED_VAR(space);
       #endif
@@ -177,8 +120,12 @@ namespace Spheral{
 
 int main() {
 
-  constexpr int N = 50000;
-
+  constexpr int N = 5;
+#if defined(CHAI_ENABLE_RAJA_PLUGIN)
+#warning Chai raja enabled
+#else
+#warning chai not enabled
+#endif
   // Create Basic NodeList
   using Dim = Spheral::Dim<3>;
   Spheral::NodeList<Dim> node_list("example_node_list", N, 0);
@@ -187,41 +134,36 @@ int main() {
   Spheral::NodePairList npl;
   setupNodePairList(npl, N);
 
-  auto field_view = Spheral::detail::DEVICE_ACCESSOR(n_pos);
-  auto npl_view = Spheral::detail::DEVICE_ACCESSOR(npl);
+  const Array1DView<decltype(n_pos)::ValueType>& field_view(n_pos.mDataArray);
+  //auto field_view = Spheral::detail::DEVICE_ACCESSOR(n_pos);
 
   RAJA::RangeSegment range(0, field_view.size());
   RAJA::forall<HOST_POL>(range,
     [=](unsigned int kk) {
-      Spheral::NodePairIdxType np(kk,0,kk,0);
-      npl_view[kk] = np;
 
       field_view[kk][0]++;
       field_view[kk][1]++;
       field_view[kk][2]++;
   });
 
-  field_view.move(OFFLOAD_SPACE);
-  npl_view.move(OFFLOAD_SPACE);
+  //n_pos.mDataArray.move(OFFLOAD_SPACE);
+  //field_view.move(OFFLOAD_SPACE);
 
   RAJA::forall<EXEC_POL>(range, 
     [=] RAJA_HOST_DEVICE (int kk) {
-      Spheral::NodePairIdxType np(kk,kk,kk,kk);
-      npl_view[kk] = np;
 
       field_view[kk][0]++;
       field_view[kk][1]++;
       field_view[kk][2]++;
   });
 
-  field_view.move(HOST_SPACE);
-  npl_view.move(HOST_SPACE);
+  n_pos.mDataArray.move(HOST_SPACE);
+  //field_view.move(HOST_SPACE);
 
   bool correctness = true;
   RAJA::forall<HOST_POL>(range,
     [&] (int kk) {
       if (n_pos[kk] != Spheral::GeomVector<3>(2,2,2)) correctness = false;
-      if (npl[kk] != Spheral::NodePairIdxType(kk,kk,kk,kk)) correctness = false;
   });
 
   if (correctness)
@@ -231,3 +173,11 @@ int main() {
 
   return EXIT_SUCCESS;
 }
+#else
+
+int main() {
+  std::cout << "Hello World\n";
+  
+  return EXIT_SUCCESS;
+}
+#endif
