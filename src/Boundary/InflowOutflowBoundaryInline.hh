@@ -3,6 +3,55 @@
 #include <typeinfo>
 
 namespace Spheral {
+//------------------------------------------------------------------------------
+// beam parameters
+//------------------------------------------------------------------------------
+template<typename Dimension>
+inline
+typename Dimension::Scalar
+InflowOutflowBoundary<Dimension>::
+beamRadius() const {
+  return mBeamRadius;
+}
+template<typename Dimension>
+inline
+void
+InflowOutflowBoundary<Dimension>::
+beamRadius(const typename Dimension::Scalar x) {
+  mBeamRadius=x;
+}
+
+template<typename Dimension>
+inline
+typename Dimension::Vector
+InflowOutflowBoundary<Dimension>::
+beamAnchor() const {
+  return mBeamAnchor;
+}
+template<typename Dimension>
+inline
+void
+InflowOutflowBoundary<Dimension>::
+beamAnchor(const typename Dimension::Vector x) {
+  mBeamAnchor=x;
+}
+
+template<typename Dimension>
+inline
+typename Dimension::Vector
+InflowOutflowBoundary<Dimension>::
+beamNormal() const {
+  return mBeamNormal;
+}
+template<typename Dimension>
+inline
+void
+InflowOutflowBoundary<Dimension>::
+beamNormal(const typename Dimension::Vector x) {
+  mBeamNormal=x;
+}
+
+
 
 //------------------------------------------------------------------------------
 // The effective timestep vote

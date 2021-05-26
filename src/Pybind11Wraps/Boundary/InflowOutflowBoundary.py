@@ -202,6 +202,10 @@ Really we should rename this post-step finalize."""
 
     #...........................................................................
     # Properties
+    beamAnchor = PYB11property("Vector", "beamAnchor", "beamAnchor", doc="center of inflow clip")
+    beamNormal = PYB11property("Vector", "beamNormal", "beamNormal", doc="unit normal for inflow clip")
+    beamRadius = PYB11property("Scalar", "beamRadius", "beamRadius",doc="radius of inflow clip")
+    
     dataBase = PYB11property(doc="The DataBase for the NodeLists we know about")
     plane = PYB11property(doc="The inflowplane")
     storedKeys = PYB11property(doc="Keys for all the Fields we have stored ghost information about")

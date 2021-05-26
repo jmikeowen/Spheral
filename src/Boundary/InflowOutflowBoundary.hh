@@ -114,6 +114,13 @@ public:
   const DataBase<Dimension>& dataBase() const;
   const GeomPlane<Dimension>& plane() const;
   int numInflowNodes(const NodeList<Dimension>& nodeList) const;
+  
+  void beamRadius(const Scalar x);
+  Scalar beamRadius() const;
+  void beamAnchor(const Vector x);
+  Vector beamAnchor() const;
+  void beamNormal(const Vector x);
+  Vector beamNormal() const;
 
   // Get the stored data for generating ghost nodes.
   template<typename DataType> std::vector<DataType> storedValues(const KeyType key, const DataType& dummy);
@@ -145,6 +152,10 @@ public:
 
 private:
   //--------------------------- Private Interface ---------------------------//
+  Vector mBeamAnchor;   // center pt of inflow clip
+  Vector mBeamNormal;   // normal direction of inflow clip
+  Scalar mBeamRadius;   // radius to clip inflow
+
   DataBase<Dimension>& mDataBase;
   GeomPlane<Dimension> mPlane;
   int mBoundaryCount;

@@ -54,6 +54,9 @@ InflowOutflowBoundary(DataBase<Dimension>& dataBase,
                       const bool empty):
   Boundary<Dimension>(),
   Physics<Dimension>(),
+  mBeamAnchor(Vector::zero),
+  mBeamNormal(Vector::zero),
+  mBeamRadius(0.0),
   mDataBase(dataBase),
   mPlane(plane),
   mBoundaryCount(dataBase.numNodeLists()),
@@ -375,7 +378,7 @@ InflowOutflowBoundary<Dimension>::registerDerivatives(DataBase<Dimension>&,
 //------------------------------------------------------------------------------
 // Physics::finalize
 // At the end of a step, any ghost points that have wandered inside the entrance
-// plane become internal points.
+// plane become internal points. **If they are within the user spec. window**
 //------------------------------------------------------------------------------
 template<typename Dimension>
 void
@@ -393,12 +396,14 @@ InflowOutflowBoundary<Dimension>::finalize(const Scalar /*time*/,
     // cerr << "--------------------------------------------------------------------------------" << endl
     //      << nodeList.name() << endl;
 
-    // Find any ghost points that are inside the entrance plane now.  These are inflow.
+    // Find any ghost points that are inside the entrance plane and within our particle beam
     const auto& gNodes = this->ghostNodes(nodeList);
     auto& pos = nodeList.positions();
     vector<int> insideNodes;
     for (auto i: gNodes) {
-      if (mPlane.compare(pos[i]) == -1) insideNodes.push_back(i - gNodes[0]);
+      const Scalar Ri = ((pos[i] - mBeamAnchor) - (pos[i] - mBeamAnchor).dot(mBeamNormal)*mBeamNormal).magnitude();
+      const bool addNode = (mPlane.compare(pos[i]) == -1) and (Ri < mBeamRadius);
+      if (addNode) insideNodes.push_back(i - gNodes[0]);
     }
     const auto numNew = insideNodes.size();
     if (numNew > 0) {
@@ -517,16 +522,19 @@ template<typename Dimension>
 void
 InflowOutflowBoundary<Dimension>::
 dumpState(FileIO& file, const string& pathName) const {
-  file.write(mActive, pathName + "/active");
-  file.write(mBoundaryCount, pathName + "/boundaryCount");
+  file.write(mBeamAnchor,pathName+"/beamAnchor");
+  file.write(mBeamNormal,pathName+"/beamNormal");
+  file.write(mBeamRadius,pathName+"/beamRadius");
+  //file.write(mActive, pathName + "/active");
+  //file.write(mBoundaryCount, pathName + "/boundaryCount");
 
-  vector<std::string> keys;
-  for (const auto& p: mBufferedValues) {
-    keys.push_back(p.first);
-    std::string val(p.second.begin(), p.second.end());
-    file.write(val, pathName + "/BufferedValues/" + p.first);
-  }
-  file.write(keys, pathName + "/keys");
+  //vector<std::string> keys;
+  //for (const auto& p: mBufferedValues) {
+   // keys.push_back(p.first);
+   // std::string val(p.second.begin(), p.second.end());
+  //  file.write(val, pathName + "/BufferedValues/" + p.first);
+  //}
+  //file.write(keys, pathName + "/keys");
 }
 
 //------------------------------------------------------------------------------
@@ -536,17 +544,21 @@ template<typename Dimension>
 void
 InflowOutflowBoundary<Dimension>::
 restoreState(const FileIO& file, const string& pathName)  {
-  file.read(mActive, pathName + "/active");
-  file.read(mBoundaryCount, pathName + "/boundaryCount");
+  file.read(mBeamAnchor,pathName+"/beamAnchor");
+  file.read(mBeamNormal,pathName+"/beamNormal");
+  file.read(mBeamRadius,pathName+"/beamRadius");
+  
+  //file.read(mActive, pathName + "/active");
+  //file.read(mBoundaryCount, pathName + "/boundaryCount");
 
-  vector<std::string> keys;
-  file.read(keys, pathName + "/keys");
-  mBufferedValues.clear();
-  for (const auto key: keys) {
-    std::string val;
-    file.read(val, pathName + "/BufferedValues/" + key);
-    mBufferedValues[key] = vector<char>(val.begin(), val.end());
-  }
+  //vector<std::string> keys;
+  //file.read(keys, pathName + "/keys");
+  //mBufferedValues.clear();
+  //for (const auto key: keys) {
+  //  std::string val;
+  //  file.read(val, pathName + "/BufferedValues/" + key);
+  //  mBufferedValues[key] = vector<char>(val.begin(), val.end());
+  //}
 }
 
 }
