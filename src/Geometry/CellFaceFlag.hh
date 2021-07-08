@@ -40,6 +40,7 @@ struct DataTypeTraits<CellFaceFlag> {
   static bool fixedSize() { return true; }
   static int numElements(const CellFaceFlag&) { return 3; }
   static CellFaceFlag zero() { return CellFaceFlag({-1, -1, -1}); }
+  using AxomType = int;
 };
 
 template<>

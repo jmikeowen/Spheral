@@ -63,6 +63,7 @@ set(Utilities_headers
     RedistributionRegistrarInline.hh
     RegisterMPIDataTypes.hh
     SafeIndexMap.hh
+    SidreDataCollection.hh
     SpheralFunctions.hh
     SurfaceNodeCoupling.hh
     Timer.hh

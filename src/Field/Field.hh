@@ -12,6 +12,7 @@
 #define __Spheral_Field_hh__
 
 #include "FieldBase.hh"
+#include "axom/sidre.hpp"
 
 #include <string>
 #include <vector>
@@ -235,6 +236,10 @@ public:
   std::vector<DataType> ghostValues() const;
   std::vector<DataType> allValues() const;
 
+  // Functions to help with storing the field in a Sidre datastore.
+  axom::sidre::DataTypeId getAxomTypeID() const;
+
+
 private:
   //--------------------------- Private Interface ---------------------------//
   // Private Data
@@ -246,7 +251,7 @@ private:
   Field();
 };
 
-}
+} // namespace Spheral
 
 #include "FieldInline.hh"
 
@@ -255,6 +260,6 @@ private:
 // Forward declare the Field class.
 namespace Spheral {
   template<typename Dimension, typename DataType> class Field;
-}
+} // namespace Spheral
 
 #endif

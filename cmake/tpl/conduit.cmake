@@ -3,7 +3,13 @@ set(CONDUIT_DIST "conduit-v0.5.1-src-with-blt.tar.gz")
 set(CONDUIT_URL "https://github.com/LLNL/conduit/releases/download/v0.5.1/${CONDUIT_DIST}")
 set(CONDUIT_CACHE "${CACHE_DIR}/${CONDUIT_DIST}")
 
-set(${lib_name}_libs )
+list(APPEND ${lib_name}_INCLUDES $<BUILD_INTERFACE:${${lib_name}_DIR}/include/${lib_name}>)
+
+set(${lib_name}_libs 
+    libconduit.so
+    libconduit_blueprint.so
+    libconduit_relay.so
+   )
 
 if(${lib_name}_BUILD)
 

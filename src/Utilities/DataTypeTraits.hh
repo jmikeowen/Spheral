@@ -19,6 +19,7 @@
 #include "Utilities/DomainNode.hh"
 #include "RK/RKCorrectionParams.hh"
 #include "RK/RKCoefficients.hh"
+#include "axom/sidre.hpp"
 #include "Utilities/uniform_random.hh"
 
 #ifdef USE_MPI
@@ -29,7 +30,12 @@ extern "C" {
 
 namespace Spheral {
 
-template<typename DataType> struct DataTypeTraits;
+template<typename DataType> struct DataTypeTraits {using AxomType = double;};
+
+template <typename T> struct is_rank_n_tensor : std::false_type {};
+template <int U> struct is_rank_n_tensor<GeomThirdRankTensor<U>> : std::true_type {};
+template <int U> struct is_rank_n_tensor<GeomFourthRankTensor<U>> : std::true_type {};
+template <int U> struct is_rank_n_tensor<GeomFifthRankTensor<U>> : std::true_type {};
 
 //------------------------------------------------------------------------------
 template<>
@@ -41,6 +47,8 @@ struct DataTypeTraits<bool> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return MPI_C_BOOL; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::INT8_ID; }
+  using AxomType = bool;
 };
 
 //------------------------------------------------------------------------------
@@ -53,6 +61,8 @@ struct DataTypeTraits<char> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return MPI_CHAR; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::INT8_ID; }
+  using AxomType = char;
 };
 
 //------------------------------------------------------------------------------
@@ -65,6 +75,8 @@ struct DataTypeTraits<int> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return MPI_INT; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::INT_ID; }
+  using AxomType = int;
 };
 
 #if __APPLE__
@@ -78,6 +90,8 @@ struct DataTypeTraits<size_t> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return MPI_UNSIGNED; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::UINT64_ID; }
+  using AxomType = uint64_t;
 };
 #endif
 
@@ -95,6 +109,8 @@ struct DataTypeTraits<uint32_t> {
   static MPI_Datatype MpiDataType() { return MPI_UNSIGNED; }
 #endif
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::UINT32_ID; }
+  using AxomType = uint32_t;
 };
 
 //------------------------------------------------------------------------------
@@ -111,6 +127,8 @@ struct DataTypeTraits<uint64_t> {
   static MPI_Datatype MpiDataType() { return MPI_UNSIGNED_LONG_LONG; }
 #endif
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::UINT64_ID; }
+  using AxomType = uint64_t;
 };
 
 //------------------------------------------------------------------------------
@@ -123,6 +141,8 @@ struct DataTypeTraits<float> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return MPI_FLOAT; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::FLOAT_ID; }
+  using AxomType = float;
 };
 
 //------------------------------------------------------------------------------
@@ -135,6 +155,8 @@ struct DataTypeTraits<double> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return MPI_DOUBLE; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 //------------------------------------------------------------------------------
@@ -144,6 +166,9 @@ struct DataTypeTraits<std::string> {
   static bool fixedSize() { return false; }
   static int numElements(const ElementType& x) { return x.size(); }
   static ElementType zero() { return ""; }
+
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::INT8_ID; }
+  using AxomType = char;
 };
 
 //------------------------------------------------------------------------------
@@ -153,6 +178,9 @@ struct DataTypeTraits<std::vector<Value> > {
   static bool fixedSize() { return false; }
   static int numElements(const std::vector<Value>& x) { return x.size(); }
   static std::vector<Value> zero() { return std::vector<Value>(); }
+
+  static axom::sidre::DataTypeId axomTypeID() { return DataTypeTraits<Value>::axomTypeID(); }
+  using AxomType = typename DataTypeTraits<Value>::AxomType;
 };
 
 //------------------------------------------------------------------------------
@@ -162,6 +190,7 @@ struct DataTypeTraits<std::set<Value> > {
   static bool fixedSize() { return false; }
   static int numElements(const std::set<Value>& x) { return x.size(); }
   static std::set<Value> zero() { return std::set<Value>(); }
+  using AxomType = typename DataTypeTraits<Value>::AxomType;
 };
 
 //------------------------------------------------------------------------------
@@ -174,6 +203,8 @@ struct DataTypeTraits<std::tuple<Value, Value, Value> > {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return DataTypeTraits<Value>::MpiDataType(); }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return DataTypeTraits<Value>::axomTypeID(); }
+  using AxomType = typename DataTypeTraits<Value>::AxomType;
 };
 
 //------------------------------------------------------------------------------
@@ -186,6 +217,8 @@ struct DataTypeTraits<std::tuple<Value, Value, Value, Value> > {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return DataTypeTraits<Value>::MpiDataType(); }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return DataTypeTraits<Value>::axomTypeID(); }
+  using AxomType = typename DataTypeTraits<Value>::AxomType;
 };
 
 //------------------------------------------------------------------------------
@@ -198,6 +231,8 @@ struct DataTypeTraits<std::tuple<Value, Value, Value, Value, Value> > {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return DataTypeTraits<Value>::MpiDataType(); }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return DataTypeTraits<Value>::axomTypeID(); }
+  using AxomType = typename DataTypeTraits<Value>::AxomType;
 };
 
 //------------------------------------------------------------------------------
@@ -228,6 +263,8 @@ struct DataTypeTraits<Dim<1>::Vector> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_Vector1d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -239,6 +276,8 @@ struct DataTypeTraits<Dim<1>::Vector3d> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_Vector3d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -250,6 +289,8 @@ struct DataTypeTraits<Dim<1>::Tensor> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_Tensor1d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -261,6 +302,8 @@ struct DataTypeTraits<Dim<1>::SymTensor> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_SymTensor1d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -272,6 +315,8 @@ struct DataTypeTraits<Dim<1>::ThirdRankTensor> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_ThirdRankTensor1d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -283,6 +328,8 @@ struct DataTypeTraits<Dim<1>::FourthRankTensor> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_FourthRankTensor1d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -294,6 +341,8 @@ struct DataTypeTraits<Dim<1>::FifthRankTensor> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_FifthRankTensor1d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -302,6 +351,9 @@ struct DataTypeTraits<Dim<1>::FacetedVolume> {
   static bool fixedSize() { return false; }
   static int numElements(const Dim<1>::FacetedVolume) { return 0; }
   static Dim<1>::FacetedVolume zero() { return Dim<1>::FacetedVolume(); }
+
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 //------------------------------------------------------------------------------
@@ -314,6 +366,8 @@ struct DataTypeTraits<Dim<2>::Vector> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_Vector2d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -325,6 +379,8 @@ struct DataTypeTraits<Dim<2>::Tensor> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_Tensor2d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -336,6 +392,8 @@ struct DataTypeTraits<Dim<2>::SymTensor> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_SymTensor2d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -347,6 +405,8 @@ struct DataTypeTraits<Dim<2>::ThirdRankTensor> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_ThirdRankTensor2d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -358,6 +418,8 @@ struct DataTypeTraits<Dim<2>::FourthRankTensor> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_FourthRankTensor2d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -369,6 +431,8 @@ struct DataTypeTraits<Dim<2>::FifthRankTensor> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_FifthRankTensor2d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -377,6 +441,7 @@ struct DataTypeTraits<Dim<2>::FacetedVolume> {
   static bool fixedSize() { return false; }
   static int numElements(const Dim<2>::FacetedVolume) { return 0; }
   static Dim<2>::FacetedVolume zero() { return Dim<2>::FacetedVolume(); }
+  using AxomType = double;
 };
 
 //------------------------------------------------------------------------------
@@ -389,6 +454,8 @@ struct DataTypeTraits<Dim<3>::Vector> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_Vector3d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -400,6 +467,8 @@ struct DataTypeTraits<Dim<3>::Tensor> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_Tensor3d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -411,6 +480,8 @@ struct DataTypeTraits<Dim<3>::SymTensor> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_SymTensor3d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -422,6 +493,8 @@ struct DataTypeTraits<Dim<3>::ThirdRankTensor> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_ThirdRankTensor3d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -433,6 +506,8 @@ struct DataTypeTraits<Dim<3>::FourthRankTensor> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_FourthRankTensor3d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -444,6 +519,8 @@ struct DataTypeTraits<Dim<3>::FifthRankTensor> {
 #ifdef USE_MPI
   static MPI_Datatype MpiDataType() { return RegisterMPIDataTypes::instance().MPI_FifthRankTensor3d; }
 #endif
+  static axom::sidre::DataTypeId axomTypeID() { return axom::sidre::DOUBLE_ID; }
+  using AxomType = double;
 };
 
 template<>
@@ -452,6 +529,7 @@ struct DataTypeTraits<Dim<3>::FacetedVolume> {
   static bool fixedSize() { return false; }
   static int numElements(const Dim<3>::FacetedVolume) { return 0; }
   static Dim<3>::FacetedVolume zero() { return Dim<3>::FacetedVolume(); }
+  using AxomType = double;
 };
 
 //------------------------------------------------------------------------------
@@ -464,6 +542,7 @@ struct DataTypeTraits<PolyClipperVertex2d> {
                                                          2u +
                                                          x.clips.size()); }
   static ElementType zero() { return PolyClipperVertex2d(); }
+  using AxomType = double;
 };
 
 template<>
@@ -475,6 +554,7 @@ struct DataTypeTraits<PolyClipperVertex3d> {
                                                          2u +
                                                          x.clips.size()); }
   static ElementType zero() { return PolyClipperVertex3d(); }
+  using AxomType = double;
 };
 
 //------------------------------------------------------------------------------
@@ -484,6 +564,7 @@ struct DataTypeTraits<PolyClipperPlane2d> {
   static bool fixedSize() { return true; }
   static int numElements(const PolyClipperPlane2d&) { return 4; }
   static PolyClipperPlane2d zero() { return PolyClipperPlane2d(); }
+  using AxomType = double;
 };
 
 template<>
@@ -492,6 +573,7 @@ struct DataTypeTraits<PolyClipperPlane3d> {
   static bool fixedSize() { return true; }
   static int numElements(const PolyClipperPlane3d&) { return 5; }
   static PolyClipperPlane3d zero() { return PolyClipperPlane3d(); }
+  using AxomType = double;
 };
 
 //------------------------------------------------------------------------------
@@ -501,6 +583,7 @@ struct DataTypeTraits<DomainNode<Dim<ndim>>> {
   static bool fixedSize() { return true; }
   static int numElements(const DomainNode<Dim<ndim>>&) { return DomainNode<Dim<ndim>>::packSize(); }
   static DomainNode<Dim<ndim>> zero() { return DomainNode<Dim<ndim>>({0, 0, 0, 0, 0, 0.0, Dim<ndim>::Vector::zero}); }
+  using AxomType = double;
 };
 
 //------------------------------------------------------------------------------
@@ -510,6 +593,7 @@ struct DataTypeTraits<RKOrder> {
   static bool fixedSize() { return true; }
   static int numElements(const RKOrder&) { return 1; }
   static RKOrder zero() { return RKOrder::ZerothOrder; }
+  using AxomType = int;
 };
 
 //------------------------------------------------------------------------------
@@ -519,6 +603,7 @@ struct DataTypeTraits<RKCoefficients<Dim<ndim>>> {
   static bool fixedSize() { return false; }
   static int numElements(const RKCoefficients<Dim<ndim>>& x) { return x.size() + 1; }
   static RKCoefficients<Dim<ndim>> zero() { return RKCoefficients<Dim<ndim>>(); }
+  using AxomType = double;
 };
 
 //------------------------------------------------------------------------------
@@ -528,9 +613,10 @@ struct DataTypeTraits<uniform_random> {
   static bool fixedSize() { return true; }
   static int numElements(const uniform_random&) { return 2*sizeof(size_t) + 2*sizeof(double); }
   static uniform_random zero() { return uniform_random(); }
+  using AxomType = char;
 };
 
-}
+} // namespace Spheral
 
 #else
 

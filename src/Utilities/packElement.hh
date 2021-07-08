@@ -54,6 +54,19 @@ packElement(const DataType& value,
   }
 }
 
+// Specialization for an char type.
+template<>
+inline
+void
+packElement<char>(const char& value, 
+                 std::vector<char>& buffer) {
+  const int packSize = sizeof(char);
+  char* data = reinterpret_cast<char*>(const_cast<char*>(&value));
+  for (int i = 0; i != packSize; ++i) {
+    buffer.push_back(*(data + i));
+  }
+}
+
 // Specialization for an int type.
 template<>
 inline
@@ -325,6 +338,23 @@ unpackElement(DataType& value,
       CHECK(itr < endPackedVector);
       *(data + i) = *itr;
     }
+  }
+  ENSURE(itr <= endPackedVector);
+}
+
+// Specialization for an char type.
+template<>
+inline
+void
+unpackElement<char>(char& value,
+                   std::vector<char>::const_iterator& itr,
+                   const std::vector<char>::const_iterator& endPackedVector) {
+  CONTRACT_VAR(endPackedVector);
+  const int packSize = sizeof(char);
+  char* data = reinterpret_cast<char*>(&value);
+  for (int i = 0; i != packSize; ++i, ++itr) {
+    CHECK(itr < endPackedVector);
+    *(data + i) = *itr;
   }
   ENSURE(itr <= endPackedVector);
 }
