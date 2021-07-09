@@ -1,0 +1,37 @@
+variables:
+  DO_BUILD: 'yes'
+  DO_TEST: 'yes'
+  DO_INSTALL: 'yes'
+  COMPILER: 'g++'
+
+jobs:
+- job: Docker
+  timeoutInMinutes: 0
+  strategy:
+    matrix: 
+      gcc8:
+        docker_target: gcc8
+#      clang9:
+#        docker_target: clang9
+#      clang9-debug:
+#        docker_target: clang9-debug
+#      nvcc10:
+#        docker_target: nvcc10
+#      nvcc10-debug:
+#        docker_target: nvcc10-debug
+#      hip:
+#        docker_target: hip
+  pool:
+    vmImage: 'ubuntu-latest'
+  variables:
+    DOCKER_BUILDKIT: '1'
+    CMAKE_EXTRA_FLAGS: '-DENABLE_DEVELOPER_BENCHMARKS=On -DENABLE_DEVELOPER_DEFAULTS=On -DCMAKE_CXX_STANDARD=11'
+  steps:
+  - checkout: self
+    clean: boolean
+    submodules: recursive
+  - task: Docker@1
+    inputs:
+      command: build
+      dockerFile: 'Dockerfile'
+      arguments: '--target $(docker_target)'
