@@ -1,7 +1,6 @@
 include_directories(.)
 set(FileIO_sources
     FileIO.cc
-    FlatFileIO.cc
     SiloFileIO.cc
     PyFileIO.cc
     vectorstringUtilities.cc
@@ -11,7 +10,6 @@ set(FileIO_headers
     DbFileIO.hh
     FileIO.hh
     FileIOInline.hh
-    FlatFileIO.hh
     HDF5IO.hh
     HDF5Traits.hh
     HDF5Types.hh

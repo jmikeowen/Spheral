@@ -109,11 +109,7 @@ function(spheral_add_pybind11_library package_name)
                   SHARED       TRUE
                   )
   add_dependencies(${MODULE_NAME} ${spheral_py_depends} ${spheral_depends})
-  target_compile_options(${MODULE_NAME} PRIVATE
-                         "-Wno-unused-local-typedefs"
-                         "-Wno-self-assign-overloaded"
-                         "-Wno-overloaded-virtual"
-                         "-Wno-delete-non-abstract-non-virtual-dtor")
+  target_compile_options(${MODULE_NAME} PRIVATE ${SPHERAL_PYB11_TARGET_FLAGS})
 
   install(TARGETS     ${MODULE_NAME}
           DESTINATION Spheral

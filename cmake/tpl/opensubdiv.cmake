@@ -30,6 +30,7 @@ if(${lib_name}_BUILD)
                -DNO_OPENGL=ON
                -DNO_CLEW=ON
                -DNO_TBB=ON
+               -DICC_LOCATION=${ICC_LOCATION}
                -DCMAKE_INSTALL_PREFIX=${${lib_name}_DIR}
     LOG_DOWNLOAD ${OUT_PROTOCOL_EP}
     LOG_CONFIGURE ${OUT_PROTOCOL_EP}

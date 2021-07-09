@@ -83,11 +83,6 @@ from JohnsonCookDamageFactories import (JohnsonCookDamageConstant,
 from SpheralPickle import *
 
 # ------------------------------------------------------------------------------
-# Import the python enhanced FlatFileIO object.
-# ------------------------------------------------------------------------------
-#from ExtendFlatFileIO import *
-
-# ------------------------------------------------------------------------------
 # Import the controller and a standard timer class.
 # ------------------------------------------------------------------------------
 from SpheralTimer import *

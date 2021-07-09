@@ -18,7 +18,6 @@ PYB11includes += ['"NodeList/NodeList.hh"',
                   '"Field/Field.hh"',
                   '"Field/FieldList.hh"',
                   '"FileIO/FileIO.hh"',
-                  '"FileIO/FlatFileIO.hh"',
                   '"FileIO/SiloFileIO.hh"',
                   '"FileIO/PyFileIO.hh"',
                   '"FileIO/vectorstringUtilities.hh"']
@@ -142,14 +141,10 @@ AccessType = PYB11enum(("Undefined",
                         "ReadWrite"), export_values=True,
                        doc="How are we opening/accessing a file")
 
-FlatFileFormat = PYB11enum(("ascii", "binary"), export_values=True,
-                           doc="Format of ascii file")
-
 #-------------------------------------------------------------------------------
 # Instantiate our types
 #-------------------------------------------------------------------------------
 from FileIO import *
-from FlatFileIO import *
 from SiloFileIO import *
 from PyFileIO import *
 
